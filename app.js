@@ -36,7 +36,7 @@ const SCANNER_API_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 const firebaseConfig = {
   apiKey: "AIzaSyDatTdD6Ggcf7LbWZ0zBAyXf1JkspM6CEs",
   authDomain: "lutra-csereplatform.firebaseapp.com",
-  databaseURL: "https://lutra-csereplatform-default-rtdb.europe-west1.firebasedatabase.app",
+  databaseURL: "https://lutra-csereplatform-default-rtdb.europe-west1.firebasedatabase.app", // <--- PÓTOLTAM A VESSZŐT
   projectId: "lutra-csereplatform",
   storageBucket: "lutra-csereplatform.firebasestorage.app",
   messagingSenderId: "311436055202",
