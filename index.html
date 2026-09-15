@@ -1813,7 +1813,7 @@
     setupContactModal(targetUser, msg, subject);
   }
 
-  // 100%-OSAN MŰKÖDŐ KÜLDÉS GOMB: FIRESTORE MENTÉS + OPCIONÁLIS RESEND ENDPOINT
+// 100%-OSAN MŰKÖDŐ, HIBATŰRŐ KÜLDÉS GOMB
   document.getElementById('btn-send-message').addEventListener('click', async () => {
     const messageText = document.getElementById('contact-msg-input').value.trim();
     if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
@@ -1823,9 +1823,12 @@
     loader.style.display = 'block';
     sendBtn.disabled = true;
 
-    try {
-      // 1. Mentés a Firestore üzenetsorba (Garancia: 0% adatvesztés, azonnali naplózás)
-      if (db && currentUser) {
+    let savedToFirestore = false;
+    let sentViaEmail = false;
+
+    // 1. Mentés a Firestore üzenetsorba
+    if (db && currentUser) {
+      try {
         await db.collection("messages").add({
           fromUid: currentUser.uid,
           fromName: myProfile.nev,
@@ -1838,44 +1841,45 @@
           message: messageText,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        savedToFirestore = true;
+      } catch (fsErr) {
+        console.warn("Firestore mentési figyelmeztetés:", fsErr.message);
       }
+    }
 
-      // 2. Kézbesítés megkísérlése a Resend/Cloud Function végpontra (ha konfigurálva van)
-      try {
-        await fetch(RESEND_ENDPOINT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            toEmail: activeContactTarget.email,
-            toName: activeContactTarget.nev,
-            fromEmail: myProfile.email,
-            fromName: myProfile.nev,
-            senderCity: myProfile.telepules || '',
-            subject: activeContactTarget.subject,
-            message: messageText
-          })
-        });
-      } catch (networkErr) {
-        // Ha a külső Cloud Function még nem fut, a Firestore-os belső kézbesítés akkor is sikeres volt
+    // 2. Kézbesítés a Resend / Cloud Function felé (ha elérhető)
+    try {
+      const res = await fetch(RESEND_ENDPOINT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toEmail: activeContactTarget.email,
+          toName: activeContactTarget.nev,
+          fromEmail: myProfile.email,
+          fromName: myProfile.nev,
+          senderCity: myProfile.telepules || '',
+          subject: activeContactTarget.subject,
+          message: messageText
+        })
+      });
+
+      if (res.ok) {
+        sentViaEmail = true;
       }
+    } catch (netErr) {
+      console.warn("Cloud function hívási figyelmeztetés:", netErr);
+    }
 
+    loader.style.display = 'none';
+    sendBtn.disabled = false;
+
+    // Ha a Firestore-ba vagy a felhős e-mailbe bekerült az üzenet:
+    if (savedToFirestore || sentViaEmail) {
       showToast("✨ Üzeneted sikeresen elküldve a partnernek!");
       document.getElementById('modal-contact').classList.remove('open');
-    } catch (err) {
-      showToast("Hiba a küldés során: " + err.message);
-    } finally {
-      loader.style.display = 'none';
-      sendBtn.disabled = false;
+    } else {
+      showToast("Hiba: Frissítsd a Firestore szabályokat a Firebase Console-ban!");
     }
-  });
-
-  document.getElementById('btn-close-contact').addEventListener('click', () => {
-    document.getElementById('modal-contact').classList.remove('open');
-  });
-
-  document.getElementById('btn-copy-msg').addEventListener('click', () => {
-    navigator.clipboard.writeText(document.getElementById('contact-msg-input').value);
-    showToast("Üzenet kimásolva a vágólapra!");
   });
 
   // =========================================================================
