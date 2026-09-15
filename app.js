@@ -745,8 +745,8 @@ function renderMatches() {
         return `#${n}${qty}`;
       }).join(', ')}</p>
       <button class="btn" data-action="contact-match" data-uid="${escapeHtml(m.id)}">
-        ✉️ Biztonságos kapcsolatfelvétel
-      </button>
+  Kapcsolatfelvétel
+</button>
     </div>
   `).join('');
 }

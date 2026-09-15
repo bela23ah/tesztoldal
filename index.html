@@ -48,7 +48,7 @@
     <button class="tab active" data-view="matricaim">Matricáim (108)</button>
     <button class="tab" data-view="cserek">Párosítások</button>
     <button class="tab" data-view="kereso">Kereső</button>
-    <button class="tab" data-view="uzeneteim">💬 Üzeneteim <span id="unread-msg-badge" class="nav-badge" style="display:none;">0</span></button>
+    <button class="tab" data-view="uzeneteim">Üzeneteim <span id="unread-msg-badge" class="nav-badge" style="display:none;">0</span></button>
     <button class="tab" data-view="statisztika">Statisztika</button>
     <button class="tab" data-view="profil">Profil & Beállítás</button>
   </nav>
@@ -161,11 +161,11 @@
 
     <!-- 4. BELSŐ ÜZENETEK NÉZET (IN-APP POSTAFIÓK) -->
     <section id="view-uzeneteim" class="view">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <h2>💬 Belső Üzeneteim</h2>
-        <button class="btn btn-secondary" id="btn-refresh-inbox" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
-      </div>
-      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat. A beszélgetés teljesen zárt és privát.</p>
+  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+    <h2>Üzeneteim</h2>
+    <button class="btn btn-secondary" id="btn-refresh-inbox" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
+  </div>
+  <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat. A beszélgetés teljesen zárt és privát.</p>
 
       <div class="filter-group" style="margin-bottom: 14px;">
         <button class="filter-btn active" id="btn-msg-tab-inbox">📥 Beérkező üzenetek</button>
@@ -378,14 +378,14 @@
   </div>
 </div>
 
-<!-- 100% BIZTONSÁGOS KAPCSOLATFELVÉTELI MODAL -->
+<!-- BIZTONSÁGOS KAPCSOLATFELVÉTELI MODAL -->
 <div id="modal-contact" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-contact">✕</button>
     <h3 id="contact-modal-title" style="margin-top:0;">Biztonságos kapcsolatfelvétel</h3>
     
     <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(243,238,223,0.15); border-radius:var(--radius-sm); padding:10px; font-size:0.83rem; margin-bottom:12px; color:var(--sand);">
-      🔒 <strong>Teljes adatvédelem:</strong> A partner e-mail címe rejtett. Az üzenetet a rendszer közvetíti a címzettnek a Resend rendszeren keresztül.
+      🔒 <strong>Teljes adatvédelem:</strong> A partner e-mail címe rejtett. Az üzenetet a rendszer a belső Üzeneteim postafiókba közvetíti.
     </div>
 
     <div class="form-group">
@@ -394,18 +394,21 @@
     </div>
 
     <div id="contact-send-loader" style="display:none; text-align:center; padding:10px; font-size:0.88rem; color:var(--amber); font-weight:600;">
-      ⏳ E-mail kézbesítése a Resend rendszeren keresztül...
+      ⏳ Üzenet küldése folyamatban...
     </div>
 
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn" id="btn-send-message" style="width:100%; padding:11px; font-size:0.92rem; font-weight:700;">
-        📤 Üzenet elküldése
+        Üzenet elküldése
       </button>
 
       <button class="btn btn-secondary" id="btn-copy-msg" style="width:100%; font-size:0.8rem;">
         📋 Szöveg másolása vágólapra
       </button>
     </div>
+  </div>
+</div>
+
   </div>
 </div>
 
