@@ -1813,7 +1813,9 @@
     setupContactModal(targetUser, msg, subject);
   }
 
-// 100%-OSAN MŰKÖDŐ, HIBATŰRŐ KÜLDÉS GOMB
+const RESEND_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
+
+  // 100%-OSAN ÁTLÁTHATÓ, RÉSZLETES HIBAJELZŐVEL ELLÁTOTT KÜLDÉS
   document.getElementById('btn-send-message').addEventListener('click', async () => {
     const messageText = document.getElementById('contact-msg-input').value.trim();
     if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
@@ -1823,32 +1825,28 @@
     loader.style.display = 'block';
     sendBtn.disabled = true;
 
-    let savedToFirestore = false;
-    let sentViaEmail = false;
-
-    // 1. Mentés a Firestore üzenetsorba
-    if (db && currentUser) {
-      try {
-        await db.collection("messages").add({
-          fromUid: currentUser.uid,
-          fromName: myProfile.nev,
-          fromEmail: myProfile.email,
-          fromCity: myProfile.telepules || '',
-          toUid: activeContactTarget.uid,
-          toName: activeContactTarget.nev,
-          toEmail: activeContactTarget.email,
-          subject: activeContactTarget.subject,
-          message: messageText,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        savedToFirestore = true;
-      } catch (fsErr) {
-        console.warn("Firestore mentési figyelmeztetés:", fsErr.message);
-      }
-    }
-
-    // 2. Kézbesítés a Resend / Cloud Function felé (ha elérhető)
     try {
+      // 1. Mentés a Firestore adatbázisba
+      if (db && currentUser) {
+        try {
+          await db.collection("messages").add({
+            fromUid: currentUser.uid,
+            fromName: myProfile.nev,
+            fromEmail: myProfile.email,
+            fromCity: myProfile.telepules || '',
+            toUid: activeContactTarget.uid,
+            toName: activeContactTarget.nev,
+            toEmail: activeContactTarget.email,
+            subject: activeContactTarget.subject,
+            message: messageText,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (fsErr) {
+          console.error("Firestore mentési hiba (Szabályzat):", fsErr);
+        }
+      }
+
+      // 2. E-mail küldése a Worker + Resend közvetítőn keresztül
       const res = await fetch(RESEND_ENDPOINT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1863,22 +1861,21 @@
         })
       });
 
-      if (res.ok) {
-        sentViaEmail = true;
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `Szerverhiba (${res.status})`);
       }
-    } catch (netErr) {
-      console.warn("Cloud function hívási figyelmeztetés:", netErr);
-    }
 
-    loader.style.display = 'none';
-    sendBtn.disabled = false;
-
-    // Ha a Firestore-ba vagy a felhős e-mailbe bekerült az üzenet:
-    if (savedToFirestore || sentViaEmail) {
-      showToast("✨ Üzeneted sikeresen elküldve a partnernek!");
+      showToast("✨ E-mail sikeresen elküldve a partner postafiókjába!");
       document.getElementById('modal-contact').classList.remove('open');
-    } else {
-      showToast("Hiba: Frissítsd a Firestore szabályokat a Firebase Console-ban!");
+
+    } catch (err) {
+      console.error("Küldési hiba:", err);
+      showToast("Küldési hiba: " + err.message);
+    } finally {
+      loader.style.display = 'none';
+      sendBtn.disabled = false;
     }
   });
 
