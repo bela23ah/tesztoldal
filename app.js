@@ -3,12 +3,7 @@
 // =========================================================================
 function escapeHtml(str) {
   if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
 function ensureArray(val) {
@@ -47,7 +42,7 @@ let myProfile = {
 let allUsersData = [];
 let myIncomingMessages = [];
 let myOutgoingMessages = [];
-let activeInboxTab = 'inbox'; // 'inbox' | 'sent'
+let activeInboxTab = 'inbox';
 
 let currentFilter = 'all';
 let matchFilter = 'all';
@@ -642,7 +637,7 @@ function computeLoopMatches() {
       const cVanSet = new Set(ensureArray(userC.van));
       const cKellSet = new Set(ensureArray(userC.kell).filter(n => !cVanSet.has(n)));
 
-      const giveBtoC = [...bVanSet].filter(n => cKellSet.has(n) && !cVanSet.has(n));
+        const giveBtoC = [...bVanSet].filter(n => cKellSet.has(n) && !cVanSet.has(n));
       if (giveBtoC.length === 0) continue;
 
       const giveCtoMe = [...cVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n));
@@ -1164,7 +1159,7 @@ document.getElementById('btn-send-message').addEventListener('click', async () =
       });
     }
 
-    // 2. Kézbesítés a Cloudflare Worker + Resend API-n keresztül (háttérértesítés)
+    // 2. Kézbesítés a Cloudflare Worker + Resend API-n keresztül (értesítés)
     try {
       await fetch(WORKER_ENDPOINT_URL, {
         method: 'POST',
