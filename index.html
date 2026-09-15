@@ -482,7 +482,7 @@
           <input type="text" id="prof-telepules" class="input-field" placeholder="Pl. Kecskemét" required>
         </div>
         <div class="form-group">
-          <label for="prof-email">Kapcsolattartási e-mail <strong style="color:var(--amber);">* (Kötelező - bizalmasan kezelve)</strong></label>
+          <label for="prof-email">Kapcsolattartási e-mail <strong style="color:var(--amber);">* (Kötelező)</strong></label>
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
         <div class="form-group">
@@ -492,7 +492,7 @@
           </label>
           <label class="checkbox-label">
             <input type="checkbox" id="prof-gdpr">
-            Hozzájárulok, hogy a nevemet, településemet és csereadataimat a regisztrált tagok megtekinthessék, és a biztonságos e-mail közvetítőn keresztül üzenetet küldhessenek nekem.
+            Hozzájárulok, hogy a nevemet, településemet és e-mail címemet a regisztrált tagok megtekinthessék és üzenetet küldhessenek nekem.
           </label>
         </div>
         <button class="btn" id="btn-save-profile">Profil mentése a felhőbe</button>
@@ -546,14 +546,13 @@
     <button class="modal-close" id="btn-close-scanner">✕</button>
     <h3 style="margin-top:0;">📸 Fotós matrica-beolvasás</h3>
     <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
-      Fotózd le a papírlistádat vagy a matricákat. Az AI automatikusan felismeri a sorszámokat és kihagyja az áthúzott vagy érvénytelen számokat.
+      Fotózd le a papírlistádat vagy a matricákat. Az AI automatikusan felismeri a sorszámokat.
     </p>
 
     <div style="border:2px dashed var(--amber); border-radius:var(--radius-sm); padding:20px; text-align:center; position:relative; background:rgba(13,46,44,0.4); margin-bottom:14px; cursor:pointer;">
       <input type="file" id="scanner-file-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
       <div style="font-size:1.8rem; margin-bottom:4px;">📷</div>
       <strong>Kattints a fotózáshoz vagy kép feltöltéséhez</strong>
-      <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0;">(Választhatsz képet a galériádból is)</p>
     </div>
 
     <div id="scanner-loader" style="display:none; text-align:center; padding:12px; font-size:0.88rem; color:var(--amber); font-weight:600;">
@@ -564,10 +563,6 @@
       <div style="font-size:0.88rem; margin-bottom:6px; font-weight:600; color:var(--sand);">
         🔍 Felismert matricák (<span id="scanner-count-label">0</span> db):
       </div>
-      <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
-        Kattints a <strong>✕</strong> jelre a törléshez, ha valamit félreolvasott:
-      </p>
-
       <div id="scanner-tags-box" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; max-height:130px; overflow-y:auto; padding:8px; background:rgba(0,0,0,0.25); border-radius:var(--radius-sm);"></div>
 
       <div style="display:flex; gap:8px; margin-bottom:16px;">
@@ -575,13 +570,10 @@
         <button class="btn btn-secondary" id="btn-scanner-add-manual" style="width:auto; padding:8px 14px; white-space:nowrap;">+ Hozzáadás</button>
       </div>
 
-      <p style="font-size:0.82rem; color:var(--sand); font-weight:600; margin:0 0 8px;">Hová szeretnéd elmenteni a felismert számokat?</p>
       <div style="display:flex; gap:8px; margin-bottom:10px;">
         <button class="btn" id="btn-scanner-save-van" style="flex:1; font-size:0.85rem; padding:10px;">🟢 Dupláimhoz (Van)</button>
         <button class="btn btn-secondary" id="btn-scanner-save-kell" style="flex:1; font-size:0.85rem; padding:10px;">🟤 Hiányzóimhoz (Kell)</button>
       </div>
-
-      <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin:6px 0;">— vagy —</div>
       <button class="btn btn-secondary" id="btn-scanner-copy-formatted" style="width:100%; font-size:0.82rem; padding:8px;">
         📋 Formázott lista másolása
       </button>
@@ -594,9 +586,7 @@
   <div class="modal-card" style="max-width:380px;">
     <button class="modal-close" id="btn-close-reset">✕</button>
     <h3 style="margin-top:0;">🗑️ Gyűjtemény lenullázása</h3>
-    <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 16px;">
-      Mit szeretnél törölni a tábládról? A művelet nem vonható vissza.
-    </p>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 16px;">Mit szeretnél törölni?</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn btn-secondary" id="btn-reset-van">Csak a duplák törlése (Van)</button>
       <button class="btn btn-secondary" id="btn-reset-kell">Csak a hiányzók törlése (Kell)</button>
@@ -625,22 +615,19 @@
   </div>
 </div>
 
-<!-- BELÉPÉS / REGISZTRÁCIÓ MODAL -->
+<!-- BELÉPÉS MODAL -->
 <div id="modal-auth" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-auth">✕</button>
     <h3 style="margin-top:0;">Belépés / Regisztráció</h3>
-    <button class="btn btn-google" id="btn-google-login" style="width:100%; margin-bottom:14px;">
-      Belépés Google-lal (1 kattintás)
-    </button>
+    <button class="btn btn-google" id="btn-google-login" style="width:100%; margin-bottom:14px;">Belépés Google-lal</button>
     <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-bottom:14px;">— vagy e-mail címmel —</div>
-    
     <div class="form-group">
       <label>E-mail cím</label>
       <input type="email" id="auth-email" class="input-field" placeholder="pelda@freemail.hu">
     </div>
     <div class="form-group">
-      <label>Jelszó (min. 6 karakter)</label>
+      <label>Jelszó</label>
       <input type="password" id="auth-pass" class="input-field" placeholder="******">
     </div>
     <div style="display:flex; gap:8px;">
@@ -650,41 +637,40 @@
   </div>
 </div>
 
-<!-- BIZTONSÁGOS KAPCSOLATFELVÉTELI MODAL (RESEND / CLOUD FUNCTION KÖZVETÍTŐVEL) -->
+<!-- BIZTONSÁGOS KAPCSOLATFELVÉTELI MODAL -->
 <div id="modal-contact" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-contact">✕</button>
-    <h3 id="contact-modal-title" style="margin-top:0;">Biztonságos kapcsolatfelvétel</h3>
+    <h3 id="contact-modal-title" style="margin-top:0;">Kapcsolatfelvétel</h3>
     
-    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px;">
-      🔒 <strong>Adatvédelem:</strong> A partner és a te e-mail címed is rejtve marad. Az üzenetet a rendszer biztonságosan továbbítja a partner e-mail fiókjába.
-    </p>
-
     <div class="form-group">
-      <label>Te megjelenő neved és válaszcímed:</label>
-      <div id="contact-sender-info" style="font-size:0.85rem; color:var(--sand); background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); margin-bottom:8px;"></div>
+      <label>Partner e-mail címe:</label>
+      <div id="contact-target-email-display" class="copy-box" style="font-weight:600; color:var(--amber);"></div>
     </div>
 
     <div class="form-group">
-      <label>Üzenet szövege:</label>
+      <label>Előre megfogalmazott csereüzenet:</label>
       <textarea id="contact-msg-input" class="input-field" rows="6" style="resize:vertical; font-family:inherit; font-size:0.88rem;"></textarea>
     </div>
 
     <div id="contact-send-loader" style="display:none; text-align:center; padding:8px; font-size:0.85rem; color:var(--amber); font-weight:600;">
-      ⏳ E-mail küldése folyamatban a Resend rendszeren keresztül...
+      ⏳ E-mail küldése folyamatban...
     </div>
 
     <div style="display:flex; flex-direction:column; gap:8px;">
-      <button class="btn" id="btn-send-resend-email" style="width:100%; padding:10px; font-size:0.9rem;">
-        📤 Üzenet küldése (Resend e-mail közvetítés)
+      <!-- 1. Azonnali, 100%-ban működő megnyitás -->
+      <a id="contact-mailto-link" href="#" class="btn" style="width:100%; padding:10px; font-size:0.9rem; text-decoration:none;">
+        ✉️ Megnyitás a saját levelezőmben (Gmail, Freemail, Outlook)
+      </a>
+
+      <!-- 2. Felhős közvetítés gomb -->
+      <button class="btn btn-secondary" id="btn-send-cloud-email" style="width:100%; font-size:0.82rem;">
+        📤 Küldés a felhőn keresztül (Cloud Function / Resend)
       </button>
-      <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin:2px 0;">— vagy alternatívaként —</div>
+
       <button class="btn btn-secondary" id="btn-copy-msg" style="width:100%; font-size:0.8rem;">
         📋 Üzenet szövegének másolása
       </button>
-      <a id="contact-mailto-link" href="#" class="btn btn-secondary" style="width:100%; font-size:0.8rem; display:none;">
-        ✉️ Megnyitás külső levelezőben
-      </a>
     </div>
   </div>
 </div>
@@ -693,16 +679,11 @@
 
 <script>
   // =========================================================================
-  // 0. BIZTONSÁGI SEGÉDFÜGGVÉNYEK & XSS VÉDELEM
+  // 0. BIZTONSÁGI SEGÉDFÜGGVÉNYEK
   // =========================================================================
   function escapeHtml(str) {
     if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
   function ensureArray(val) {
@@ -731,7 +712,8 @@
   // =========================================================================
   const ALBUM_SIZE = 108;
   const SCANNER_API_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
-  const RESEND_EMAIL_API_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev/send-email";
+  // A Firebase Cloud Function URL-je a Resendhez:
+  const CLOUD_FUNCTION_EMAIL_URL = "https://europe-west1-lutra-csereplatform.cloudfunctions.net/sendEmail";
 
   let myProfile = {
     nev: "Vendég gyűjtő",
@@ -869,7 +851,7 @@
   });
 
   // =========================================================================
-  // 2. RÁCSOS ÉS ALBUM NÉZET KIRAJZOLÁSA
+  // 2. RÁCSOS ÉS ALBUM NÉZET
   // =========================================================================
   function renderGrid() {
     const grid = document.getElementById('matrica-grid');
@@ -1003,7 +985,7 @@
   }
 
   // =========================================================================
-  // 3. VILLÓDZÁSMENTES KATTINTÁS & DARABSZÁM
+  // 3. VILLÓDZÁSMENTES KATTINTÁS (DEBOUNCED)
   // =========================================================================
   let activePopoverNum = null;
   const popover = document.getElementById('qty-popover');
@@ -1112,7 +1094,6 @@
     });
   }
 
-  // BIZTONSÁGI GDPR-KAPU: Csak akkor ment Firestore-ba, ha el van fogadva a GDPR
   function saveMyState() {
     myProfile.van = ensureArray(myProfile.van);
     myProfile.kell = ensureArray(myProfile.kell).filter(n => !myProfile.van.includes(n));
@@ -1237,7 +1218,7 @@
   });
 
   // =========================================================================
-  // 5. NÉZET ÉS FÜLEK VÁLTÁSA
+  // 5. NÉZET ÉS FÜLEK
   // =========================================================================
   on('btn-mode-grid', 'click', () => {
     document.getElementById('btn-mode-grid').classList.add('active');
@@ -1387,10 +1368,10 @@
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button class="btn" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
-                Biztonságos e-mail ${escapeHtml(l.userB.nev)}-nek
+                Kapcsolat: ${escapeHtml(l.userB.nev)}
               </button>
               <button class="btn btn-secondary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-c" data-loop-idx="${loopIdx}">
-                Biztonságos e-mail ${escapeHtml(l.userC.nev)}-nek
+                Kapcsolat: ${escapeHtml(l.userC.nev)}
               </button>
             </div>
           </div>
@@ -1444,7 +1425,7 @@
           return `#${n}${qty}`;
         }).join(', ')}</p>
         <button class="btn" data-action="contact-match" data-uid="${escapeHtml(m.id)}">
-          ✉️ Biztonságos kapcsolatfelvétel
+          Kapcsolatfelvétel
         </button>
       </div>
     `).join('');
@@ -1465,16 +1446,16 @@
       const uKellSet = new Set(ensureArray(targetUser.kell).filter(n => !uVanSet.has(n)));
       const give = [...myVanSet].filter(n => uKellSet.has(n) && !uVanSet.has(n));
       const get = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n));
-      openSecureContactModal(targetUser, give.map(n => `#${n}`).join(', '), get.map(n => `#${n}`).join(', '), targetUser.isGiftOffering);
+      openContactModal(targetUser, give.map(n => `#${n}`).join(', '), get.map(n => `#${n}`).join(', '), targetUser.isGiftOffering);
     } else if (action === 'contact-loop-b' || action === 'contact-loop-c') {
       const loopIdx = parseInt(btn.dataset.loopIdx, 10);
       const loops = computeLoopMatches();
       const loop = loops[loopIdx];
       if (!loop) return;
       if (action === 'contact-loop-b') {
-        openSecureLoopContactModal(loop.userB, loop.userC.nev, loop.giveToB.map(n => `#${n}`).join(', '), 'B');
+        openLoopContactModal(loop.userB, loop.userC.nev, loop.giveToB.map(n => `#${n}`).join(', '), 'B');
       } else {
-        openSecureLoopContactModal(loop.userC, loop.userB.nev, loop.giveCtoMe.map(n => `#${n}`).join(', '), 'C');
+        openLoopContactModal(loop.userC, loop.userB.nev, loop.giveCtoMe.map(n => `#${n}`).join(', '), 'C');
       }
     }
   });
@@ -1550,7 +1531,7 @@
           </div>
           <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n} (${escapeHtml(STICKER_NAMES[n] || '')})`).join(', ')}</p>
           <button class="btn" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
-            ✉️ Érdekelnek ezek a matricák
+            Kapcsolatfelvétel
           </button>
         </div>
       `).join('')}
@@ -1562,7 +1543,7 @@
     if (!btn) return;
     const targetUser = allUsersData.find(u => u.id === btn.dataset.uid);
     if (targetUser) {
-      openSecureDirectContactModal(targetUser, btn.dataset.found, targetUser.isGiftOffering);
+      openDirectContactModal(targetUser, btn.dataset.found, targetUser.isGiftOffering);
     }
   });
 
@@ -1762,7 +1743,7 @@
   });
 
   // =========================================================================
-  // 9. BIZTONSÁGOS RESEND E-MAIL KÖZVETÍTŐ LOGIKA (CLOUD FUNCTION)
+  // 9. BIZTONSÁGOS KAPCSOLATFELVÉTEL (MAILTO + CLOUD FUNCTION)
   // =========================================================================
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -1787,94 +1768,76 @@
     return true;
   }
 
-  function openSecureContactModal(targetUser, give, get, isGift) {
+  function setupContactModal(targetUser, msg, subject) {
+    activeContactTarget = {
+      id: targetUser.id,
+      email: targetUser.email,
+      nev: targetUser.nev || 'Gyűjtőpartner',
+      subject: subject
+    };
+
+    document.getElementById('contact-modal-title').textContent = `Kapcsolat: ${activeContactTarget.nev}`;
+    document.getElementById('contact-target-email-display').textContent = activeContactTarget.email;
+    document.getElementById('contact-msg-input').value = msg;
+
+    // Mailto link automatikus beállítása
+    const mailtoBtn = document.getElementById('contact-mailto-link');
+    if (mailtoBtn) {
+      mailtoBtn.href = `mailto:${encodeURIComponent(activeContactTarget.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
+    }
+
+    document.getElementById('modal-contact').classList.add('open');
+  }
+
+  function openContactModal(targetUser, give, get, isGift) {
     if (!checkSenderProfileReady()) return;
     if (!targetUser.email || targetUser.email === 'undefined') {
       return showToast("Ez a partner még nem adott meg érvényes e-mail címet.");
     }
 
-    activeContactTarget = {
-      id: targetUser.id,
-      email: targetUser.email,
-      nev: targetUser.nev || 'Gyűjtőpartner',
-      subject: "Lutra 2026 matricacsere megkeresés"
-    };
-
-    const senderInfo = document.getElementById('contact-sender-info');
-    if (senderInfo) {
-      senderInfo.innerHTML = `👤 <strong>Feladó:</strong> ${escapeHtml(myProfile.nev)} (${escapeHtml(myProfile.telepules || 'Nincs megadva')})<br>✉️ <strong>Válaszcím:</strong> ${escapeHtml(myProfile.email)}`;
-    }
-
+    const subject = "Lutra 2026 matricacsere megkeresés";
     const msg = isGift && !give ?
-      `Szia ${activeContactTarget.nev}!\n\nA Lutra 2026 csereoldalon láttam a felajánlásodat, hogy a dupláidat szívesen odaadod ajándékba.\nSzeretném elkérni az alábbi matricá(ka)t:\n${get}\n\nHogyan tudnánk lebonyolítani az átadást/postázást?\n\nÜdvözlettel,\n${myProfile.nev}` :
-      `Szia ${activeContactTarget.nev}!\n\nA Lutra 2026 platformon találtam meg a gyűjteményedet, és tudnánk egymásnak segíteni:\n\nÉn tudom adni neked: ${give}\nTe tudod adni nekem: ${get}\n\nMegfelelne a csere postán vagy személyesen?\n\nÜdvözlettel,\n${myProfile.nev}`;
+      `Szia ${targetUser.nev}!\n\nA Lutra 2026 csereoldalon láttam a felajánlásodat, hogy a dupláidat szívesen odaadod ajándékba.\nSzeretném elkérni az alábbi matricá(ka)t:\n${get}\n\nHogyan tudnánk lebonyolítani az átadást/postázást?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})` :
+      `Szia ${targetUser.nev}!\n\nA Lutra 2026 platformon találtam meg a gyűjteményedet, és tudnánk egymásnak segíteni:\n\nÉn tudom adni neked: ${give}\nTe tudod adni nekem: ${get}\n\nMegfelelne a csere postán vagy személyesen?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})`;
 
-    document.getElementById('contact-modal-title').textContent = `Üzenet küldése: ${activeContactTarget.nev}`;
-    document.getElementById('contact-msg-input').value = msg;
-    document.getElementById('modal-contact').classList.add('open');
+    setupContactModal(targetUser, msg, subject);
   }
 
-  function openSecureLoopContactModal(targetUser, thirdPersonName, stickersText, role) {
+  function openLoopContactModal(targetUser, thirdPersonName, stickersText, role) {
     if (!checkSenderProfileReady()) return;
     if (!targetUser.email || targetUser.email === 'undefined') {
       return showToast("Nincs érvényes e-mail cím megadva.");
     }
 
-    activeContactTarget = {
-      id: targetUser.id,
-      email: targetUser.email,
-      nev: targetUser.nev || 'Gyűjtőpartner',
-      subject: "Lutra 2026 3 fős körcsere egyeztetés"
-    };
-
-    const senderInfo = document.getElementById('contact-sender-info');
-    if (senderInfo) {
-      senderInfo.innerHTML = `👤 <strong>Feladó:</strong> ${escapeHtml(myProfile.nev)} (${escapeHtml(myProfile.telepules || '')})<br>✉️ <strong>Válaszcím:</strong> ${escapeHtml(myProfile.email)}`;
-    }
-
+    const subject = "Lutra 2026 3 fős körcsere egyeztetés";
     const msg = role === 'B' ?
-      `Szia ${activeContactTarget.nev}!\n\nA Lutra 2026 oldalon egy 3 fős körcsere lehetőséget találtam:\n1. Én adom neked: ${stickersText}\n2. Te adsz ${thirdPersonName}-nek matricát\n3. ${thirdPersonName} pedig ad nekem.\n\nMit szólsz, összehozzuk a körcserét?\n\nÜdvözlettel,\n${myProfile.nev}` :
-      `Szia ${activeContactTarget.nev}!\n\nA Lutra 2026 oldalon egy 3 fős körcsere lehetőséget találtam, amiben te tudnád nekem adni: ${stickersText}, cserébe ${thirdPersonName} adna neked matricát.\n\nÉrdekelne a körcsere?\n\nÜdvözlettel,\n${myProfile.nev}`;
+      `Szia ${targetUser.nev}!\n\nA Lutra 2026 oldalon egy 3 fős körcsere lehetőséget találtam:\n1. Én adom neked: ${stickersText}\n2. Te adsz ${thirdPersonName}-nek matricát\n3. ${thirdPersonName} pedig ad nekem.\n\nMit szólsz, összehozzuk a körcserét?\n\nÜdvözlettel,\n${myProfile.nev}` :
+      `Szia ${targetUser.nev}!\n\nA Lutra 2026 oldalon egy 3 fős körcsere lehetőséget találtam, amiben te tudnád nekem adni: ${stickersText}, cserébe ${thirdPersonName} adna neked matricát.\n\nÉrdekelne a körcsere?\n\nÜdvözlettel,\n${myProfile.nev}`;
 
-    document.getElementById('contact-modal-title').textContent = `Körcsere egyeztetés: ${activeContactTarget.nev}`;
-    document.getElementById('contact-msg-input').value = msg;
-    document.getElementById('modal-contact').classList.add('open');
+    setupContactModal(targetUser, msg, subject);
   }
 
-  function openSecureDirectContactModal(targetUser, numsStr, isGift) {
+  function openDirectContactModal(targetUser, numsStr, isGift) {
     if (!checkSenderProfileReady()) return;
     if (!targetUser.email || targetUser.email === 'undefined') {
       return showToast("Nincs érvényes e-mail cím megadva.");
     }
 
-    activeContactTarget = {
-      id: targetUser.id,
-      email: targetUser.email,
-      nev: targetUser.nev || 'Gyűjtőpartner',
-      subject: "Lutra 2026 matrica érdeklődés"
-    };
-
-    const senderInfo = document.getElementById('contact-sender-info');
-    if (senderInfo) {
-      senderInfo.innerHTML = `👤 <strong>Feladó:</strong> ${escapeHtml(myProfile.nev)} (${escapeHtml(myProfile.telepules || '')})<br>✉️ <strong>Válaszcím:</strong> ${escapeHtml(myProfile.email)}`;
-    }
-
+    const subject = "Lutra 2026 matrica érdeklődés";
     const msg = isGift ?
-      `Szia ${activeContactTarget.nev}!\n\nA Lutra 2026 platformon láttam, hogy ajándékba felajánlod a dupláidat. Szeretném elkérni az alábbi matricá(ka)t: ${numsStr}.\n\nHogyan tudnánk lebonyolítani?\n\nÜdvözlettel,\n${myProfile.nev}` :
-      `Szia ${activeContactTarget.nev}!\n\nA Lutra platformon láttam, hogy nálad megvannak az alábbi matricák: ${numsStr}.\n\nSzeretnék érdeklődni, hogy tudnánk-e cserélni rájuk.\n\nÜdvözlettel,\n${myProfile.nev}`;
+      `Szia ${targetUser.nev}!\n\nA Lutra 2026 platformon láttam, hogy ajándékba felajánlod a dupláidat. Szeretném elkérni az alábbi matricá(ka)t: ${numsStr}.\n\nHogyan tudnánk lebonyolítani?\n\nÜdvözlettel,\n${myProfile.nev}` :
+      `Szia ${targetUser.nev}!\n\nA Lutra platformon láttam, hogy nálad megvannak az alábbi matricák: ${numsStr}.\n\nSzeretnék érdeklődni, hogy tudnánk-e cserélni rájuk.\n\nÜdvözlettel,\n${myProfile.nev}`;
 
-    document.getElementById('contact-modal-title').textContent = `Érdeklődés: ${activeContactTarget.nev}`;
-    document.getElementById('contact-msg-input').value = msg;
-    document.getElementById('modal-contact').classList.add('open');
+    setupContactModal(targetUser, msg, subject);
   }
 
-  // RESEND / CLOUD FUNCTION API HÍVÁS
-  on('btn-send-resend-email', 'click', async () => {
+  // Felhős küldés (Firebase Cloud Function)
+  on('btn-send-cloud-email', async () => {
     const messageText = document.getElementById('contact-msg-input').value.trim();
     if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
 
     const loader = document.getElementById('contact-send-loader');
-    const sendBtn = document.getElementById('btn-send-resend-email');
+    const sendBtn = document.getElementById('btn-send-cloud-email');
     loader.style.display = 'block';
     sendBtn.disabled = true;
 
@@ -1889,7 +1852,7 @@
         message: messageText
       };
 
-      const res = await fetch(RESEND_EMAIL_API_URL, {
+      const res = await fetch(CLOUD_FUNCTION_EMAIL_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1901,16 +1864,10 @@
         showToast("✨ E-mail sikeresen elküldve a partnernek!");
         document.getElementById('modal-contact').classList.remove('open');
       } else {
-        throw new Error(resData.error || "A közvetítő szerver nem tudta kézbesíteni az e-mailt.");
+        throw new Error(resData.error || "A Cloud Function nem elérhető. Használd a 'Megnyitás levelezőben' gombot!");
       }
     } catch (err) {
-      showToast("Küldési hiba: " + err.message);
-      // Fallback gomb megjelenítése, ha a felhős API épp nem elérhető
-      const mailtoLink = document.getElementById('contact-mailto-link');
-      if (mailtoLink) {
-        mailtoLink.style.display = 'inline-flex';
-        mailtoLink.href = `mailto:${encodeURIComponent(activeContactTarget.email)}?subject=${encodeURIComponent(activeContactTarget.subject)}&body=${encodeURIComponent(messageText)}`;
-      }
+      showToast(err.message);
     } finally {
       loader.style.display = 'none';
       sendBtn.disabled = false;
@@ -2042,7 +1999,6 @@
         allUsersData = [];
         snapshot.forEach(doc => {
           const u = doc.data();
-          // SZIGORÚ ADATVÉDELMI SZŰRŐ: Csak érvényes e-maillel és GDPR elfogadással rendelkező tagok kerülhetnek a listába
           if (u && u.gdprAccepted === true && u.email && u.email.trim() && u.email !== 'undefined') {
             allUsersData.push({ id: doc.id, ...u });
           }
@@ -2125,7 +2081,7 @@
 
   on('btn-delete-account', 'click', async () => {
     if (!currentUser) return showToast("Nem vagy bejelentkezve.");
-    if (!confirm("Biztosan törölni szeretnéd a fiókodat és az összes mentett adatodat a csereplatformról?")) return;
+    if (!confirm("Biztosan törölni szeretnéd a fiókodat és az összes mentett adatodat?")) return;
 
     try {
       await db.collection("users").doc(currentUser.uid).delete();
@@ -2141,7 +2097,7 @@
       await auth.signOut();
       renderGrid();
       renderAlbumChapter();
-      showToast("Adataid és adatlapod véglegesen törölve lettek.");
+      showToast("Adataid törölve lettek.");
     } catch (err) {
       showToast("Hiba: " + err.message);
     }
