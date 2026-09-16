@@ -424,7 +424,7 @@ function saveMyState() {
   renderAlbumChapter();
 
   if (currentUser && myProfile.gdprAccepted === true && db) {
-    db.collection("users").doc(currentUser.uid).set({
+    db.collection("public_profiles").doc(currentUser.uid).set({
       van: myProfile.van,
       vanCounts: myProfile.vanCounts || {},
       kell: myProfile.kell,
@@ -688,10 +688,10 @@ function renderMatches() {
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="btn" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
-              ✉️ Üzenet: ${escapeHtml(l.userB.nev)}
+              Üzenet: ${escapeHtml(l.userB.nev)}
             </button>
             <button class="btn btn-secondary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-c" data-loop-idx="${loopIdx}">
-              ✉️ Üzenet: ${escapeHtml(l.userC.nev)}
+              Üzenet: ${escapeHtml(l.userC.nev)}
             </button>
           </div>
         </div>
@@ -851,7 +851,7 @@ function renderSearchResults(targetNums, titleText) {
         </div>
         <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n} (${escapeHtml(STICKER_NAMES[n] || '')})`).join(', ')}</p>
         <button class="btn" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
-          ✉️ Érdekelnek a matricák
+          Érdekelnek a matricák
         </button>
       </div>
     `).join('')}
@@ -1432,7 +1432,7 @@ function listenToAllUsers() {
   if (!db) return;
   if (allUsersUnsubscribe) allUsersUnsubscribe();
   try {
-    allUsersUnsubscribe = db.collection("users").onSnapshot(snapshot => {
+    allUsersUnsubscribe = db.collection("public_profiles").onSnapshot(snapshot => {
       allUsersData = [];
       snapshot.forEach(doc => {
         const u = doc.data();
@@ -1449,16 +1449,32 @@ function listenToAllUsers() {
 function listenToMyProfile(uid) {
   if (!db) return;
   if (myDocUnsubscribe) myDocUnsubscribe();
-  myDocUnsubscribe = db.collection("users").doc(uid).onSnapshot(doc => {
+  
+  // A publikus adatokat (matricák, név, település, gdpr) a public_profiles-ból figyeljük valós időben
+  myDocUnsubscribe = db.collection("public_profiles").doc(uid).onSnapshot(async doc => {
     if (doc.exists) {
       const d = doc.data();
+      
+      // Opcionálisan lekérhetjük az e-mail címet a secure users kollekcióból, ha ott van
+      let userEmail = myProfile.email || '';
+      try {
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (userDoc.exists && userDoc.data().email) {
+          userEmail = userDoc.data().email;
+        }
+      } catch (err) {}
+
       myProfile = {
         ...myProfile,
         ...d,
+        email: userEmail,
+        nev: d.nickname || d.nev || '',         // Kezelve a migráció szerinti mezőneveket is
+        telepules: d.city || d.telepules || '', // Kezelve a migráció szerinti mezőneveket is
         van: ensureArray(d.van),
         kell: ensureArray(d.kell),
         vanCounts: d.vanCounts || {}
       };
+      
       localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
       localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
       localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
@@ -1496,10 +1512,20 @@ document.getElementById('btn-save-profile').addEventListener('click', async () =
   myProfile.gdprAccepted = true;
 
   try {
-    await db.collection("users").doc(currentUser.uid).set({
-      nev: myProfile.nev,
-      telepules: myProfile.telepules,
+    const batch = db.batch();
+
+    // 1. Bizalmas/szenzitív adatok mentése a 'users' kollekcióba (pl. e-mail)
+    const userRef = db.collection("users").doc(currentUser.uid);
+    batch.set(userRef, {
       email: myProfile.email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // 2. Publikus adatok és matricák mentése a 'public_profiles' kollekcióba (ezt látják a mások)
+    const publicRef = db.collection("public_profiles").doc(currentUser.uid);
+    batch.set(publicRef, {
+      nickname: myProfile.nev,
+      city: myProfile.telepules,
       isGiftOffering: myProfile.isGiftOffering,
       gdprAccepted: true,
       van: myProfile.van,
@@ -1508,6 +1534,9 @@ document.getElementById('btn-save-profile').addEventListener('click', async () =
       gdprAcceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
+
+    // Batch commit végrehajtása
+    await batch.commit();
 
     checkMandatoryProfile();
     showToast("Profil adatok elmentve a felhőbe!");
@@ -1521,7 +1550,19 @@ document.getElementById('btn-delete-account').addEventListener('click', async ()
   if (!confirm("Biztosan törölni szeretnéd a fiókodat és az összes mentett adatodat a csereplatformról?")) return;
 
   try {
-    await db.collection("users").doc(currentUser.uid).delete();
+    const batch = db.batch();
+
+    // 1. Bizalmas adatok törlése a 'users' kollekcióból
+    const userRef = db.collection("users").doc(currentUser.uid);
+    batch.delete(userRef);
+
+    // 2. Publikus profil és matricák törlése a 'public_profiles' kollekcióból
+    const publicRef = db.collection("public_profiles").doc(currentUser.uid);
+    batch.delete(publicRef);
+
+    // Batch végrehajtása
+    await batch.commit();
+
     myProfile = {
       nev: "Vendég gyűjtő", telepules: "", email: "",
       isGiftOffering: false, gdprAccepted: false, van: [], vanCounts: {}, kell: []
