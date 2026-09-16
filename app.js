@@ -1,4 +1,17 @@
 // =========================================================================
+// app_v2.js — javított verzió (2026.09.16)
+//  1) listenToAllUsers(): az e-mail alapú szűrés megszűnt (az e-mail már a
+//     'users' kollekcióban van, nem a 'public_profiles'-ban) -> ettől volt
+//     üres az allUsersData és a párosítások listája
+//  2) nickname/city -> nev/telepules normalizálás a többi felhasználónál is
+//  3) a public_profiles listener az auth állapothoz kötve (belépéskor újraindul),
+//     valódi hibakezeléssel a néma () => {} helyett
+//  4) renderMatches() a saját profil frissülésekor is lefut
+//  5) üzenetküldés uid alapon (e-mail cím nem megy át a kliensen), a 'messages'
+//     listener szűrt lekérdezésekkel -> WORKER OLDALI MÓDOSÍTÁST IGÉNYEL
+// =========================================================================
+
+// =========================================================================
 // 0. BIZTONSÁGI SEGÉDFÜGGVÉNYEK & XSS VÉDELEM
 // =========================================================================
 function escapeHtml(str) {
@@ -58,7 +71,6 @@ let activeContactTarget = {
   uid: '',
   nev: '',
   telepules: '',
-  email: '',
   subject: ''
 };
 
@@ -422,6 +434,7 @@ function saveMyState() {
   
   renderGrid();
   renderAlbumChapter();
+  refreshMatchesIfVisible();
 
   if (currentUser && myProfile.gdprAccepted === true && db) {
     db.collection("public_profiles").doc(currentUser.uid).set({
@@ -603,6 +616,11 @@ document.getElementById('btn-match-city').addEventListener('click', function() {
 document.getElementById('btn-match-gift').addEventListener('click', function() { setActiveMatchFilter(this, 'gift'); });
 document.getElementById('btn-match-loop').addEventListener('click', function() { setActiveMatchFilter(this, 'loop'); });
 
+function refreshMatchesIfVisible() {
+  const v = document.getElementById('view-cserek');
+  if (v && v.classList.contains('active')) renderMatches();
+}
+
 function setActiveMatchFilter(btn, filterType) {
   document.querySelectorAll('#view-cserek .filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -617,17 +635,17 @@ document.getElementById('btn-refresh-matches').addEventListener('click', () => {
 
 function computeLoopMatches() {
   const myId = currentUser ? currentUser.uid : 'me';
-  // Itt a .map(Number) konvertálja a szöveges ID-kat is számokká
-  const myVanSet = new Set(ensureArray(myProfile.van).map(Number));
-  const myKellSet = new Set(ensureArray(myProfile.kell).map(Number).filter(n => !myVanSet.has(n)));
+  // Az ensureArray() már számmá konvertál és 1..108 közé szűr
+  const myVanSet = new Set(ensureArray(myProfile.van));
+  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
   const myCity = (myProfile.telepules || '').trim().toLowerCase();
   const otherUsers = allUsersData.filter(u => u.id !== myId);
   const loops = [];
 
   for (let i = 0; i < otherUsers.length; i++) {
     const userB = otherUsers[i];
-    const bVanSet = new Set(ensureArray(userB.van).map(Number));
-    const bKellSet = new Set(ensureArray(userB.kell).map(Number).filter(n => !bVanSet.has(n)));
+    const bVanSet = new Set(ensureArray(userB.van));
+    const bKellSet = new Set(ensureArray(userB.kell).filter(n => !bVanSet.has(n)));
 
     const giveToB = [...myVanSet].filter(n => bKellSet.has(n) && !bVanSet.has(n));
     if (giveToB.length === 0) continue;
@@ -655,9 +673,9 @@ function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
 
-  // Itt is mindent átalakítunk számmá a biztonság kedvéért:
-  const myVanSet = new Set(ensureArray(myProfile.van).map(Number));
-  const myKellSet = new Set(ensureArray(myProfile.kell).map(Number).filter(n => !myVanSet.has(n)));
+  // Az ensureArray() már számmá konvertál és 1..108 közé szűr
+  const myVanSet = new Set(ensureArray(myProfile.van));
+  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
   const myCity = (myProfile.telepules || '').trim().toLowerCase();
 
   if (matchFilter === 'loop') {
@@ -705,8 +723,8 @@ function renderMatches() {
   let matches = allUsersData
     .filter(u => u.id !== (currentUser ? currentUser.uid : 'me'))
     .map(u => {
-      const uVanSet = new Set(ensureArray(u.van).map(Number));
-      const uKellSet = new Set(ensureArray(u.kell).map(Number).filter(n => !uVanSet.has(n)));
+      const uVanSet = new Set(ensureArray(u.van));
+      const uKellSet = new Set(ensureArray(u.kell).filter(n => !uVanSet.has(n)));
       const give = [...myVanSet].filter(n => uKellSet.has(n) && !uVanSet.has(n));
       const get = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n));
       const score = Math.min(give.length, get.length);
@@ -1095,7 +1113,6 @@ function setupContactModal(targetUser, msg, subject) {
     uid: targetUser.id || targetUser.uid || '',
     nev: targetUser.nev || 'Gyűjtőpartner',
     telepules: targetUser.telepules || '',
-    email: targetUser.email || '',
     subject: subject
   };
 
@@ -1150,11 +1167,9 @@ document.getElementById('btn-send-message').addEventListener('click', async () =
       await db.collection("messages").add({
         fromUid: currentUser.uid,
         fromName: myProfile.nev,
-        fromEmail: myProfile.email,
         fromCity: myProfile.telepules || '',
         toUid: activeContactTarget.uid,
         toName: activeContactTarget.nev,
-        toEmail: activeContactTarget.email,
         subject: activeContactTarget.subject,
         message: messageText,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1163,12 +1178,20 @@ document.getElementById('btn-send-message').addEventListener('click', async () =
 
     // 2. Kézbesítés a Cloudflare Worker + Resend API-n keresztül (értesítés)
     try {
+      // A címzett e-mail címét NEM a kliens küldi (az a 'users' kollekcióban van,
+      // és nem publikus). A Worker az Admin SDK-val a toUid alapján olvassa ki,
+      // az ID tokent pedig ellenőrzi, hogy ne lehessen kívülről spamelni.
+      const idToken = currentUser ? await currentUser.getIdToken() : '';
       await fetch(WORKER_ENDPOINT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
         body: JSON.stringify({
-          toEmail: activeContactTarget.email,
+          toUid: activeContactTarget.uid,
           toName: activeContactTarget.nev,
+          fromUid: currentUser ? currentUser.uid : '',
           fromName: myProfile.nev,
           senderCity: myProfile.telepules || '',
           subject: activeContactTarget.subject,
@@ -1265,7 +1288,7 @@ function renderMessages() {
         </div>
         <div class="message-body">${escapeHtml(msg.message)}</div>
         ${isIncoming ? `
-          <button class="btn" style="font-size:0.75rem; padding:4px 12px;" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}" data-sender-email="${escapeHtml(msg.fromEmail || '')}">
+          <button class="btn" style="font-size:0.75rem; padding:4px 12px;" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}">
             ↩️ Válasz ${escapeHtml(msg.fromName)}-nek
           </button>
         ` : ''}
@@ -1279,8 +1302,7 @@ document.getElementById('messages-inbox-list').addEventListener('click', (e) => 
   if (!btn) return;
   const targetUser = {
     id: btn.dataset.senderUid,
-    nev: btn.dataset.senderName,
-    email: btn.dataset.senderEmail || ''
+    nev: btn.dataset.senderName
   };
   setupContactModal(targetUser, `Szia ${targetUser.nev}!\n\nKöszönöm a megkeresést. `, `Válasz: Lutra csere`);
 });
@@ -1289,16 +1311,9 @@ function listenToMyMessages(uid) {
   if (!db) return;
   if (messagesUnsubscribe) messagesUnsubscribe();
 
-  messagesUnsubscribe = db.collection("messages").onSnapshot(snapshot => {
-    myIncomingMessages = [];
-    myOutgoingMessages = [];
-
-    snapshot.forEach(doc => {
-      const data = { id: doc.id, ...doc.data() };
-      if (data.toUid === uid) myIncomingMessages.push(data);
-      if (data.fromUid === uid) myOutgoingMessages.push(data);
-    });
-
+  // Nem a teljes 'messages' kollekciót olvassuk (az mindenki üzenetét jelentené),
+  // hanem két szűrt lekérdezést: nekem szólók + általam küldöttek.
+  const refresh = () => {
     myIncomingMessages.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     myOutgoingMessages.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
@@ -1313,7 +1328,19 @@ function listenToMyMessages(uid) {
     }
 
     renderMessages();
-  }, () => {});
+  };
+
+  const unsubIn = db.collection("messages").where("toUid", "==", uid).onSnapshot(snap => {
+    myIncomingMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    refresh();
+  }, err => console.error("messages (bejövő) listener hiba:", err.code, err.message));
+
+  const unsubOut = db.collection("messages").where("fromUid", "==", uid).onSnapshot(snap => {
+    myOutgoingMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    refresh();
+  }, err => console.error("messages (küldött) listener hiba:", err.code, err.message));
+
+  messagesUnsubscribe = () => { unsubIn(); unsubOut(); };
 }
 
 // =========================================================================
@@ -1402,7 +1429,13 @@ function initFirebase() {
         document.getElementById('modal-auth').classList.remove('open');
         listenToMyProfile(user.uid);
         listenToMyMessages(user.uid);
+        listenToAllUsers();   // belépés után (újra) rácsatlakozunk a public_profiles-ra
       } else {
+        if (myDocUnsubscribe) { myDocUnsubscribe(); myDocUnsubscribe = null; }
+        if (messagesUnsubscribe) { messagesUnsubscribe(); messagesUnsubscribe = null; }
+        myIncomingMessages = [];
+        myOutgoingMessages = [];
+        listenToAllUsers();   // vendégként is megpróbáljuk (ha a rules engedi)
         if (guestNotice) guestNotice.style.display = 'flex';
         if (authArea) authArea.innerHTML = `<button class="btn" id="btn-open-auth">Belépés / Fiók</button>`;
         const btnAuth = document.getElementById('btn-open-auth');
@@ -1410,8 +1443,6 @@ function initFirebase() {
       }
       checkMandatoryProfile();
     });
-
-    listenToAllUsers();
   } catch (e) {
     console.warn("Firebase inicializálási figyelmeztetés:", e);
   }
@@ -1432,20 +1463,42 @@ function checkMandatoryProfile() {
 
 function listenToAllUsers() {
   if (!db) return;
-  if (allUsersUnsubscribe) allUsersUnsubscribe();
-  try {
-    allUsersUnsubscribe = db.collection("public_profiles").onSnapshot(snapshot => {
-      allUsersData = [];
-      snapshot.forEach(doc => {
-        const u = doc.data();
-        if (u && u.gdprAccepted === true && u.email && u.email.trim() && u.email !== 'undefined') {
-          allUsersData.push({ id: doc.id, ...u });
-        }
+  if (allUsersUnsubscribe) { allUsersUnsubscribe(); allUsersUnsubscribe = null; }
+
+  allUsersUnsubscribe = db.collection("public_profiles").onSnapshot(snapshot => {
+    allUsersData = [];
+    snapshot.forEach(doc => {
+      const u = doc.data();
+      // FONTOS: az e-mail már NINCS a public_profiles-ban (a 'users' kollekcióban
+      // tároljuk), ezért nem szabad rá szűrni — ettől maradt üresen a lista.
+      if (!u || u.gdprAccepted !== true) return;
+
+      const van = ensureArray(u.van);
+      const kell = ensureArray(u.kell);
+      if (van.length === 0 && kell.length === 0) return; // üres profil, nincs mit cserélni
+
+      allUsersData.push({
+        ...u,
+        id: doc.id,                                   // a spread UTÁN, hogy ne írja felül
+        nev: u.nickname || u.nev || 'Névtelen gyűjtő', // migrált mezőnevek kezelése
+        telepules: u.city || u.telepules || '',
+        van,
+        kell,
+        vanCounts: u.vanCounts || {},
+        isGiftOffering: u.isGiftOffering === true
       });
-      renderMatches();
-      renderStatistics();
-    }, () => {});
-  } catch (e) {}
+    });
+    renderMatches();
+    renderStatistics();
+  }, err => {
+    console.error("public_profiles listener hiba:", err.code, err.message);
+    allUsersData = [];
+    const list = document.getElementById('matches-list');
+    if (list) {
+      list.innerHTML = `<p class="view-intro">Nem sikerült betölteni a cserepartnereket (${escapeHtml(err.code || 'ismeretlen hiba')}).
+        Ha ki vagy jelentkezve, lépj be a fiókodba, majd frissítsd az oldalt.</p>`;
+    }
+  });
 }
 
 function listenToMyProfile(uid) {
@@ -1490,8 +1543,11 @@ function listenToMyProfile(uid) {
       const gdI = document.getElementById('prof-gdpr'); if (gdI) gdI.checked = !!myProfile.gdprAccepted;
 
       checkMandatoryProfile();
+      refreshMatchesIfVisible();   // a saját van/kell változásakor a cserelista is frissüljön
     }
-  }, () => {});
+  }, err => {
+    console.error("public_profiles/{uid} listener hiba:", err.code, err.message);
+  });
 }
 
 document.getElementById('btn-save-profile').addEventListener('click', async () => {
