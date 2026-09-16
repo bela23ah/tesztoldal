@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0D2E2C">
   
-  <!-- PWA & Mobil Támogatás -->
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,26 +12,19 @@
   <meta name="apple-mobile-web-app-title" content="Lutra Csere">
   <title>Lutra Album Cserebere (Lidl 2026)</title>
 
-  <!-- Betűtípusok -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Külső CSS Stíluslap -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase SDK-k -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- Konfetti könyvtár -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
 <div class="page">
-  <!-- FELSŐ HÍRSÁV (Ha van aktív rendszerüzenet) -->
   <div id="system-announcement-banner" class="announcement-banner" style="display:none;">
     <div class="announcement-content">
       <span id="announcement-banner-icon">📢</span>
@@ -65,19 +57,20 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- Fő navigációs fülek -->
-  <nav class="view-tabs">
-    <button class="tab active" data-view="matricaim">Matricáim (108)</button>
-    <button class="tab" data-view="cserek">Párosítások</button>
-    <button class="tab" data-view="kereso">Kereső & Radar</button>
-    <button class="tab" data-view="uzeneteim">Üzeneteim <span id="unread-msg-badge" class="nav-badge" style="display:none;">0</span></button>
-    <button class="tab" data-view="statisztika">Statisztika</button>
-    <button class="tab" data-view="profil">Profil & Jegyzet</button>
-    <button class="tab" id="tab-admin" data-view="admin" style="display:none; color:var(--amber);">⚙️ Admin</button>
-  </nav>
+  <div class="nav-wrapper">
+    <nav class="view-tabs" id="main-view-tabs">
+      <button class="tab active" data-view="matricaim">Matricáim (108)</button>
+      <button class="tab" data-view="cserek">Párosítások</button>
+      <button class="tab" data-view="kereso">Kereső & Radar</button>
+      <button class="tab" data-view="uzeneteim">Üzeneteim <span id="unread-msg-badge" class="nav-badge" style="display:none;">0</span></button>
+      <button class="tab" data-view="statisztika">Statisztika</button>
+      <button class="tab" data-view="profil">Profil & Jegyzet</button>
+      <button class="tab" id="tab-admin" data-view="admin" style="display:none; color:var(--amber);">⚙️ Admin</button>
+    </nav>
+    <div class="nav-scroll-hint" id="nav-scroll-hint" title="További menüpontok jobbra">▶</div>
+  </div>
 
   <main>
-    <!-- 1. MATRICÁIM NÉZET -->
     <section id="view-matricaim" class="view active">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2>Gyűjteményem</h2>
@@ -97,7 +90,6 @@
         </div>
       </div>
 
-      <!-- 4-Állapotú Jelmagyarázat -->
       <div class="legend-box">
         <div class="legend-item"><span class="legend-chip state-van"></span> 1x = <strong>Dupla (Van)</strong></div>
         <div class="legend-item"><span class="legend-chip state-kell"></span> 2x = <strong>Hiányzik (Kell)</strong></div>
@@ -115,7 +107,6 @@
         </div>
       </div>
 
-      <!-- Tömeges beviteli doboz -->
       <div id="batch-input-box" class="batch-box">
         <label style="display:block; font-size:0.85rem; margin-bottom:6px; font-weight:600;">
           Másold be a számokat (pl. <code>12, 12, 12, 45, 88</code> vagy <code>12*3, 45*2, 88</code>):
@@ -130,7 +121,6 @@
         </div>
       </div>
 
-      <!-- Rácsos nézet konténer -->
       <div id="grid-view-container">
         <div class="grid-controls">
           <div class="filter-group">
@@ -148,7 +138,6 @@
         <div id="matrica-grid"></div>
       </div>
 
-      <!-- Album nézet konténer -->
       <div id="album-view-container" style="display:none;">
         <div class="book-nav">
           <button class="btn btn-secondary" id="btn-album-prev" style="padding:4px 10px; font-size:0.75rem;">◀ Előző fejezet</button>
@@ -159,7 +148,6 @@
       </div>
     </section>
 
-    <!-- 2. PÁROSÍTÁSOK NÉZET -->
     <section id="view-cserek" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2>Cserelehetőségek</h2>
@@ -177,15 +165,12 @@
       <div id="matches-list">Adatok betöltése...</div>
     </section>
 
-    <!-- 3. KERESŐ & ALBUMRADAR NÉZET -->
     <section id="view-kereso" class="view">
-      <!-- Kereső fülek (Matricák vs Bolt-Radar) -->
       <div class="filter-group" style="margin-bottom: 14px;">
         <button class="filter-btn active" id="btn-subview-stickers">🔍 Matricakereső</button>
         <button class="filter-btn" id="btn-subview-radar">🛒 Albumradar (Lidl Boltok)</button>
       </div>
 
-      <!-- A) Matricakereső Al-szekció -->
       <div id="subview-stickers-box">
         <h2>Matricakereső</h2>
         <p class="view-intro">Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>12, 45</code>) vagy állatnévre is (<code>tigris</code>, <code>hiúz</code>).</p>
@@ -202,7 +187,6 @@
         <div id="search-results"></div>
       </div>
 
-      <!-- B) Albumradar Al-szekció -->
       <div id="subview-radar-box" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:baseline;">
           <h2>🛒 Közösségi Albumradar</h2>
@@ -210,16 +194,39 @@
         </div>
         <p class="view-intro">Hol kapható még fizikai üres album? Segítsük egymást a bolti tapasztalatokkal!</p>
 
-        <!-- Új bejelentés kártya -->
         <div class="card" style="border:1.5px solid var(--amber);">
           <h3 style="margin-top:0; font-size:1.05rem;">📍 Új bolti készlet bejelentése</h3>
           <div class="form-group">
-            <label>Település:</label>
-            <input type="text" id="radar-input-city" class="input-field" placeholder="Pl. Kecskemét vagy Budapest XI.">
+            <label>Település / Kerület:</label>
+            <input type="text" id="radar-input-city" class="input-field" list="lidl-cities-list" placeholder="Kezdd el gépelni a várost...">
+            <datalist id="lidl-cities-list">
+              <option value="Budapest">
+              <option value="Budapest III.">
+              <option value="Budapest XI.">
+              <option value="Budapest XIII.">
+              <option value="Budapest XIV.">
+              <option value="Debrecen">
+              <option value="Szeged">
+              <option value="Miskolc">
+              <option value="Pécs">
+              <option value="Győr">
+              <option value="Nyíregyháza">
+              <option value="Kecskemét">
+              <option value="Székesfehérvár">
+              <option value="Szombathely">
+              <option value="Szolnok">
+              <option value="Tatabánya">
+              <option value="Kaposvár">
+              <option value="Békéscsaba">
+              <option value="Veszprém">
+              <option value="Zalaegerszeg">
+              <option value="Eger">
+              <option value="Nagykanizsa">
+            </datalist>
           </div>
           <div class="form-group">
             <label>Melyik Lidl üzlet? (Cím vagy elnevezés):</label>
-            <input type="text" id="radar-input-store" class="input-field" placeholder="Pl. Izsáki úti Lidl">
+            <input type="text" id="radar-input-store" class="input-field" placeholder="Pl. Izsáki úti Lidl vagy Rákóczi út">
           </div>
           <div class="form-group">
             <label>Állapot:</label>
@@ -239,17 +246,14 @@
           <button class="btn" id="btn-submit-radar" style="width:100%;">Bejelentés beküldése</button>
         </div>
 
-        <!-- Figyelmeztető sáv -->
         <div class="notice-banner" style="background:rgba(216,155,74,0.1); border-color:var(--amber);">
           <span>⚠️ <strong>Figyelem:</strong> A bejelentések gyűjtői tapasztalatokon alapulnak, az információk gyorsan elavulhatnak!</span>
         </div>
 
-        <!-- Bejelentések listája -->
         <div id="radar-reports-list">Jelentések betöltése...</div>
       </div>
     </section>
 
-    <!-- 4. BELSŐ ÜZENETEK NÉZET -->
     <section id="view-uzeneteim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2>Üzeneteim</h2>
@@ -265,7 +269,6 @@
       <div id="messages-inbox-list">Bejelentkezés szükséges az üzenetek megtekintéséhez.</div>
     </section>
 
-    <!-- 5. STATISZTIKA NÉZET -->
     <section id="view-statisztika" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2>Országos Ritkaság-mutató</h2>
@@ -290,12 +293,10 @@
       </div>
     </section>
 
-    <!-- 6. PROFIL NÉZET -->
     <section id="view-profil" class="view">
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <!-- Privát Jegyzettömb Kártya -->
       <div class="card" style="border-left:4px solid var(--amber);">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between;">
           <span>📝 Saját Privát Jegyzettömb</span>
@@ -307,7 +308,6 @@
         <textarea id="prof-private-note" class="input-field" rows="3" maxlength="160" placeholder="Pl. #12 és #45 félretéve Marcinak; Postázás szerdán..."></textarea>
       </div>
 
-      <!-- Profil Űrlap Kártya -->
       <div class="card">
         <div class="form-group">
           <label for="prof-nev">Megjelenő név <strong style="color:var(--amber);">* (Kötelező)</strong></label>
@@ -330,12 +330,12 @@
 
           <label class="checkbox-label" style="color:var(--sand);">
             <input type="checkbox" id="prof-show-email">
-            📧 Engedélyezem, hogy a bejelentkezett tagok láthassák az e-mail címemet a gyorsabb kapcsolatfelvételhez
+            Engedélyezem, hogy a bejelentkezett tagok láthassák az e-mail címemet a gyorsabb kapcsolatfelvételhez
           </label>
 
           <label class="checkbox-label" style="color:var(--sand);">
             <input type="checkbox" id="prof-allow-inspect">
-            🔍 Engedélyezem, hogy mások megnézhessék a teljes hiányzólistámat a profilomban
+            Engedélyezem, hogy mások megnézhessék a teljes hiányzólistámat a profilomban
           </label>
 
           <label class="checkbox-label">
@@ -360,7 +360,6 @@
       </div>
     </section>
 
-    <!-- 7. TITKOS ADMINISZTRÁCIÓS NÉZET -->
     <section id="view-admin" class="view">
       <h2>⚙️ Adminisztrátori Vezérlőpult</h2>
       <p class="view-intro">Rendszerüzenetek, találkozók és közlemények élesítése az összes felhasználónak.</p>
@@ -404,7 +403,6 @@
     </section>
   </main>
 
-  <!-- LÁBLÉC -->
   <footer class="support-footer">
     <p style="margin:0 0 6px;"><strong>Tetszik az oldal és segített a cserében?</strong></p>
     <p style="margin:0 0 10px; font-size:0.8rem;">Ha szívesen támogatnád a platform ingyenes működését:</p>
@@ -414,7 +412,6 @@
   </footer>
 </div>
 
-<!-- DARABSZÁM POPOVER (1x - 10x) -->
 <div id="qty-popover" class="qty-popover">
   <div class="qty-row">
     <button class="qty-pop-btn" data-qty="1">1×</button>
@@ -432,20 +429,28 @@
   </div>
 </div>
 
-<!-- FOTÓBEOLVASÓ MODAL -->
+<!-- FOTÓBEOLVASÓ MODAL: KÜLÖN KAMERA ÉS GALÉRIA GOMBOKKAL -->
 <div id="modal-scanner" class="modal-overlay">
   <div class="modal-card" style="max-width:540px;">
     <button class="modal-close" id="btn-close-scanner">✕</button>
     <h3 style="margin-top:0;">📸 Fotós matrica-beolvasás</h3>
     <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
-      Fotózd le a listádat vagy a matricákat. Választhatsz közvetlen kamerát vagy képet a galériából:
+      Fotózd le a listádat vagy a matricákat. Válaszd ki a kívánt beviteli módot:
     </p>
 
-    <div style="border:2px dashed var(--amber); border-radius:var(--radius-sm); padding:20px; text-align:center; position:relative; background:rgba(13,46,44,0.4); margin-bottom:14px; cursor:pointer;">
-      <input type="file" id="scanner-file-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
-      <div style="font-size:1.8rem; margin-bottom:4px;">📷 / 🖼️</div>
-      <strong>Kattints a fotózáshoz vagy kép feltöltéséhez</strong>
-      <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0;">(Mobilon felajánlja a kamerát és a galériát is)</p>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+      <label style="border:2px dashed var(--amber); border-radius:var(--radius-sm); padding:16px; text-align:center; position:relative; background:rgba(13,46,44,0.4); cursor:pointer; display:block;">
+        <input type="file" id="scanner-camera-input" accept="image/*" capture="environment" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
+        <div style="font-size:1.6rem; margin-bottom:4px;">📸</div>
+        <strong>Fotó készítése azonnal kamerával</strong>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0;">(Azonnal megnyitja a telefon kameráját)</p>
+      </label>
+
+      <label style="border:1px solid rgba(243,238,223,0.25); border-radius:var(--radius-sm); padding:12px; text-align:center; position:relative; background:rgba(0,0,0,0.2); cursor:pointer; display:block;">
+        <input type="file" id="scanner-file-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
+        <div style="font-size:1.3rem;">🖼️</div>
+        <strong>Kép kiválasztása a galériából</strong>
+      </label>
     </div>
 
     <div id="scanner-loader" style="display:none; text-align:center; padding:12px; font-size:0.88rem; color:var(--amber); font-weight:600;">
@@ -477,13 +482,11 @@
   </div>
 </div>
 
-<!-- KAPCSOLATFELVÉTELI MODAL -->
 <div id="modal-contact" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-contact">✕</button>
     <h3 id="contact-modal-title" style="margin-top:0;">Kapcsolatfelvétel</h3>
     
-    <!-- Opcionális közvetlen e-mail doboz -->
     <div id="contact-direct-email-box" style="display:none; background:rgba(216,155,74,0.15); border:1px solid var(--amber); border-radius:var(--radius-sm); padding:10px; font-size:0.85rem; margin-bottom:12px;">
       📧 <strong>Partner közvetlen e-mail címe:</strong> <span id="contact-partner-email" style="font-weight:700; color:#FFF;"></span>
       <div style="margin-top:4px;">
@@ -511,7 +514,6 @@
   </div>
 </div>
 
-<!-- FELUGRÓ POP-UP ÉRTESÍTŐ MODAL -->
 <div id="modal-announcement" class="modal-overlay">
   <div class="modal-card" style="max-width:460px; border-color:var(--amber);">
     <button class="modal-close" id="btn-close-announcement">✕</button>
@@ -528,7 +530,6 @@
   </div>
 </div>
 
-<!-- GYŰJTŐTELJES ADATLAP MODAL (Keresőből) -->
 <div id="modal-user-profile" class="modal-overlay">
   <div class="modal-card" style="max-width:500px;">
     <button class="modal-close" id="btn-close-user-profile">✕</button>
@@ -547,7 +548,6 @@
   </div>
 </div>
 
-<!-- LENULLÁZÁS MODAL -->
 <div id="modal-reset" class="modal-overlay">
   <div class="modal-card" style="max-width:380px;">
     <button class="modal-close" id="btn-close-reset">✕</button>
@@ -562,7 +562,6 @@
   </div>
 </div>
 
-<!-- OKLEVÉL MODAL -->
 <div id="modal-certificate" class="modal-overlay">
   <div class="modal-card" style="max-width:440px;">
     <button class="modal-close" id="btn-close-cert">✕</button>
@@ -582,7 +581,6 @@
   </div>
 </div>
 
-<!-- BELÉPÉS MODAL -->
 <div id="modal-auth" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-auth">✕</button>
@@ -606,7 +604,6 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Fő JavaScript fájl beemelése -->
 <script src="app.js"></script>
 </body>
 </html>
