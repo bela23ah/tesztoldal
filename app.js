@@ -617,16 +617,17 @@ document.getElementById('btn-refresh-matches').addEventListener('click', () => {
 
 function computeLoopMatches() {
   const myId = currentUser ? currentUser.uid : 'me';
-  const myVanSet = new Set(ensureArray(myProfile.van));
-  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
+  // Itt a .map(Number) konvertálja a szöveges ID-kat is számokká
+  const myVanSet = new Set(ensureArray(myProfile.van).map(Number));
+  const myKellSet = new Set(ensureArray(myProfile.kell).map(Number).filter(n => !myVanSet.has(n)));
   const myCity = (myProfile.telepules || '').trim().toLowerCase();
   const otherUsers = allUsersData.filter(u => u.id !== myId);
   const loops = [];
 
   for (let i = 0; i < otherUsers.length; i++) {
     const userB = otherUsers[i];
-    const bVanSet = new Set(ensureArray(userB.van));
-    const bKellSet = new Set(ensureArray(userB.kell).filter(n => !bVanSet.has(n)));
+    const bVanSet = new Set(ensureArray(userB.van).map(Number));
+    const bKellSet = new Set(ensureArray(userB.kell).map(Number).filter(n => !bVanSet.has(n)));
 
     const giveToB = [...myVanSet].filter(n => bKellSet.has(n) && !bVanSet.has(n));
     if (giveToB.length === 0) continue;
@@ -654,8 +655,9 @@ function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
 
-  const myVanSet = new Set(ensureArray(myProfile.van));
-  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
+  // Itt is mindent átalakítunk számmá a biztonság kedvéért:
+  const myVanSet = new Set(ensureArray(myProfile.van).map(Number));
+  const myKellSet = new Set(ensureArray(myProfile.kell).map(Number).filter(n => !myVanSet.has(n)));
   const myCity = (myProfile.telepules || '').trim().toLowerCase();
 
   if (matchFilter === 'loop') {
@@ -703,8 +705,8 @@ function renderMatches() {
   let matches = allUsersData
     .filter(u => u.id !== (currentUser ? currentUser.uid : 'me'))
     .map(u => {
-      const uVanSet = new Set(ensureArray(u.van));
-      const uKellSet = new Set(ensureArray(u.kell).filter(n => !uVanSet.has(n)));
+      const uVanSet = new Set(ensureArray(u.van).map(Number));
+      const uKellSet = new Set(ensureArray(u.kell).map(Number).filter(n => !uVanSet.has(n)));
       const give = [...myVanSet].filter(n => uKellSet.has(n) && !uVanSet.has(n));
       const get = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n));
       const score = Math.min(give.length, get.length);
