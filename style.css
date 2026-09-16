@@ -7,6 +7,8 @@
   --sand: #E3D5B8;
   --fur-brown: #8B5E3C;
   --fur-brown-soft: #C99568;
+  --reserved-blue: #2B6CB0;
+  --reserved-blue-soft: #63B3ED;
   --amber: #D89B4A;
   --gift-gold: #FFD166;
   --danger: #E85A4F;
@@ -28,12 +30,34 @@ body {
 }
 .page { max-width: 760px; margin: 0 auto; padding: 18px 14px 40px; }
 
+/* FELSŐ HÍRSÁV */
+.announcement-banner {
+  background: linear-gradient(90deg, #8B5E3C 0%, #D89B4A 100%);
+  color: #081B1A; border-radius: var(--radius-sm);
+  padding: 8px 12px; margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  box-shadow: 0 4px 15px rgba(216, 155, 74, 0.3); font-size: 0.85rem; font-weight: 600;
+}
+.announcement-content { display: flex; align-items: center; gap: 8px; }
+.announcement-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #081B1A; }
+
 header {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
   border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 12px; margin-bottom: 16px;
 }
 .wordmark { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; }
 .wordmark span { font-size: 0.85rem; color: var(--amber); font-weight: 400; }
+
+.btn-pwa-install {
+  background: #FFD166; color: #081B1A; font-weight: 800; font-size: 0.78rem;
+  padding: 5px 12px; border-radius: 999px; border: 1.5px solid #FFFFFF;
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.5); cursor: pointer; animation: pulse 2.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
 
 .auth-box { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
 .user-badge { display: flex; align-items: center; gap: 6px; background: var(--water-mid); padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(243,238,223,0.15); }
@@ -48,6 +72,18 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
+/* 4-ÁLLAPOTÚ JELMAGYARÁZAT */
+.legend-box {
+  display: flex; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.25);
+  padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 0.78rem;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-chip { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.legend-chip.state-van { background: var(--moss); }
+.legend-chip.state-kell { background: var(--fur-brown); }
+.legend-chip.state-foglalva { background: var(--reserved-blue); }
+.legend-chip.state-ures { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.2); }
+
 .view-tabs { display: flex; overflow-x: auto; gap: 14px; margin-bottom: 18px; border-bottom: 1px solid rgba(243,238,223,0.1); }
 .tab {
   background: none; border: none; color: var(--text-muted); font-family: var(--font-body);
@@ -58,8 +94,9 @@ header {
 
 .nav-badge {
   background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800;
-  padding: 1px 6px; border-radius: 999px; margin-left: 4px; vertical-align: middle;
+  padding: 1px 6px; border-radius: 999px; margin-left: 4px; vertical-align: middle; transition: background 0.3s ease;
 }
+.nav-badge.read { background: rgba(216, 155, 74, 0.4); color: var(--sand); }
 
 .view { display: none; }
 .view.active { display: block; }
@@ -81,10 +118,11 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .filter-btn.active { background: var(--amber); color: var(--water-deep); font-weight: 700; }
 
-.stats-badges { display: flex; gap: 8px; }
+.stats-badges { display: flex; gap: 8px; flex-wrap: wrap; }
 .stat-chip { font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; background: var(--water-mid); }
 .stat-van strong { color: var(--moss-soft); }
 .stat-kell strong { color: var(--fur-brown-soft); }
+.stat-foglalva strong { color: var(--reserved-blue-soft); }
 
 /* 1. RÁCSOS NÉZET */
 #matrica-grid {
@@ -115,6 +153,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .matrica-cell:active { transform: scale(0.94); }
 .matrica-cell.van { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
 .matrica-cell.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; font-weight: 700; }
+.matrica-cell.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; font-weight: 700; }
 
 .qty-badge {
   position: absolute; top: -4px; right: -4px; background: var(--amber); color: var(--water-deep);
@@ -191,6 +230,12 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .slot.kell .sticker-num, .combo-half.kell .sticker-num { color: var(--text-primary); }
 .slot.kell .sticker-tag, .combo-half.kell .sticker-tag { background: rgba(0,0,0,0.3); color: var(--sand); }
 
+.slot.foglalva, .combo-half.foglalva {
+  background: var(--reserved-blue) !important; color: #FFF !important; border-style: solid; border-color: var(--reserved-blue-soft);
+}
+.slot.foglalva .sticker-num, .combo-half.foglalva .sticker-num { color: #FFF; }
+.slot.foglalva .sticker-tag, .combo-half.foglalva .sticker-tag { background: rgba(0,0,0,0.35); color: #FFF; }
+
 /* KÁRTYÁK & ÜZENETEK */
 .card {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.12);
@@ -202,10 +247,10 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-gift { background: var(--gift-gold); color: var(--water-deep); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .badge-ratio { background: rgba(216, 155, 74, 0.25); color: var(--amber); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
 
-/* Belső üzenet kártya stílus */
+/* Belső üzenet kártya */
 .message-card {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
-  border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;
+  border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; position: relative;
 }
 .message-card.incoming { border-left: 4px solid var(--amber); }
 .message-card.outgoing { border-left: 4px solid var(--moss-soft); opacity: 0.9; }
@@ -215,13 +260,23 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; color: var(--text-primary);
 }
 
+/* BOLT-RADAR KÁRTYÁK */
+.radar-card {
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
+  border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px;
+}
+.badge-radar-van { background: var(--moss); color: var(--water-deep); font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
+.badge-radar-nincs { background: var(--danger); color: #FFF; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
+
 .btn {
   background: var(--moss); color: var(--water-deep); border: none; border-radius: 999px;
   padding: 8px 16px; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font-body);
 }
+.btn-sm { padding: 4px 10px; font-size: 0.75rem; }
 .btn-google { background: #FFFFFF; color: #333333; }
 .btn-secondary { background: transparent; border: 1px solid rgba(243,238,223,0.3); color: var(--text-primary); }
+.btn-blue { background: var(--reserved-blue); color: #FFFFFF; }
 .btn-danger { background: var(--danger); color: #FFFFFF; }
 .btn-fb { background: #1877F2; color: #FFFFFF; }
 .btn-scanner-highlight {
@@ -238,8 +293,8 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 .form-group { margin-bottom: 14px; }
 .form-group label { display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted); }
-.checkbox-label { display: flex; gap: 8px; font-size: 0.82rem; color: var(--text-muted); align-items: flex-start; cursor: pointer; margin-bottom: 10px; }
-.checkbox-label input { margin-top: 3px; }
+.checkbox-label, .radio-label { display: flex; gap: 8px; font-size: 0.82rem; color: var(--text-muted); align-items: flex-start; cursor: pointer; margin-bottom: 10px; }
+.checkbox-label input, .radio-label input { margin-top: 3px; }
 
 .batch-box {
   background: rgba(13, 46, 44, 0.6); border: 1px dashed var(--amber); border-radius: var(--radius-md);
@@ -269,7 +324,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 /* Modális ablakok */
 .modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none;
   align-items: center; justify-content: center; z-index: 2500; padding: 16px;
 }
 .modal-overlay.open { display: flex; }

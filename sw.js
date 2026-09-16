@@ -1,41 +1,72 @@
-const CACHE_NAME = 'lutra-csere-v1';
-const ASSETS = [
+// =========================================================================
+// Lutra Album Cserebere - Service Worker (sw.js v2.0)
+// =========================================================================
+
+const CACHE_NAME = 'lutra-csere-v2.0';
+const STATIC_ASSETS = [
+  './',
   './index.html',
   './style.css',
   './app.js',
   './manifest.json'
 ];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+// 1. Telepítés és statikus fájlok gyorsítótárazása
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+// 2. Aktiválás és régi gyorsítótárak kitakarítása
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
     })
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (e) => {
-  // Csak a helyi fájlokat cache-eljük, a Firebase/API hívások mindig hálózatra mennek
-  if (e.request.url.includes('firebase') || e.request.url.includes('workers.dev') || e.request.url.includes('googleapis')) {
+// 3. Hálózati kérések kezelése: Network-first a dinamikus adatokhoz, Cache fallback
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // A Firestore és külső API hívásokat nem gyorsítótárazzuk, hagyjuk közvetlenül átmenni
+  if (
+    url.origin.includes('firestore.googleapis.com') ||
+    url.origin.includes('workers.dev') ||
+    url.origin.includes('firebaseio.com') ||
+    event.request.method !== 'GET'
+  ) {
     return;
   }
 
-  e.respondWith(
-    caches.match(e.request).then((cached) => {
-      return cached || fetch(e.request);
-    })
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Ha sikeres a hálózati letöltés, frissítjük a gyorsítótárat
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Offline állapot esetén a gyorsítótárból szolgáljuk ki
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.headers.get('accept').includes('text/html')) {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
-```
