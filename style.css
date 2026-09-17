@@ -28,9 +28,9 @@ body {
   font-family: var(--font-body); line-height: 1.5; -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
 }
-.page { max-width: 760px; margin: 0 auto; padding: 18px 14px 40px; }
+.page { max-width: 760px; margin: 0 auto; padding: 16px 12px 40px; }
 
-/* FELSŐ HÍRSÁV */
+/* FELSŐ DÍSZES ÉRTESÍTÉSI SÁV */
 .announcement-banner {
   background: linear-gradient(90deg, #8B5E3C 0%, #D89B4A 100%);
   color: #081B1A; border-radius: var(--radius-sm);
@@ -43,7 +43,7 @@ body {
 
 header {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-  border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 12px; margin-bottom: 16px;
+  border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 12px; margin-bottom: 14px;
 }
 .wordmark { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; }
 .wordmark span { font-size: 0.85rem; color: var(--amber); font-weight: 400; }
@@ -72,9 +72,55 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
+/* 2-SOROS, MOBILBARÁT NAVIGÁCIÓS FÜLEK */
+.view-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(243,238,223,0.1);
+}
+.tab {
+  background: var(--water-mid);
+  border: 1px solid rgba(243,238,223,0.15);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.tab.active {
+  background: var(--amber);
+  color: var(--water-deep);
+  border-color: var(--amber);
+  font-weight: 700;
+}
+.tab-highlight-radar {
+  border: 1.5px solid var(--amber);
+  background: rgba(216, 155, 74, 0.15);
+  color: var(--sand);
+}
+
+.nav-badge {
+  background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800;
+  padding: 1px 6px; border-radius: 999px; margin-left: 4px; vertical-align: middle; transition: background 0.3s ease;
+}
+.nav-badge.read { background: rgba(216, 155, 74, 0.4); color: var(--sand); }
+.badge-radar-count { background: var(--moss); color: var(--water-deep); }
+
+.view { display: none; }
+.view.active { display: block; }
+h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
+.view-intro { color: var(--text-muted); font-size: 0.88rem; margin: 0 0 14px; }
+
 /* 4-ÁLLAPOTÚ JELMAGYARÁZAT */
 .legend-box {
-  display: flex; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.25);
+  display: flex; flex-wrap: wrap; gap: 8px 12px; background: rgba(0,0,0,0.25);
   padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 0.78rem;
 }
 .legend-item { display: flex; align-items: center; gap: 5px; }
@@ -83,25 +129,6 @@ header {
 .legend-chip.state-kell { background: var(--fur-brown); }
 .legend-chip.state-foglalva { background: var(--reserved-blue); }
 .legend-chip.state-ures { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.2); }
-
-.view-tabs { display: flex; overflow-x: auto; gap: 14px; margin-bottom: 18px; border-bottom: 1px solid rgba(243,238,223,0.1); }
-.tab {
-  background: none; border: none; color: var(--text-muted); font-family: var(--font-body);
-  font-size: 0.95rem; font-weight: 600; padding: 8px 4px; cursor: pointer;
-  border-bottom: 2px solid transparent; white-space: nowrap; position: relative;
-}
-.tab.active { color: var(--text-primary); border-bottom-color: var(--amber); }
-
-.nav-badge {
-  background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800;
-  padding: 1px 6px; border-radius: 999px; margin-left: 4px; vertical-align: middle; transition: background 0.3s ease;
-}
-.nav-badge.read { background: rgba(216, 155, 74, 0.4); color: var(--sand); }
-
-.view { display: none; }
-.view.active { display: block; }
-h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
-.view-intro { color: var(--text-muted); font-size: 0.88rem; margin: 0 0 14px; }
 
 .view-mode-toggle { display: flex; gap: 8px; }
 .mode-btn {
@@ -160,6 +187,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   font-size: 0.65rem; font-weight: 800; padding: 1px 5px; border-radius: 999px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1px solid var(--water-deep); z-index: 5; pointer-events: none;
 }
+.qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
 
 /* 2. ALBUM NÉZET */
 .book-nav {
@@ -250,7 +278,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 /* Belső üzenet kártya */
 .message-card {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
-  border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; position: relative;
+  border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;
 }
 .message-card.incoming { border-left: 4px solid var(--amber); }
 .message-card.outgoing { border-left: 4px solid var(--moss-soft); opacity: 0.9; }
@@ -260,13 +288,17 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; color: var(--text-primary);
 }
 
-/* BOLT-RADAR KÁRTYÁK */
+/* BOLT-RADAR KÁRTYÁK & FOTÓK */
 .radar-card {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
-  border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px;
+  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px;
 }
 .badge-radar-van { background: var(--moss); color: var(--water-deep); font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
 .badge-radar-nincs { background: var(--danger); color: #FFF; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
+.radar-attached-img {
+  max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid rgba(243,238,223,0.2);
+  margin-top: 8px; display: block; object-fit: cover; cursor: pointer;
+}
 
 .btn {
   background: var(--moss); color: var(--water-deep); border: none; border-radius: 999px;
@@ -331,6 +363,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .modal-card {
   background: var(--water-deep); border: 1px solid var(--amber); border-radius: var(--radius-md);
   padding: 22px; max-width: 520px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;
+  max-height: 90vh; overflow-y: auto;
 }
 .modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
 

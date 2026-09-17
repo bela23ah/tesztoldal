@@ -1,12 +1,12 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v2.0 Golyóálló Verzió)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v2.0 Teljes Rendszer)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// Biztonsági eseménykezelő segédfüggvény (nem engedi összeomlani az appot)
+// Biztonságos eseménykezelő segédfüggvény (Crash-Proof DOM handling)
 function safeAddListener(id, event, handler) {
   const el = document.getElementById(id);
   if (el) el.addEventListener(event, handler);
@@ -119,6 +119,8 @@ let myOutgoingMessages = [];
 let radarReports = [];
 let activeAnnouncements = [];
 let previousIncomingCount = null;
+let previousRadarCount = null;
+let radarAttachedBase64 = '';
 
 let activeInboxTab = 'inbox';
 let currentFilter = 'all';
@@ -716,6 +718,11 @@ function switchTab(viewName) {
 
   if (viewName === 'cserek') renderMatches();
   if (viewName === 'statisztika') renderStatistics();
+  if (viewName === 'radar') {
+    renderRadarReports();
+    const rBadge = document.getElementById('radar-badge');
+    if (rBadge) rBadge.style.display = 'none';
+  }
   if (viewName === 'uzeneteim') {
     renderMessages();
     const badge = document.getElementById('unread-msg-badge');
@@ -725,26 +732,12 @@ function switchTab(viewName) {
     renderGrid();
     renderAlbumChapter();
   }
-  if (viewName === 'kereso') renderRadarReports();
   if (viewName === 'admin') renderAdminAnnouncements();
 }
 
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => switchTab(t.dataset.view));
 });
-
-const tabsNav = document.getElementById('main-view-tabs');
-const scrollHint = document.getElementById('nav-scroll-hint');
-if (tabsNav && scrollHint) {
-  tabsNav.addEventListener('scroll', () => {
-    const maxScroll = tabsNav.scrollWidth - tabsNav.clientWidth;
-    if (tabsNav.scrollLeft >= maxScroll - 10) {
-      scrollHint.style.opacity = '0';
-    } else {
-      scrollHint.style.opacity = '1';
-    }
-  });
-}
 
 safeAddListener('btn-match-all', 'click', function() { setActiveMatchFilter(this, 'all'); });
 safeAddListener('btn-match-city', 'click', function() {
@@ -945,21 +938,6 @@ safeAddListener('matches-list', 'click', (e) => {
   }
 });
 
-safeAddListener('btn-subview-stickers', 'click', () => {
-  document.getElementById('btn-subview-stickers')?.classList.add('active');
-  document.getElementById('btn-subview-radar')?.classList.remove('active');
-  if (document.getElementById('subview-stickers-box')) document.getElementById('subview-stickers-box').style.display = 'block';
-  if (document.getElementById('subview-radar-box')) document.getElementById('subview-radar-box').style.display = 'none';
-});
-
-safeAddListener('btn-subview-radar', 'click', () => {
-  document.getElementById('btn-subview-radar')?.classList.add('active');
-  document.getElementById('btn-subview-stickers')?.classList.remove('active');
-  if (document.getElementById('subview-stickers-box')) document.getElementById('subview-stickers-box').style.display = 'none';
-  if (document.getElementById('subview-radar-box')) document.getElementById('subview-radar-box').style.display = 'block';
-  renderRadarReports();
-});
-
 function normalizeText(text) {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
@@ -1048,29 +1026,93 @@ safeAddListener('search-results', 'click', (e) => {
   }
 });
 
+// =========================================================================
+// 8. ALBUMRADAR & FOTÓ TÖMÖRÍTÉS (10 PERCES KORLÁTTAL)
+// =========================================================================
+safeAddListener('radar-photo-input', 'change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 600; // Kis méret a gyorsaságért
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+      }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      radarAttachedBase64 = canvas.toDataURL('image/jpeg', 0.65);
+      const preview = document.getElementById('radar-photo-preview');
+      const previewBox = document.getElementById('radar-photo-preview-box');
+      if (preview && previewBox) {
+        preview.src = radarAttachedBase64;
+        previewBox.style.display = 'block';
+      }
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 safeAddListener('btn-submit-radar', 'click', async () => {
   if (!currentUser) return showToast("Bejelentéshez előbb lépj be a fiókodba!");
-  const city = document.getElementById('radar-input-city')?.value.trim() || '';
-  const store = document.getElementById('radar-input-store')?.value.trim() || '';
+
+  // 10 perces korlát ellenőrzése
+  const lastReportTime = parseInt(localStorage.getItem('lutra_last_radar_report') || '0', 10);
+  const now = Date.now();
+  if (now - lastReportTime < 10 * 60 * 1000) {
+    const remMin = Math.ceil((10 * 60 * 1000 - (now - lastReportTime)) / 60000);
+    return showToast(`Kérlek várj még ${remMin} percet az újabb bejelentés előtt!`);
+  }
+
+  const rawStore = document.getElementById('radar-input-store')?.value.trim() || '';
   const note = document.getElementById('radar-input-note')?.value.trim() || '';
   const statusEl = document.querySelector('input[name="radar-status"]:checked');
   const status = statusEl ? statusEl.value === 'van' : true;
 
-  if (!city || !store) return showToast("Kérlek add meg a települést és a Lidl boltot!");
+  if (!rawStore) return showToast("Kérlek válaszd ki a Lidl áruházat a listából!");
+
+  let city = '';
+  let storeName = rawStore;
+  if (rawStore.includes('–')) {
+    const parts = rawStore.split('–');
+    city = parts[0].trim();
+    storeName = parts[1].trim();
+  } else if (rawStore.includes('-')) {
+    const parts = rawStore.split('-');
+    city = parts[0].trim();
+    storeName = parts[1].trim();
+  } else {
+    city = myProfile.telepules || 'Magyarország';
+  }
 
   try {
     await db.collection("album_reports").add({
       city: city,
-      storeName: store,
+      storeName: storeName,
+      fullStoreName: rawStore,
       note: note,
       status: status,
+      photoBase64: radarAttachedBase64 || '',
       reportedAt: firebase.firestore.FieldValue.serverTimestamp(),
       reporterName: myProfile.nev || 'Gyűjtő',
       userId: currentUser.uid
     });
 
+    localStorage.setItem('lutra_last_radar_report', now.toString());
+    radarAttachedBase64 = '';
     if (document.getElementById('radar-input-store')) document.getElementById('radar-input-store').value = '';
     if (document.getElementById('radar-input-note')) document.getElementById('radar-input-note').value = '';
+    if (document.getElementById('radar-photo-input')) document.getElementById('radar-photo-input').value = '';
+    if (document.getElementById('radar-photo-preview-box')) document.getElementById('radar-photo-preview-box').style.display = 'none';
+
     showToast("Köszönjük! A bolti jelentésed mentve.");
   } catch (err) {
     showToast("Hiba: " + err.message);
@@ -1086,27 +1128,39 @@ function renderRadarReports() {
   const container = document.getElementById('radar-reports-list');
   if (!container) return;
 
-  if (radarReports.length === 0) {
-    container.innerHTML = '<p class="view-intro">Még nem érkezett bolti készletjelentés. Legyél te az első!</p>';
+  const filterQuery = (document.getElementById('radar-filter-input')?.value || '').toLowerCase().trim();
+
+  const filtered = radarReports.filter(r => {
+    if (!filterQuery) return true;
+    const matchCity = (r.city || '').toLowerCase().includes(filterQuery);
+    const matchStore = (r.storeName || '').toLowerCase().includes(filterQuery);
+    const matchFull = (r.fullStoreName || '').toLowerCase().includes(filterQuery);
+    return matchCity || matchStore || matchFull;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="view-intro">Nincs a szűrésnek megfelelő készletjelentés.</p>';
     return;
   }
 
-  container.innerHTML = radarReports.map(r => {
+  container.innerHTML = filtered.map(r => {
     const timeStr = r.reportedAt?.toDate ? r.reportedAt.toDate().toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' }) : 'Nemrég';
     const isOwnerOrAdmin = currentUser && (r.userId === currentUser.uid || currentUser.email === ADMIN_EMAIL);
+    const storeLabel = r.fullStoreName ? r.fullStoreName : `${r.city} – ${r.storeName}`;
 
     return `
       <div class="radar-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
           <div>
-            <strong>📍 ${escapeHtml(r.city)}</strong> — ${escapeHtml(r.storeName)}
+            <strong>📍 ${escapeHtml(storeLabel)}</strong>
           </div>
           <span class="${r.status ? 'badge-radar-van' : 'badge-radar-nincs'}">
             ${r.status ? '🟢 Kapható' : '🔴 Elfogyott'}
           </span>
         </div>
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:6px;">
+        ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" onclick="window.open(this.src)">` : ''}
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
           <span>👤 ${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
@@ -1114,6 +1168,8 @@ function renderRadarReports() {
     `;
   }).join('');
 }
+
+safeAddListener('radar-filter-input', 'input', () => renderRadarReports());
 
 safeAddListener('radar-reports-list', 'click', async (e) => {
   const btn = e.target.closest('[data-action="delete-radar"]');
@@ -1133,9 +1189,26 @@ function listenToRadarReports() {
 
   radarUnsubscribe = db.collection("album_reports")
     .orderBy("reportedAt", "desc")
-    .limit(30)
+    .limit(35)
     .onSnapshot(snap => {
+      const isInitial = (previousRadarCount === null);
+      const newCount = snap.docs.length;
+
       radarReports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Radar jelvény és felső értesítés ha új bejelentés érkezett
+      const rBadge = document.getElementById('radar-badge');
+      if (rBadge && radarReports.length > 0) {
+        rBadge.textContent = radarReports.length;
+        rBadge.style.display = 'inline-block';
+      }
+
+      if (!isInitial && newCount > previousRadarCount && radarReports.length > 0) {
+        const latest = radarReports[0];
+        triggerTopNotification('🛒', `Új bolti készletjelentés: ${latest.city} (${latest.status ? '🟢 Kapható' : '🔴 Elfogyott'})`, () => switchTab('radar'));
+      }
+      previousRadarCount = newCount;
+
       renderRadarReports();
     }, err => console.warn("Albumradar listener:", err));
 }
@@ -1620,6 +1693,27 @@ safeAddListener('messages-inbox-list', 'click', async (e) => {
   }
 });
 
+function triggerTopNotification(icon, text, actionFn) {
+  const banner = document.getElementById('top-notification-banner');
+  const iconEl = document.getElementById('top-banner-icon');
+  const textEl = document.getElementById('top-banner-text');
+  const actionBtn = document.getElementById('btn-top-banner-action');
+  const closeBtn = document.getElementById('btn-top-banner-close');
+
+  if (!banner || !textEl) return;
+  if (iconEl) iconEl.textContent = icon;
+  textEl.textContent = text;
+  banner.style.display = 'flex';
+
+  if (actionBtn) {
+    actionBtn.onclick = () => {
+      banner.style.display = 'none';
+      if (actionFn) actionFn();
+    };
+  }
+  if (closeBtn) closeBtn.onclick = () => { banner.style.display = 'none'; };
+}
+
 function listenToMyMessages(uid) {
   if (!db) return;
   if (messagesUnsubscribe) messagesUnsubscribe();
@@ -1648,6 +1742,7 @@ function listenToMyMessages(uid) {
       if ("vibrate" in navigator) {
         navigator.vibrate([180, 90, 180]);
       }
+      triggerTopNotification('📩', "Új belső üzeneted érkezett egy cserepartnertől!", () => switchTab('uzeneteim'));
       showToast("📩 Új üzeneted érkezett!");
     }
     previousIncomingCount = newCount;
@@ -1678,11 +1773,7 @@ function listenToAnnouncements() {
 }
 
 function checkAndDisplayAnnouncements() {
-  const banner = document.getElementById('system-announcement-banner');
-  if (activeAnnouncements.length === 0) {
-    if (banner) banner.style.display = 'none';
-    return;
-  }
+  if (activeAnnouncements.length === 0) return;
 
   const myCity = (myProfile.telepules || '').trim().toLowerCase();
   const relevant = activeAnnouncements.find(a => {
@@ -1690,23 +1781,11 @@ function checkAndDisplayAnnouncements() {
     return a.targetCity.toLowerCase() === myCity;
   });
 
-  if (!relevant) {
-    if (banner) banner.style.display = 'none';
-    return;
-  }
+  if (!relevant) return;
 
-  if ((relevant.format === 'banner' || !relevant.format) && banner) {
-    const textEl = document.getElementById('announcement-banner-text');
-    const iconEl = document.getElementById('announcement-banner-icon');
-
-    if (iconEl) iconEl.textContent = relevant.type === 'event' ? '📅' : relevant.type === 'feature' ? '🚀' : '📢';
-    if (textEl) textEl.textContent = `${relevant.title}: ${relevant.content.slice(0, 60)}...`;
-    banner.style.display = 'flex';
-
-    const btnDet = document.getElementById('btn-banner-details');
-    const btnCls = document.getElementById('btn-banner-close');
-    if (btnDet) btnDet.onclick = () => showAnnouncementModal(relevant);
-    if (btnCls) btnCls.onclick = () => { banner.style.display = 'none'; };
+  if (relevant.format === 'banner' || !relevant.format) {
+    const icon = relevant.type === 'event' ? '📅' : relevant.type === 'feature' ? '🚀' : '📢';
+    triggerTopNotification(icon, `${relevant.title}: ${relevant.content.slice(0, 50)}...`, () => showAnnouncementModal(relevant));
   }
 
   if (relevant.format === 'popup') {
@@ -1839,6 +1918,78 @@ safeAddListener('btn-reset-all', 'click', () => {
   showToast("Összes adat törölve.");
 });
 
+// OKLEVÉL KÉP GENERÁLÁSA ÉS LETÖLTÉSE (HTML5 CANVAS)
+function downloadCertificateImage() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+
+  // Háttér
+  const grad = ctx.createLinearGradient(0, 0, 1200, 800);
+  grad.addColorStop(0, '#0D2E2C');
+  grad.addColorStop(1, '#081B1A');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1200, 800);
+
+  // Arany díszszegély
+  ctx.strokeStyle = '#D89B4A';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(30, 30, 1140, 740);
+
+  ctx.strokeStyle = '#FFD166';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(45, 45, 1110, 710);
+
+  // Szövegek
+  ctx.textAlign = 'center';
+  
+  ctx.fillStyle = '#D89B4A';
+  ctx.font = 'bold 32px "Work Sans", sans-serif';
+  ctx.fillText('🏆 WWF MAGYARORSZÁG & LIDL 2026 🏆', 600, 120);
+
+  ctx.font = 'bold 54px Georgia, serif';
+  ctx.fillStyle = '#FFD166';
+  ctx.fillText('BOLYGÓVÉDŐ SZUPERHŐS OKLEVÉL', 600, 200);
+
+  ctx.font = '24px "Work Sans", sans-serif';
+  ctx.fillStyle = '#E3D5B8';
+  ctx.fillText('Ezennel tanúsítjuk, hogy', 600, 290);
+
+  // Név
+  ctx.font = 'bold 64px "Work Sans", sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(myProfile.nev || 'Gyűjtő', 600, 390);
+
+  // Vonal a név alatt
+  ctx.strokeStyle = '#D89B4A';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(350, 420);
+  ctx.lineTo(850, 420);
+  ctx.stroke();
+
+  ctx.font = '28px "Work Sans", sans-serif';
+  ctx.fillStyle = '#E3D5B8';
+  ctx.fillText('sikeresen összegyűjtötte a 2026-os Lidl Lutra album', 600, 480);
+  ctx.fillText('mind a 108 állat- és természetvédelmi matricáját!', 600, 525);
+
+  ctx.font = 'italic 22px "Work Sans", sans-serif';
+  ctx.fillStyle = '#9FB3A3';
+  ctx.fillText(`Kelt: ${new Date().toLocaleDateString('hu-HU')} • Lutra Csereplatform`, 600, 640);
+
+  // Logó / Ikon
+  ctx.font = '60px sans-serif';
+  ctx.fillText('🦦 🌍 🌿', 600, 720);
+
+  // Letöltés indítása
+  const link = document.createElement('a');
+  link.download = `Lutra_Szuperhos_Oklevel_${(myProfile.nev || 'Gyujto').replace(/\s+/g, '_')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast("📥 Oklevél kép letöltve!");
+}
+
 safeAddListener('btn-view-certificate', 'click', () => {
   const nameEl = document.getElementById('cert-user-name');
   const dateEl = document.getElementById('cert-date-label');
@@ -1847,6 +1998,8 @@ safeAddListener('btn-view-certificate', 'click', () => {
   document.getElementById('modal-certificate')?.classList.add('open');
   if (window.confetti) confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
 });
+
+safeAddListener('btn-download-cert-img', 'click', downloadCertificateImage);
 safeAddListener('btn-close-cert', 'click', () => document.getElementById('modal-certificate')?.classList.remove('open'));
 safeAddListener('btn-close-cert-2', 'click', () => document.getElementById('modal-certificate')?.classList.remove('open'));
 safeAddListener('btn-cert-share-fb', 'click', () => {
@@ -1858,14 +2011,15 @@ safeAddListener('btn-open-auth', 'click', () => document.getElementById('modal-a
 safeAddListener('btn-close-auth', 'click', () => document.getElementById('modal-auth')?.classList.remove('open'));
 safeAddListener('link-open-profile', 'click', () => switchTab('profil'));
 
+// 200 KARAKTERES PRIVÁT JEGYZETTÖMB
 const noteTextarea = document.getElementById('prof-private-note');
 if (noteTextarea) {
   noteTextarea.value = myProfile.privateNote;
   const countEl = document.getElementById('note-char-count');
-  if (countEl) countEl.textContent = `${myProfile.privateNote.length}/160`;
+  if (countEl) countEl.textContent = `${myProfile.privateNote.length}/200`;
   noteTextarea.addEventListener('input', (e) => {
-    myProfile.privateNote = e.target.value.slice(0, 160);
-    if (countEl) countEl.textContent = `${myProfile.privateNote.length}/160`;
+    myProfile.privateNote = e.target.value.slice(0, 200);
+    if (countEl) countEl.textContent = `${myProfile.privateNote.length}/200`;
     localStorage.setItem('lutra_private_note', myProfile.privateNote);
   });
 }
@@ -1982,7 +2136,7 @@ function initFirebase() {
 
       if (user) {
         if (guestNotice) guestNotice.style.display = 'none';
-        if (adminTab) adminTab.style.display = user.email === ADMIN_EMAIL ? 'block' : 'none';
+        if (adminTab) adminTab.style.display = user.email === ADMIN_EMAIL ? 'inline-block' : 'none';
 
         if (authArea) {
           authArea.innerHTML = `
@@ -2106,7 +2260,7 @@ function listenToMyProfile(uid) {
       if (pNoteEl) {
         pNoteEl.value = myProfile.privateNote;
         const countEl = document.getElementById('note-char-count');
-        if (countEl) countEl.textContent = `${myProfile.privateNote.length}/160`;
+        if (countEl) countEl.textContent = `${myProfile.privateNote.length}/200`;
       }
 
       checkMandatoryProfile();
@@ -2168,7 +2322,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Inicializálás
+// Biztonsági inicializálás
 try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
