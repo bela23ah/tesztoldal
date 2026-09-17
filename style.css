@@ -76,7 +76,7 @@ header {
 .view-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  gap: 6px 8px;
   margin-bottom: 18px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(243,238,223,0.1);
@@ -86,7 +86,7 @@ header {
   border: 1px solid rgba(243,238,223,0.15);
   color: var(--text-muted);
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 999px;
@@ -105,6 +105,11 @@ header {
   background: rgba(216, 155, 74, 0.15);
   color: var(--sand);
 }
+.tab-highlight-meetup {
+  border: 1.5px solid var(--moss-soft);
+  background: rgba(107, 138, 90, 0.15);
+  color: var(--sand);
+}
 
 .nav-badge {
   background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800;
@@ -112,6 +117,7 @@ header {
 }
 .nav-badge.read { background: rgba(216, 155, 74, 0.4); color: var(--sand); }
 .badge-radar-count { background: var(--moss); color: var(--water-deep); }
+.badge-meetup-count { background: var(--amber); color: var(--water-deep); }
 
 .view { display: none; }
 .view.active { display: block; }
@@ -300,6 +306,53 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   margin-top: 8px; display: block; object-fit: cover; cursor: pointer;
 }
 
+/* TALÁLKOZÓK / ESEMÉNYEK KÁRTYA */
+.meetup-card {
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
+  border-left: 4px solid var(--moss-soft); border-radius: var(--radius-sm);
+  padding: 14px; margin-bottom: 12px;
+}
+.meetup-time-badge {
+  background: rgba(216, 155, 74, 0.2); color: var(--amber);
+  font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+}
+
+/* VÁROSI HŐTÉRKÉP & TÉRKÉP STÍLUSOK */
+.map-heatmap-container {
+  position: relative; width: 100%; background: rgba(8, 27, 26, 0.7);
+  border-radius: var(--radius-md); border: 1px solid rgba(243, 238, 223, 0.15);
+  overflow: hidden; padding: 8px; margin-bottom: 12px;
+}
+.hungary-svg-map { width: 100%; height: auto; display: block; }
+.map-outline {
+  fill: rgba(20, 69, 63, 0.6); stroke: var(--amber); stroke-width: 3; stroke-dasharray: 4, 4;
+}
+#heatmap-overlay-pins { position: absolute; inset: 0; pointer-events: none; }
+
+.heat-pin {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer; pointer-events: auto;
+  transition: transform 0.2s ease;
+}
+.heat-pin:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 10; }
+.heat-pin.fire {
+  background: rgba(232, 90, 79, 0.9); box-shadow: 0 0 14px rgba(232, 90, 79, 0.95);
+  border: 2px solid #FFF; color: #FFF; font-size: 0.7rem; font-weight: 800;
+}
+.heat-pin.warm {
+  background: rgba(216, 155, 74, 0.9); box-shadow: 0 0 10px rgba(216, 155, 74, 0.8);
+  border: 1.5px solid #FFF; color: #081B1A; font-size: 0.65rem; font-weight: 800;
+}
+.heat-pin.cool {
+  background: rgba(107, 138, 90, 0.9); box-shadow: 0 0 8px rgba(107, 138, 90, 0.7);
+  border: 1px solid #FFF; color: #081B1A; font-size: 0.6rem; font-weight: 800;
+}
+
+.heat-chip-fire { background: var(--danger); color: #FFF; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.heat-chip-warm { background: var(--amber); color: var(--water-deep); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.heat-chip-cool { background: var(--moss); color: var(--water-deep); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+
 .btn {
   background: var(--moss); color: var(--water-deep); border: none; border-radius: 999px;
   padding: 8px 16px; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none;
@@ -337,7 +390,9 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .stats-ranking-item {
   display: flex; justify-content: space-between; align-items: center;
   background: rgba(13, 46, 44, 0.4); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem;
+  cursor: pointer; transition: background 0.2s ease;
 }
+.stats-ranking-item:hover { background: rgba(216, 155, 74, 0.2); }
 
 /* Darabszám Popover */
 .qty-popover {
