@@ -2617,3 +2617,64 @@ try {
 } catch (err) {
   console.error("Indítási hiba:", err);
 }
+
+// =========================================================================
+// GYŰJTŐ ADATLAP MODAL (Hiányzók és Duplák megtekintése)
+// =========================================================================
+function openUserProfileModal(uid) {
+  const targetUser = allUsersData.find(u => u.id === uid);
+  if (!targetUser) return showToast("Gyűjtő adatai nem találhatók.");
+
+  const modal = document.getElementById('modal-user-profile');
+  if (!modal) return;
+
+  const nameEl = document.getElementById('user-profile-modal-name');
+  const cityEl = document.getElementById('user-profile-modal-city');
+  if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
+  if (cityEl) cityEl.textContent = targetUser.telepules ? `📍 Település: ${targetUser.telepules}` : '📍 Nincs megadva település';
+
+  const mBox = document.getElementById('user-profile-missing-tags');
+  const vBox = document.getElementById('user-profile-van-tags');
+
+  // 1. Hiányzók listája matricanevekkel
+  if (mBox) {
+    if (targetUser.allowInspect === false) {
+      mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
+    } else if (!targetUser.kell || targetUser.kell.length === 0) {
+      mBox.innerHTML = '<span style="color:var(--moss-soft);">Minden matrica megvan neki! 🎉</span>';
+    } else {
+      mBox.innerHTML = targetUser.kell
+        .sort((a, b) => a - b)
+        .map(n => `<span style="display:inline-block; margin:2px 4px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:999px; border:1px solid rgba(243,238,223,0.2);">#${n} ${escapeHtml(STICKER_NAMES[n] || '')}</span>`)
+        .join('');
+    }
+  }
+
+  // 2. Duplikátumok listája darabszámmal
+  if (vBox) {
+    if (!targetUser.van || targetUser.van.length === 0) {
+      vBox.innerHTML = '<em style="color:var(--text-muted);">Jelenleg nincs cserélhető duplája.</em>';
+    } else {
+      vBox.innerHTML = targetUser.van
+        .sort((a, b) => a - b)
+        .map(n => {
+          const q = (targetUser.vanCounts && targetUser.vanCounts[n] > 1) ? ` (${targetUser.vanCounts[n]}db)` : '';
+          return `<span style="display:inline-block; margin:2px 4px; background:rgba(107,138,90,0.25); color:var(--moss-soft); padding:2px 8px; border-radius:999px; border:1px solid var(--moss-soft);">#${n}${q} ${escapeHtml(STICKER_NAMES[n] || '')}</span>`;
+        })
+        .join('');
+    }
+  }
+
+  modal.classList.add('open');
+}
+
+// Adatlap bezárása (X gomb vagy háttérre kattintás)
+safeAddListener('btn-close-user-profile', 'click', () => {
+  document.getElementById('modal-user-profile')?.classList.remove('open');
+});
+
+document.getElementById('modal-user-profile')?.addEventListener('click', (e) => {
+  if (e.target.id === 'modal-user-profile') {
+    e.target.classList.remove('open');
+  }
+});
