@@ -582,16 +582,61 @@
           Kattints egy városra a térképen vagy a listában a helyi cserepartnerek azonnali szűréséhez!
         </p>
         
-        <!-- Vektoros Térkép Konténer -->
+        <!-- 1. Maga az új térkép Balatonnal és folyókkal -->
         <div class="map-heatmap-container" id="heatmap-map-box">
           <svg viewBox="0 0 800 500" class="hungary-svg-map">
-            <!-- Magyarország stilizált körvonala -->
-            <path class="map-outline" d="M 120,160 L 190,140 L 260,150 L 320,130 L 380,100 L 450,110 L 520,90 L 580,110 L 640,100 L 720,110 L 760,180 L 720,250 L 750,300 L 720,380 L 640,390 L 580,410 L 510,400 L 440,430 L 360,420 L 280,400 L 200,420 L 150,390 L 100,320 L 80,240 Z" />
+            <!-- Magyarország részletes határvonala -->
+            <path class="map-outline" d="
+              M 72,130 
+              C 60,145 68,175 80,195 
+              C 90,210 75,250 62,275 
+              C 55,300 70,330 110,360 
+              C 140,380 165,395 190,405 
+              C 230,420 280,425 330,435 
+              C 370,445 410,470 435,475 
+              C 455,480 470,450 495,440 
+              C 530,430 570,425 615,415 
+              C 650,400 685,385 710,345 
+              C 730,310 710,270 725,230 
+              C 740,200 760,170 765,130 
+              C 770,95 735,75 700,60 
+              C 665,50 640,40 605,50 
+              C 570,60 540,75 510,75 
+              C 480,75 455,85 435,100 
+              C 415,115 410,140 395,145 
+              C 380,140 365,115 340,110 
+              C 300,105 240,115 195,120 
+              C 150,125 110,120 72,130 Z" />
+
+            <!-- Duna folyása -->
+            <path class="map-river" d="
+              M 175,118 
+              C 210,122 280,110 335,110 
+              C 375,112 400,125 412,145 
+              C 418,175 422,230 425,290 
+              C 428,350 432,410 440,470" />
+
+            <!-- Tisza folyása -->
+            <path class="map-river" d="
+              M 720,68 
+              C 680,85 645,95 625,120 
+              C 600,150 585,210 565,255 
+              C 545,300 530,360 525,415" />
+
+            <!-- Balaton -->
+            <path class="map-lake" d="
+              M 220,290 
+              C 240,282 275,264 300,252 
+              C 315,246 335,236 352,228 
+              C 345,238 318,258 290,270 
+              C 260,282 235,296 220,290 Z" />
           </svg>
+          
+          <!-- Hőtűk rétege -->
           <div id="heatmap-overlay-pins"></div>
         </div>
 
-        <!-- Városi Hő-ranglista -->
+        <!-- 2. A városi ranglista (EZ MARADJON ITT ALATTA): -->
         <div id="heatmap-city-list" class="stats-ranking-list" style="margin-top:14px;">
           Adatok számítása...
         </div>

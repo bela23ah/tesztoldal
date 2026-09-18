@@ -317,36 +317,95 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
 }
 
-/* VÁROSI HŐTÉRKÉP & TÉRKÉP STÍLUSOK */
+/* VÁROSI HŐTÉRKÉP & VALÓSÁGHŰ TÉRKÉP STÍLUSOK */
 .map-heatmap-container {
-  position: relative; width: 100%; background: rgba(8, 27, 26, 0.7);
-  border-radius: var(--radius-md); border: 1px solid rgba(243, 238, 223, 0.15);
-  overflow: hidden; padding: 8px; margin-bottom: 12px;
+  position: relative;
+  width: 100%;
+  background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(216, 155, 74, 0.4);
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  padding: 8px;
+  margin-bottom: 12px;
 }
-.hungary-svg-map { width: 100%; height: auto; display: block; }
+.hungary-svg-map {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
 .map-outline {
-  fill: rgba(20, 69, 63, 0.6); stroke: var(--amber); stroke-width: 3; stroke-dasharray: 4, 4;
+  fill: rgba(20, 69, 63, 0.75);
+  stroke: var(--amber);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
-#heatmap-overlay-pins { position: absolute; inset: 0; pointer-events: none; }
+.map-river {
+  fill: none;
+  stroke: rgba(99, 179, 237, 0.45);
+  stroke-width: 2;
+  stroke-dasharray: 4, 3;
+}
+.map-lake {
+  fill: #3182CE;
+  stroke: #63B3ED;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 4px rgba(49, 130, 206, 0.8));
+}
+#heatmap-overlay-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 
 .heat-pin {
-  position: absolute; transform: translate(-50%, -50%);
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; cursor: pointer; pointer-events: auto;
-  transition: transform 0.2s ease;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
 }
-.heat-pin:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 10; }
+.heat-pin:hover {
+  transform: translate(-50%, -50%) scale(1.35);
+  z-index: 20;
+}
 .heat-pin.fire {
-  background: rgba(232, 90, 79, 0.9); box-shadow: 0 0 14px rgba(232, 90, 79, 0.95);
-  border: 2px solid #FFF; color: #FFF; font-size: 0.7rem; font-weight: 800;
+  background: radial-gradient(circle, #FF453A 0%, #E85A4F 100%);
+  box-shadow: 0 0 16px rgba(232, 90, 79, 1);
+  border: 2px solid #FFFFFF;
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  animation: pulseHeat 1.8s infinite;
 }
 .heat-pin.warm {
-  background: rgba(216, 155, 74, 0.9); box-shadow: 0 0 10px rgba(216, 155, 74, 0.8);
-  border: 1.5px solid #FFF; color: #081B1A; font-size: 0.65rem; font-weight: 800;
+  background: radial-gradient(circle, #FFD166 0%, #D89B4A 100%);
+  box-shadow: 0 0 12px rgba(216, 155, 74, 0.9);
+  border: 1.5px solid #FFFFFF;
+  color: #081B1A;
+  font-size: 0.68rem;
+  font-weight: 800;
 }
 .heat-pin.cool {
-  background: rgba(107, 138, 90, 0.9); box-shadow: 0 0 8px rgba(107, 138, 90, 0.7);
-  border: 1px solid #FFF; color: #081B1A; font-size: 0.6rem; font-weight: 800;
+  background: radial-gradient(circle, #93B382 0%, #6B8A5A 100%);
+  box-shadow: 0 0 8px rgba(107, 138, 90, 0.8);
+  border: 1.2px solid #FFFFFF;
+  color: #081B1A;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+@keyframes pulseHeat {
+  0% { box-shadow: 0 0 6px rgba(232, 90, 79, 0.7); }
+  50% { box-shadow: 0 0 20px rgba(232, 90, 79, 1); }
+  100% { box-shadow: 0 0 6px rgba(232, 90, 79, 0.7); }
 }
 
 .heat-chip-fire { background: var(--danger); color: #FFF; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
