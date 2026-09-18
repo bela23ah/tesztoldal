@@ -2,7 +2,7 @@
 // Lutra Album Cserebere - Service Worker (sw.js v2.0)
 // =========================================================================
 
-const CACHE_NAME = 'lutra-csere-v2.0';
+const CACHE_NAME = 'lutra-csere-v2.3';
 const STATIC_ASSETS = [
   './',
   './index.html',
