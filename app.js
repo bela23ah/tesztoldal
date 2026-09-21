@@ -763,7 +763,7 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
 });
 
 // =========================================================================
-// 3.0-S KÉTSZINTŰ NAVIGÁCIÓS ROUTER
+// 3.0-S KÉTSZINTŰ NAVIGÁCIÓS ROUTER (HOVER + MOBIL TÁMOGATÁS)
 // =========================================================================
 function switchCategory(catName) {
   document.querySelectorAll('.primary-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === catName));
@@ -793,6 +793,7 @@ function switchView(viewName) {
   if (targetView) targetView.classList.add('active');
 
   document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
+  document.querySelectorAll('.dropdown-link').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
 
   let parentCat = 'matricaim';
   if (viewName === 'radar') parentCat = 'radar';
@@ -822,13 +823,17 @@ function switchView(viewName) {
   if (viewName === 'meetups') {
     renderMeetups();
     const mBadge = document.getElementById('meetup-badge');
+    const mBadgeM = document.getElementById('meetup-badge-m');
     if (mBadge) mBadge.style.display = 'none';
+    if (mBadgeM) mBadgeM.style.display = 'none';
     updateCserebereBadge();
   }
   if (viewName === 'uzeneteim') {
     renderMessages();
     const badge = document.getElementById('unread-msg-badge');
+    const badgeM = document.getElementById('unread-msg-badge-m');
     if (badge) badge.classList.add('read');
+    if (badgeM) badgeM.classList.add('read');
     updateCserebereBadge();
   }
   if (viewName === 'matricaim') {
@@ -846,11 +851,8 @@ document.querySelectorAll('.sub-tab').forEach(t => {
   t.addEventListener('click', () => switchView(t.dataset.view));
 });
 
-document.querySelectorAll('.btn-back').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.dataset.back;
-    if (target) switchView(target);
-  });
+document.querySelectorAll('.dropdown-link').forEach(t => {
+  t.addEventListener('click', () => switchView(t.dataset.view));
 });
 
 function updateCserebereBadge() {
@@ -966,7 +968,7 @@ function renderMatches() {
             <p style="margin:0; color:var(--moss-soft);">3️⃣ <strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button class="btn" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
+            <button class="btn btn-primary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
               Üzenet: ${escapeHtml(l.userB.nev)}
             </button>
             <button class="btn btn-secondary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-c" data-loop-idx="${loopIdx}">
@@ -1029,7 +1031,7 @@ function renderMatches() {
         return `#${n}${qty}`;
       }).join(', ')}</p>
       <div style="display:flex; gap:8px; margin-top:8px;">
-        <button class="btn" data-action="contact-match" data-uid="${escapeHtml(m.id)}" style="flex:1;">
+        <button class="btn btn-contact-green" data-action="contact-match" data-uid="${escapeHtml(m.id)}" style="flex:1;">
           Kapcsolatfelvétel
         </button>
         <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
@@ -1140,7 +1142,7 @@ function renderSearchResults(targetNums, titleText) {
           ${u.isGiftOffering ? '<span class="badge-gift">🎁 Ingyen adja</span>' : ''}
         </div>
         <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n} (${escapeHtml(STICKER_NAMES[n] || '')})`).join(', ')}</p>
-        <button class="btn" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
+        <button class="btn btn-contact-green" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
           Érdekelnek a matricák
         </button>
       </div>
@@ -1482,9 +1484,14 @@ function listenToMeetups() {
       meetupEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       const mBadge = document.getElementById('meetup-badge');
+      const mBadgeM = document.getElementById('meetup-badge-m');
       if (mBadge && meetupEvents.length > 0) {
         mBadge.textContent = meetupEvents.length;
         mBadge.style.display = 'inline-block';
+      }
+      if (mBadgeM && meetupEvents.length > 0) {
+        mBadgeM.textContent = meetupEvents.length;
+        mBadgeM.style.display = 'inline-block';
       }
 
       updateCserebereBadge();
@@ -1493,7 +1500,7 @@ function listenToMeetups() {
 }
 
 // =========================================================================
-// STATISZTIKA, BEFEJEZÉSI ESÉLY & VÁROSI HŐTÉRKÉP
+// STATISZTIKA, JÁTÉKOS MÉRETKALKULÁTOR & HŐTÉRKÉP
 // =========================================================================
 function renderCompletionOdds() {
   const oddsCard = document.getElementById('completion-odds-card');
@@ -1528,6 +1535,8 @@ function renderCompletionOdds() {
 function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
+  let totalMissingCount = 0;
+  const chapterCounts = {};
 
   allUsersData.forEach(u => {
     const rawCity = (u.telepules || '').trim();
@@ -1537,19 +1546,83 @@ function renderHeatmap() {
       cityStats[cityKey] = { name: rawCity, users: 0, duplicates: 0, missing: 0 };
     }
     cityStats[cityKey].users += 1;
-    cityStats[cityKey].missing += ensureArray(u.kell).length;
+    const userMissing = ensureArray(u.kell);
+    cityStats[cityKey].missing += userMissing.length;
+    totalMissingCount += userMissing.length;
     
     ensureArray(u.van).forEach(n => {
       const q = (u.vanCounts && u.vanCounts[n]) ? u.vanCounts[n] : 1;
       cityStats[cityKey].duplicates += q;
       totalPoolCount += q;
+
+      // Fejezetenkénti számlálás
+      FEJEZETEK.forEach(f => {
+        f.elemek.forEach(el => {
+          const nums = el.type === 'combo' ? el.nums : [el.num];
+          if (nums.includes(n)) {
+            chapterCounts[f.id] = (chapterCounts[f.id] || 0) + q;
+          }
+        });
+      });
     });
   });
 
+  // 1. Összes dupla és átlagok
   const poolEl = document.getElementById('stats-total-pool-count');
   if (poolEl) poolEl.textContent = `${totalPoolCount.toLocaleString('hu-HU')} db`;
 
-  // Csereláz index képlet: (Gyűjtők * 10) + (Duplák * 2) + Hiányzók
+  const avgDupesEl = document.getElementById('stats-avg-dupes');
+  const avgProgressEl = document.getElementById('stats-avg-progress');
+  if (avgDupesEl && allUsersData.length > 0) {
+    avgDupesEl.textContent = Math.round(totalPoolCount / allUsersData.length);
+  }
+  if (avgProgressEl && allUsersData.length > 0) {
+    const avgMissing = totalMissingCount / allUsersData.length;
+    const avgProg = Math.max(0, Math.min(100, Math.round(((ALBUM_SIZE - avgMissing) / ALBUM_SIZE) * 100)));
+    avgProgressEl.textContent = `${avgProg}%`;
+  }
+
+  // 2. JÁTÉKOS FIZIKAI MÉRETEK KISZÁMÍTÁSA
+  // Hossz: 1 matrica = 7.6 cm (0.076 m)
+  const totalMeters = (totalPoolCount * 0.076);
+  const totalKm = (totalMeters / 1000).toFixed(2);
+  const highwayKmEl = document.getElementById('fun-stat-highway-km');
+  const highwayTextEl = document.getElementById('fun-stat-highway-text');
+  if (highwayKmEl) highwayKmEl.textContent = totalKm;
+  if (highwayTextEl) {
+    highwayTextEl.innerHTML = `Több mint <strong>${(totalMeters / 607).toFixed(1)}× olyan hosszú</strong>, mint a Margit híd (607 m), vagy ${(totalMeters / 330).toFixed(1)}× magasabb, mint az Eiffel-torony!`;
+  }
+
+  // Magasság: 20 matrica = 3 mm -> 1 matrica = 0.15 mm (0.00015 m)
+  const totalTowerM = (totalPoolCount * 0.00015).toFixed(2);
+  const towerMEl = document.getElementById('fun-stat-tower-m');
+  const towerTextEl = document.getElementById('fun-stat-tower-text');
+  if (towerMEl) towerMEl.textContent = totalTowerM;
+  if (towerTextEl) {
+    towerTextEl.innerHTML = `Magasabb, mint a lakás belmagassága (2.6 m), és ${(totalTowerM / 2.51).toFixed(1)}× olyan magas, mint a világ legmagasabb embere!`;
+  }
+
+  // 3. Fejezetenkénti sávdiagram
+  const chapterBarsBox = document.getElementById('stats-chapter-bars');
+  if (chapterBarsBox && totalPoolCount > 0) {
+    chapterBarsBox.innerHTML = FEJEZETEK.slice(1, 8).map(f => {
+      const cCount = chapterCounts[f.id] || 0;
+      const pct = Math.round((cCount / totalPoolCount) * 100);
+      return `
+        <div class="chapter-bar-row">
+          <div class="chapter-bar-header">
+            <span>${escapeHtml(f.cim.split('—')[1] || f.cim)}</span>
+            <strong>${cCount} db (${pct}%)</strong>
+          </div>
+          <div class="chapter-bar-track">
+            <div class="chapter-bar-fill" style="width:${pct}%;"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 4. Csereláz index képlet: (Gyűjtők * 10) + (Duplák * 2) + Hiányzók
   const sortedCities = Object.values(cityStats).sort((a, b) => {
     const scoreA = (a.users * 10) + (a.duplicates * 2) + a.missing;
     const scoreB = (b.users * 10) + (b.duplicates * 2) + b.missing;
@@ -2002,7 +2075,7 @@ function renderMessages() {
       <div class="card" style="text-align:center; padding:24px;">
         <h3>Belépés szükséges</h3>
         <p style="font-size:0.85rem; color:var(--text-muted); margin:6px 0 14px;">Az üzeneteid megtekintéséhez kérlek lépj be a fiókodba.</p>
-        <button class="btn" onclick="document.getElementById('modal-auth')?.classList.add('open')">Belépés / Fiók</button>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-auth')?.classList.add('open')">Belépés / Fiók</button>
       </div>`;
     return;
   }
@@ -2037,7 +2110,7 @@ function renderMessages() {
         <div class="message-body">${escapeHtml(msg.message || msg.text || '')}</div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
           ${isIncoming ? `
-            <button class="btn btn-sm" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}">
+            <button class="btn btn-sm btn-primary" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}">
               ↩️ Válasz ${escapeHtml(msg.fromName)}-nek
             </button>
           ` : '<div></div>'}
@@ -2091,7 +2164,7 @@ function openUserProfileModal(uid) {
     if (targetUser.allowInspect === false) {
       mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
     } else if (!targetUser.kell || targetUser.kell.length === 0) {
-      mBox.innerHTML = '<span style="color:var(--moss-soft);">Minden matrica megvan neki! 🎉</span>';
+      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki! 🎉</span>';
     } else {
       mBox.innerHTML = targetUser.kell
         .sort((a, b) => a - b)
@@ -2109,7 +2182,7 @@ function openUserProfileModal(uid) {
         .sort((a, b) => a - b)
         .map(n => {
           const q = (targetUser.vanCounts && targetUser.vanCounts[n] > 1) ? ` (${targetUser.vanCounts[n]}db)` : '';
-          return `<span style="display:inline-block; margin:2px 4px; background:rgba(107,138,90,0.25); color:var(--moss-soft); padding:2px 8px; border-radius:999px; border:1px solid var(--moss-soft);">#${n}${q} ${escapeHtml(STICKER_NAMES[n] || '')}</span>`;
+          return `<span style="display:inline-block; margin:2px 4px; background:rgba(216,155,74,0.2); color:var(--sand); padding:2px 8px; border-radius:999px; border:1px solid var(--amber);">#${n}${q} ${escapeHtml(STICKER_NAMES[n] || '')}</span>`;
         })
         .join('');
     }
@@ -2162,12 +2235,21 @@ function listenToMyMessages(uid) {
     myOutgoingMessages.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
     const badge = document.getElementById('unread-msg-badge');
+    const badgeM = document.getElementById('unread-msg-badge-m');
     if (badge) {
       if (myIncomingMessages.length > 0) {
         badge.textContent = myIncomingMessages.length;
         badge.style.display = 'inline-block';
       } else {
         badge.style.display = 'none';
+      }
+    }
+    if (badgeM) {
+      if (myIncomingMessages.length > 0) {
+        badgeM.textContent = myIncomingMessages.length;
+        badgeM.style.display = 'inline-block';
+      } else {
+        badgeM.style.display = 'none';
       }
     }
     updateCserebereBadge();
@@ -2565,10 +2647,12 @@ function initFirebase() {
       const authArea = document.getElementById('auth-area');
       const guestNotice = document.getElementById('guest-notice');
       const adminTab = document.getElementById('tab-admin');
+      const adminTabM = document.getElementById('tab-admin-m');
 
       if (user) {
         if (guestNotice) guestNotice.style.display = 'none';
-        if (adminTab) adminTab.style.display = user.email === ADMIN_EMAIL ? 'inline-block' : 'none';
+        if (adminTab) adminTab.style.display = user.email === ADMIN_EMAIL ? 'flex' : 'none';
+        if (adminTabM) adminTabM.style.display = user.email === ADMIN_EMAIL ? 'inline-block' : 'none';
 
         if (authArea) {
           authArea.innerHTML = `
@@ -2589,6 +2673,7 @@ function initFirebase() {
         if (myDocUnsubscribe) myDocUnsubscribe();
         if (messagesUnsubscribe) messagesUnsubscribe();
         if (adminTab) adminTab.style.display = 'none';
+        if (adminTabM) adminTabM.style.display = 'none';
         myIncomingMessages = [];
         myOutgoingMessages = [];
 
@@ -2598,7 +2683,7 @@ function initFirebase() {
         listenToAnnouncements();
 
         if (guestNotice) guestNotice.style.display = 'flex';
-        if (authArea) authArea.innerHTML = `<button class="btn btn-sm" id="btn-open-auth">Belépés / Fiók</button>`;
+        if (authArea) authArea.innerHTML = `<button class="btn btn-sm btn-primary" id="btn-open-auth">Belépés / Fiók</button>`;
         document.getElementById('btn-open-auth')?.addEventListener('click', () => document.getElementById('modal-auth')?.classList.add('open'));
       }
       checkMandatoryProfile();
