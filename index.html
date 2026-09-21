@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Lutra Csere">
-  <title>Lutra Album Cserebere, Radar & Találkozók (Lidl 2026)</title>
+  <title>Lutra Album Cserebere & Bolt-Radar (Lidl 2026)</title>
 
   <!-- Betűtípusok -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,27 +65,51 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- Fő navigációs sáv (2-soros, kényelmes áttekintés) -->
-  <nav class="view-tabs" id="main-view-tabs">
-    <button class="tab active" data-view="matricaim">Matricáim (108)</button>
-    <button class="tab" data-view="cserek">Párosítások</button>
-    <button class="tab" data-view="kereso">Kereső</button>
-    <button class="tab tab-highlight-radar" data-view="radar">
+  <!-- 1. SZINTŰ FŐNAVIGÁCIÓ (4 FŐ KATEGÓRIA) -->
+  <nav class="primary-nav" id="main-primary-nav">
+    <button class="primary-tab active" data-cat="matricaim">
+      📖 Matricáim
+    </button>
+    <button class="primary-tab tab-highlight-radar" data-cat="radar">
       🛒 Albumradar <span id="radar-badge" class="nav-badge badge-radar-count" style="display:none;">0</span>
     </button>
-    <button class="tab tab-highlight-meetup" data-view="meetups">
-      📍 Találkozók <span id="meetup-badge" class="nav-badge badge-meetup-count" style="display:none;">0</span>
+    <button class="primary-tab" data-cat="cserebere">
+      💬 Cserebere <span id="cserebere-badge" class="nav-badge alert-badge" style="display:none;">!</span>
     </button>
-    <button class="tab" data-view="uzeneteim">
-      Üzeneteim <span id="unread-msg-badge" class="nav-badge" style="display:none;">0</span>
+    <button class="primary-tab" data-cat="profil">
+      👤 Profil & Adatok
     </button>
-    <button class="tab" data-view="statisztika">Statisztika & Térkép</button>
-    <button class="tab" data-view="profil">Profil & Jegyzet</button>
-    <button class="tab" id="tab-admin" data-view="admin" style="display:none; color:var(--amber);">⚙️ Admin</button>
   </nav>
 
+  <!-- 2. SZINTŰ ALNAVIGÁCIÓK (KATEGÓRIÁNKÉNT) -->
+  <div class="sub-nav-wrapper">
+    <!-- A) Matricáim alfül -->
+    <div class="sub-nav" id="subnav-matricaim">
+      <button class="sub-tab active" data-view="matricaim">Gyűjtemény (108)</button>
+      <button class="sub-tab" data-view="cserek">Párosítások</button>
+      <button class="sub-tab" data-view="kereso">Kereső</button>
+    </div>
+
+    <!-- B) Cserebere alfül -->
+    <div class="sub-nav" id="subnav-cserebere" style="display:none;">
+      <button class="sub-tab active" data-view="uzeneteim">
+        Üzeneteim <span id="unread-msg-badge" class="nav-badge" style="display:none;">0</span>
+      </button>
+      <button class="sub-tab" data-view="meetups">
+        Találkozók <span id="meetup-badge" class="nav-badge badge-meetup-count" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <!-- C) Profil & Adatok alfül -->
+    <div class="sub-nav" id="subnav-profil" style="display:none;">
+      <button class="sub-tab active" data-view="profil">Profil & Jegyzet</button>
+      <button class="sub-tab" data-view="statisztika">Statisztika & Térkép</button>
+      <button class="sub-tab" id="tab-admin" data-view="admin" style="display:none; color:var(--amber);">⚙️ Admin</button>
+    </div>
+  </div>
+
   <main>
-    <!-- 1. MATRICÁIM NÉZET -->
+    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET -->
     <section id="view-matricaim" class="view active">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2>Gyűjteményem</h2>
@@ -167,13 +191,16 @@
       </div>
     </section>
 
-    <!-- 2. PÁROSÍTÁSOK NÉZET -->
+    <!-- 2. MATRICÁIM: PÁROSÍTÁSOK NÉZET -->
     <section id="view-cserek" class="view">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <h2>Cserelehetőségek</h2>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-secondary btn-sm btn-back" data-back="matricaim">◀ Vissza</button>
+          <h2 style="margin:0;">Cserelehetőségek</h2>
+        </div>
         <button class="btn btn-secondary" id="btn-refresh-matches" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Azok a gyűjtők, akikkel kölcsönösen vagy körcserében tudtok egymásnak matricát adni.</p>
+      <p class="view-intro" style="margin-top:6px;">Azok a gyűjtők, akikkel kölcsönösen vagy körcserében tudtok egymásnak matricát adni.</p>
       
       <div class="filter-group" style="margin-bottom: 14px;">
         <button class="filter-btn active" id="btn-match-all">🌟 Legjobb cserék (Összes)</button>
@@ -185,9 +212,12 @@
       <div id="matches-list">Adatok betöltése...</div>
     </section>
 
-    <!-- 3. KERESŐ NÉZET -->
+    <!-- 3. MATRICÁIM: KERESŐ NÉZET -->
     <section id="view-kereso" class="view">
-      <h2>Matricakereső</h2>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <button class="btn btn-secondary btn-sm btn-back" data-back="matricaim">◀ Vissza</button>
+        <h2 style="margin:0;">Matricakereső</h2>
+      </div>
       <p class="view-intro">Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>12, 45</code>) vagy állatnévre is (<code>tigris</code>, <code>hiúz</code>).</p>
       
       <div class="search-box">
@@ -210,7 +240,7 @@
       </div>
       <p class="view-intro">Hol kapható még fizikai üres album? Segítsük egymást a 221 hazai Lidl áruház készletinformációival!</p>
 
-      <div class="card" style="border:1.5px solid var(--amber);">
+      <div class="card">
         <h3 style="margin-top:0; font-size:1.05rem;">📍 Új bolti készlet bejelentése</h3>
         
         <div class="form-group">
@@ -472,7 +502,7 @@
         </button>
       </div>
 
-      <div class="notice-banner" style="background:rgba(216,155,74,0.1); border-color:var(--amber);">
+      <div class="notice-banner">
         <span>⚠️ <strong>Figyelem:</strong> A bejelentések gyűjtői tapasztalatokon alapulnak. Visszaélések ellen 10 percenként 1 bejelentés küldhető.</span>
       </div>
 
@@ -483,15 +513,18 @@
       <div id="radar-reports-list">Készletjelentések betöltése...</div>
     </section>
 
-    <!-- 5. OFFLINE TALÁLKOZÓK & CSERENAPOK (ÚJ KÖZÖSSÉGI ÜZENŐFAL!) -->
+    <!-- 5. CSEREBERE: TALÁLKOZÓK NÉZET -->
     <section id="view-meetups" class="view">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <h2>📍 Közösségi Találkozók & Cserenapok</h2>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-secondary btn-sm btn-back" data-back="uzeneteim">◀ Vissza</button>
+          <h2 style="margin:0;">📍 Közösségi Találkozók</h2>
+        </div>
         <button class="btn btn-secondary" id="btn-refresh-meetups" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Közös matricázások, játszótéri cserebere alkalmak, vagy Facebook csoportos találkozók hirdetőtáblája.</p>
+      <p class="view-intro" style="margin-top:6px;">Közös matricázások, játszótéri cserebere alkalmak, vagy Facebook csoportos találkozók hirdetőtáblája.</p>
 
-      <div class="card" style="border:1.5px solid var(--moss-soft);">
+      <div class="card">
         <h3 style="margin-top:0; font-size:1.05rem;">📢 Új cserealkalom meghirdetése</h3>
         <div class="form-group">
           <label>Település / Város:</label>
@@ -524,7 +557,7 @@
       <div id="meetups-list">Találkozók betöltése...</div>
     </section>
 
-    <!-- 6. BELSŐ ÜZENETEK NÉZET -->
+    <!-- 6. CSEREBERE: BELSŐ ÜZENETEK NÉZET -->
     <section id="view-uzeneteim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2>Üzeneteim</h2>
@@ -540,20 +573,23 @@
       <div id="messages-inbox-list">Bejelentkezés szükséges az üzenetek megtekintéséhez.</div>
     </section>
 
-    <!-- 7. STATISZTIKA & VÁROSI HŐTÉRKÉP NÉZET -->
+    <!-- 7. PROFIL & ADATOK: STATISZTIKA & HŐTÉRKÉP NÉZET -->
     <section id="view-statisztika" class="view">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <h2>Statisztika & Aktivitási Hőtérkép</h2>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-secondary btn-sm btn-back" data-back="profil">◀ Vissza</button>
+          <h2 style="margin:0;">Statisztika & Hőtérkép</h2>
+        </div>
         <button class="btn btn-secondary" id="btn-refresh-stats" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Valós idejű közösségi adatok az országos matricakínálatról és az aktív csererégiókról.</p>
+      <p class="view-intro" style="margin-top:6px;">Valós idejű közösségi adatok az országos matricakínálatról és az aktív csererégiókról.</p>
       
       <!-- A) Közösségi Megmentett / Gazdára váró Matricaszámláló -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(20,69,63,0.9) 0%, rgba(13,46,44,0.9) 100%); border: 1.5px solid var(--moss-soft); text-align:center; padding:18px;">
+      <div class="card" style="text-align:center; padding:18px;">
         <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
           📦 Közösségi Dupla Kínálat
         </div>
-        <div style="font-size:2.2rem; font-weight:800; color:var(--moss-soft); font-family:var(--font-display);" id="stats-total-pool-count">
+        <div style="font-size:2.2rem; font-weight:800; color:var(--amber); font-family:var(--font-display);" id="stats-total-pool-count">
           0 db
         </div>
         <p style="font-size:0.82rem; color:var(--sand); margin:4px 0 0;">
@@ -562,7 +598,7 @@
       </div>
 
       <!-- B) Személyre Szabott Befejezési Esélykalkulátor -->
-      <div class="card" id="completion-odds-card" style="border:1.5px solid var(--amber);">
+      <div class="card" id="completion-odds-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <h3 style="margin:0; font-size:1rem; color:var(--amber);">🎯 Befejezési Esélykalkulátor</h3>
           <span style="font-size:1.1rem; font-weight:800; color:#FFF;" id="completion-odds-pct">0%</span>
@@ -582,7 +618,7 @@
           Kattints egy városra a térképen vagy a listában a helyi cserepartnerek azonnali szűréséhez!
         </p>
         
-        <!-- 1. Maga az új térkép Balatonnal és folyókkal -->
+        <!-- Vektoros Térkép Konténer -->
         <div class="map-heatmap-container" id="heatmap-map-box">
           <svg viewBox="0 0 800 500" class="hungary-svg-map">
             <!-- Magyarország részletes határvonala -->
@@ -636,10 +672,15 @@
           <div id="heatmap-overlay-pins"></div>
         </div>
 
-        <!-- 2. A városi ranglista (EZ MARADJON ITT ALATTA): -->
+        <!-- Városi Hő-ranglista -->
         <div id="heatmap-city-list" class="stats-ranking-list" style="margin-top:14px;">
           Adatok számítása...
         </div>
+
+        <!-- Összes város megtekintése gomb -->
+        <button class="btn btn-secondary btn-sm" id="btn-toggle-all-cities" style="width:100%; margin-top:10px;">
+          📋 Összes aktív város mutatása
+        </button>
       </div>
 
       <!-- D) Ritkaság Rangsorok -->
@@ -650,7 +691,7 @@
       </div>
 
       <div class="card">
-        <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--moss-soft);">Top 5 leggyakoribb matrica</h3>
+        <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--sand);">Top 5 leggyakoribb matrica</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Ezekből áll a legtöbb felesleges duplikátum:</p>
         <div id="stats-common-list" class="stats-ranking-list">Adatok számítása...</div>
       </div>
@@ -660,13 +701,13 @@
       </div>
     </section>
 
-    <!-- 8. PROFIL & 200 KARAKTERES JEGYZETTÖMB -->
+    <!-- 8. PROFIL & ADATOK: PROFIL & JEGYZET NÉZET -->
     <section id="view-profil" class="view">
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
       <!-- Privát Jegyzettömb (200 karakteres) -->
-      <div class="card" style="border-left:4px solid var(--amber); margin-bottom:16px;">
+      <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
           <span>📝 Saját Privát Jegyzettömb</span>
           <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="note-char-count">0/200</span>
@@ -692,17 +733,17 @@
         </div>
 
         <div class="form-group">
-          <label class="checkbox-label" style="color:var(--gift-gold); font-weight:600;">
+          <label class="checkbox-label" style="font-weight:600;">
             <input type="checkbox" id="prof-gift">
             🎁 A dupláimat ingyen / ajándékba is szívesen odaadom (nem kérek cserét)
           </label>
 
-          <label class="checkbox-label" style="color:var(--sand);">
+          <label class="checkbox-label">
             <input type="checkbox" id="prof-show-email">
             Engedélyezem, hogy a bejelentkezett tagok láthassák az e-mail címemet a gyorsabb kapcsolatfelvételhez
           </label>
 
-          <label class="checkbox-label" style="color:var(--sand);">
+          <label class="checkbox-label">
             <input type="checkbox" id="prof-allow-inspect">
             Engedélyezem, hogy mások megnézhessék a teljes hiányzólistámat a profilomban
           </label>
@@ -729,12 +770,15 @@
       </div>
     </section>
 
-    <!-- 9. TITKOS ADMINISZTRÁCIÓS NÉZET -->
+    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET -->
     <section id="view-admin" class="view">
-      <h2>⚙️ Adminisztrátori Vezérlőpult</h2>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <button class="btn btn-secondary btn-sm btn-back" data-back="profil">◀ Vissza</button>
+        <h2 style="margin:0;">⚙️ Adminisztrátori Vezérlőpult</h2>
+      </div>
       <p class="view-intro">Rendszerüzenetek, találkozók és közlemények élesítése az összes felhasználónak.</p>
 
-      <div class="card" style="border:1.5px solid var(--amber);">
+      <div class="card">
         <h3 style="margin-top:0;">📢 Új rendszerüzenet kiküldése</h3>
         <div class="form-group">
           <label>Üzenet címe:</label>
@@ -810,7 +854,7 @@
     </p>
 
     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
-      <label style="border:2px dashed var(--amber); border-radius:var(--radius-sm); padding:16px; text-align:center; position:relative; background:rgba(13,46,44,0.4); cursor:pointer; display:block;">
+      <label style="border:1.5px dashed var(--amber); border-radius:var(--radius-sm); padding:16px; text-align:center; position:relative; background:rgba(13,46,44,0.4); cursor:pointer; display:block;">
         <input type="file" id="scanner-camera-input" accept="image/*" capture="environment" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
         <div style="font-size:1.6rem; margin-bottom:4px;">📸</div>
         <strong>Fotó készítése azonnal kamerával</strong>
@@ -915,9 +959,13 @@
       <div id="user-profile-missing-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;"></div>
     </div>
 
-    <div>
+    <div style="margin-bottom:14px;">
       <h4 style="margin:0 0 4px; font-size:0.9rem; color:var(--moss-soft);">Nála lévő duplikátumok:</h4>
       <div id="user-profile-van-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;"></div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-secondary btn-sm" id="btn-close-user-profile-2">◀ Vissza a listához</button>
     </div>
   </div>
 </div>
