@@ -67,7 +67,6 @@
 
   <!-- FŐNAVIGÁCIÓ (ASZTALI HOVER DROPDOWN + MOBIL BARÁT MENÜ) -->
   <nav class="primary-nav" id="main-primary-nav">
-    <!-- 1. Matricáim csoport -->
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
         📖 Matricáim <span class="dropdown-arrow">▾</span>
@@ -79,14 +78,12 @@
       </div>
     </div>
 
-    <!-- 2. Kiemelt Albumradar -->
     <div class="nav-dropdown-item">
       <button class="primary-tab tab-highlight-radar" data-cat="radar" data-view="radar">
         🛒 Albumradar <span id="radar-badge" class="nav-badge badge-radar-count" style="display:none;">0</span>
       </button>
     </div>
 
-    <!-- 3. Cserebere csoport -->
     <div class="nav-dropdown-item">
       <button class="primary-tab" data-cat="cserebere">
         💬 Cserebere <span class="dropdown-arrow">▾</span>
@@ -102,7 +99,6 @@
       </div>
     </div>
 
-    <!-- 4. Profil & Adatok csoport -->
     <div class="nav-dropdown-item">
       <button class="primary-tab" data-cat="profil">
         👤 Profil & Adatok <span class="dropdown-arrow">▾</span>
@@ -115,7 +111,7 @@
     </div>
   </nav>
 
-  <!-- MOBIL ALNAVIGÁCIÓS SÁV (ÉRINTŐKÉPERNYŐN MINDIG TISZTÁN LÁTSZIK) -->
+  <!-- MOBIL ALNAVIGÁCIÓS SÁV -->
   <div class="mobile-subnav-wrapper" id="mobile-subnav-bar">
     <div class="sub-nav" id="subnav-matricaim">
       <button class="sub-tab active" data-view="matricaim">Gyűjtemény (108)</button>
@@ -618,7 +614,45 @@
         </div>
       </div>
 
-      <!-- B) JÁTÉKOS FIZIKAI MÉRETKALKULÁTOR (18 000+ MATRICA KITERJEDÉSE) -->
+      <!-- B) KÖZÖNSÉGKEDVENC MATRICÁK (TOP 5 ÁLLAT SZAVAZÁS) -->
+      <div class="card" style="border-left:4px solid var(--amber);">
+        <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--amber);">🏆 A Közösség Kedvenc Állatai (Top 5)</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+          A gyűjtők által a profiljukban megjelölt 1., 2. és 3. legkedvesebb állat összesített ranglistája:
+        </p>
+        <div id="stats-favorites-ranking" class="stats-ranking-list">Szavazatok számítása...</div>
+      </div>
+
+      <!-- C) A ÖTLET: „HOL TART AZ ORSZÁG?” (KÖZÖSSÉGI TELÍTETTSÉG) -->
+      <div class="card">
+        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">📊 Hol tart az ország? (Közösségi album-telítettség)</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">A regisztrált gyűjtők haladása a 108 matrica összegyűjtésében:</p>
+        
+        <!-- Többszegmenses színes folyamatcsík -->
+        <div style="display:flex; height:12px; border-radius:999px; overflow:hidden; margin-bottom:12px; background:rgba(0,0,0,0.3);">
+          <div id="dist-bar-complete" style="background:#FFD166; width:0%;" title="Betelt (100%)"></div>
+          <div id="dist-bar-near" style="background:var(--amber); width:0%;" title="Célegyenesben (80-99%)"></div>
+          <div id="dist-bar-half" style="background:var(--moss-soft); width:0%;" title="Félúton (50-79%)"></div>
+          <div id="dist-bar-starter" style="background:var(--water-light); width:0%;" title="Kezdők (0-49%)"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px;" id="dist-segments-grid">
+          <!-- JS tölti fel a 4 kategória kártyáit -->
+        </div>
+      </div>
+
+      <!-- D) B ÖTLET: FEJEZETI NEHÉZSÉGI INDEX -->
+      <div class="card">
+        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">⛰️ Fejezeti Nehézségi Index: Melyik oldalt a legnehezebb betölteni?</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+          Országos hiány-arány a fejezetekben (piros = nehéz beszerezni, zöld = sok a cserepéldány):
+        </p>
+        <div id="stats-difficulty-bars" style="display:flex; flex-direction:column; gap:8px;">
+          Adatok számítása...
+        </div>
+      </div>
+
+      <!-- E) JÁTÉKOS FIZIKAI MÉRETKALKULÁTOR -->
       <div class="card" style="border-left:4px solid var(--amber);">
         <h3 style="margin:0 0 8px; font-size:1.05rem; color:var(--amber);">📏 Ha egymás mellé tennénk az összes matricát...</h3>
         
@@ -639,7 +673,7 @@
         </div>
       </div>
 
-      <!-- C) Személyre Szabott Befejezési Esélykalkulátor -->
+      <!-- F) Személyre Szabott Befejezési Esélykalkulátor -->
       <div class="card" id="completion-odds-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <h3 style="margin:0; font-size:1rem; color:var(--amber);">🎯 Befejezési Esélykalkulátor</h3>
@@ -653,68 +687,33 @@
         </p>
       </div>
 
-      <!-- D) Városi Hőtérkép (Hol izzik a csere?) -->
+      <!-- G) Városi Hőtérkép -->
       <div class="card">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--amber);">🗺️ Városi Hőtérkép: Hol izzik a csere?</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
           Kattints egy városra a térképen vagy a listában a helyi cserepartnerek azonnali szűréséhez!
         </p>
         
-        <!-- Vektoros Térkép Konténer -->
         <div class="map-heatmap-container" id="heatmap-map-box">
           <svg viewBox="0 0 800 500" class="hungary-svg-map">
-            <!-- Magyarország részletes határvonala -->
             <path class="map-outline" d="
-              M 72,130 
-              C 60,145 68,175 80,195 
-              C 90,210 75,250 62,275 
-              C 55,300 70,330 110,360 
-              C 140,380 165,395 190,405 
-              C 230,420 280,425 330,435 
-              C 370,445 410,470 435,475 
-              C 455,480 470,450 495,440 
-              C 530,430 570,425 615,415 
-              C 650,400 685,385 710,345 
-              C 730,310 710,270 725,230 
-              C 740,200 760,170 765,130 
-              C 770,95 735,75 700,60 
-              C 665,50 640,40 605,50 
-              C 570,60 540,75 510,75 
-              C 480,75 455,85 435,100 
-              C 415,115 410,140 395,145 
-              C 380,140 365,115 340,110 
-              C 300,105 240,115 195,120 
+              M 72,130 C 60,145 68,175 80,195 C 90,210 75,250 62,275 
+              C 55,300 70,330 110,360 C 140,380 165,395 190,405 
+              C 230,420 280,425 330,435 C 370,445 410,470 435,475 
+              C 455,480 470,450 495,440 C 530,430 570,425 615,415 
+              C 650,400 685,385 710,345 C 730,310 710,270 725,230 
+              C 740,200 760,170 765,130 C 770,95 735,75 700,60 
+              C 665,50 640,40 605,50 C 570,60 540,75 510,75 
+              C 480,75 455,85 435,100 C 415,115 410,140 395,145 
+              C 380,140 365,115 340,110 C 300,105 240,115 195,120 
               C 150,125 110,120 72,130 Z" />
-
-            <!-- Duna folyása -->
-            <path class="map-river" d="
-              M 175,118 
-              C 210,122 280,110 335,110 
-              C 375,112 400,125 412,145 
-              C 418,175 422,230 425,290 
-              C 428,350 432,410 440,470" />
-
-            <!-- Tisza folyása -->
-            <path class="map-river" d="
-              M 720,68 
-              C 680,85 645,95 625,120 
-              C 600,150 585,210 565,255 
-              C 545,300 530,360 525,415" />
-
-            <!-- Balaton -->
-            <path class="map-lake" d="
-              M 220,290 
-              C 240,282 275,264 300,252 
-              C 315,246 335,236 352,228 
-              C 345,238 318,258 290,270 
-              C 260,282 235,296 220,290 Z" />
+            <path class="map-river" d="M 175,118 C 210,122 280,110 335,110 C 375,112 400,125 412,145 C 418,175 422,230 425,290 C 428,350 432,410 440,470" />
+            <path class="map-river" d="M 720,68 C 680,85 645,95 625,120 C 600,150 585,210 565,255 C 545,300 530,360 525,415" />
+            <path class="map-lake" d="M 220,290 C 240,282 275,264 300,252 C 315,246 335,236 352,228 C 345,238 318,258 290,270 C 260,282 235,296 220,290 Z" />
           </svg>
-          
-          <!-- Hőtűk rétege -->
           <div id="heatmap-overlay-pins"></div>
         </div>
 
-        <!-- Városi Hő-ranglista -->
         <div id="heatmap-city-list" class="stats-ranking-list" style="margin-top:14px;">
           Adatok számítása...
         </div>
@@ -724,16 +723,7 @@
         </button>
       </div>
 
-      <!-- E) Fejezetenkénti / Témakörönkénti Kínálat Grafikon -->
-      <div class="card">
-        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">🌍 Duplikátumok megoszlása fejezetenként</h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Melyik kontinensből és témából forog a legtöbb cserepéldány:</p>
-        <div id="stats-chapter-bars" style="display:flex; flex-direction:column; gap:8px;">
-          Adatok számítása...
-        </div>
-      </div>
-
-      <!-- F) Ritkaság Rangsorok -->
+      <!-- H) Ritkaság Rangsorok -->
       <div class="card">
         <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--amber);">Top 5 legkeresettebb matrica (Legritkábbak)</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Ezeket keresik a legtöbben az országban:</p>
@@ -768,6 +758,7 @@
         <textarea id="prof-private-note" class="input-field" rows="4" maxlength="200" placeholder="Pl. #12 és #45 félretéve Marcinak; Postázás szerdán..."></textarea>
       </div>
 
+      <!-- Profil Űrlap (Top 3 Kedvenc Állattal) -->
       <div class="card">
         <div class="form-group">
           <label for="prof-nev">Megjelenő név <strong style="color:var(--amber);">* (Kötelező)</strong></label>
@@ -780,6 +771,29 @@
         <div class="form-group">
           <label for="prof-email">Értesítési e-mail cím <strong style="color:var(--amber);">* (Kötelező)</strong></label>
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
+        </div>
+
+        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT MEGJELÖLÉSE -->
+        <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
+          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);">⭐ Top 3 Kedvenc Állatod az Albumban</h4>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
+            Jelöld meg a 3 legkedvesebb matricádat! Ezzel szavazol a Közönségkedvenc állatra:
+          </p>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
+            <div>
+              <label style="font-size:0.75rem; color:var(--sand);">🥇 1. Legkedvesebb:</label>
+              <select id="prof-fav-1" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--sand);">🥈 2. Legkedvesebb:</label>
+              <select id="prof-fav-2" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--sand);">🥉 3. Legkedvesebb:</label>
+              <select id="prof-fav-3" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -967,7 +981,6 @@
     </div>
 
     <div style="display:flex; flex-direction:column; gap:8px;">
-      <!-- ZÖLD KAPCSOLATFELVÉTEL GOMB -->
       <button class="btn btn-contact-green" id="btn-send-message" style="width:100%; padding:10px; font-weight:700;">
         Üzenet elküldése
       </button>
@@ -995,13 +1008,18 @@
   </div>
 </div>
 
-<!-- GYŰJTŐTELJES ADATLAP MODAL -->
+<!-- GYŰJTŐTELJES ADATLAP MODAL (KEDVENCEK MEGJELENÍTÉSÉVEL) -->
 <div id="modal-user-profile" class="modal-overlay">
   <div class="modal-card" style="max-width:500px;">
     <button class="modal-close" id="btn-close-user-profile">✕</button>
     <h3 id="user-profile-modal-name" style="margin-top:0;">Gyűjtő adatlapja</h3>
-    <p id="user-profile-modal-city" style="font-size:0.85rem; color:var(--text-muted); margin:0 0 10px;"></p>
+    <p id="user-profile-modal-city" style="font-size:0.85rem; color:var(--text-muted); margin:0 0 8px;"></p>
     
+    <!-- Gyűjtő kedvenc állatai -->
+    <div id="user-profile-favorites-box" style="display:none; background:rgba(216,155,74,0.15); border:1px solid rgba(216,155,74,0.4); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:12px; font-size:0.82rem;">
+      <strong>⭐ Kedvenc állatai:</strong> <span id="user-profile-favorites-text" style="color:var(--sand);"></span>
+    </div>
+
     <div style="margin-bottom:12px;">
       <h4 style="margin:0 0 4px; font-size:0.9rem; color:var(--fur-brown-soft);">Neki hiányzó matricák:</h4>
       <div id="user-profile-missing-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;"></div>
