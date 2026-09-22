@@ -65,7 +65,7 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- FŐNAVIGÁCIÓ (ASZTALI HOVER DROPDOWN + MOBIL BARÁT MENÜ) -->
+  <!-- FŐNAVIGÁCIÓ (MOBILON 2x2 RÁCS, ASZTALIN 4 OSZLOP) -->
   <nav class="primary-nav" id="main-primary-nav">
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
@@ -438,7 +438,7 @@
             <option value="Nagyatád – Árpád utca 49.">
             <option value="Nagykáta – Dózsa György út 16.">
             <option value="Nagykanizsa – Balatoni utca 41.">
-            <option value="Nagykőrös – Kecskeméti út 73.">
+            <option file="Nagykőrös – Kecskeméti út 73.">
             <option value="Nyíregyháza – Debreceni u. 106/c.">
             <option value="Nyíregyháza – Pazonyi út 37/a.">
             <option value="Orosháza – Hóvirág u. 1-5.">
@@ -621,16 +621,19 @@
       </div>
       <p class="view-intro" style="margin-bottom:10px;">Valós idejű közösségi adatok, méretkalkulációk és cserepiaci aktivitás.</p>
 
-      <!-- ⚡ GYORSUGRÓ NAVIGÁCIÓS SÁV A STATISZTIKÁHOZ -->
-      <div class="stats-quicknav">
-        <button class="btn-stat-jump" data-target="stat-sec-pool">📦 Kínálat</button>
-        <button class="btn-stat-jump" data-target="stat-sec-favs">🏆 Kedvencek</button>
-        <button class="btn-stat-jump" data-target="stat-sec-fun">📏 Méretek</button>
-        <button class="btn-stat-jump" data-target="stat-sec-odds">🎯 Esélyek</button>
-        <button class="btn-stat-jump" data-target="stat-sec-map">🗺️ Hőtérkép</button>
-        <button class="btn-stat-jump" data-target="stat-sec-dist">📊 Telítettség</button>
-        <button class="btn-stat-jump" data-target="stat-sec-diff">⛰️ Nehézség</button>
-        <button class="btn-stat-jump" data-target="stat-sec-rare">🔍 Ritkaságok</button>
+      <!-- ⚡ GYORSUGRÓ NAVIGÁCIÓS SÁV A STATISZTIKÁHOZ (NYÍLLAL ELLÁTVA) -->
+      <div class="stats-quicknav-wrapper">
+        <div class="stats-quicknav" id="stats-quicknav-bar">
+          <button class="btn-stat-jump" data-target="stat-sec-pool">📦 Kínálat</button>
+          <button class="btn-stat-jump" data-target="stat-sec-favs">🏆 Kedvencek</button>
+          <button class="btn-stat-jump" data-target="stat-sec-fun">📏 Méretek</button>
+          <button class="btn-stat-jump" data-target="stat-sec-odds">🎯 Esélyek</button>
+          <button class="btn-stat-jump" data-target="stat-sec-map">🗺️ Hőtérkép</button>
+          <button class="btn-stat-jump" data-target="stat-sec-dist">📊 Telítettség</button>
+          <button class="btn-stat-jump" data-target="stat-sec-diff">⛰️ Nehézség</button>
+          <button class="btn-stat-jump" data-target="stat-sec-rare">🔍 Ritkaságok</button>
+        </div>
+        <div class="quicknav-arrow" id="stats-quicknav-arrow">▶</div>
       </div>
 
       <!-- 1. KÖZÖSSÉGI DUPLA KÍNÁLAT & ÁTLAGOK & HALMOZÓDÁSI MUTATÓ -->
@@ -806,9 +809,9 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT -->
+        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT (KÖTELEZŐ) -->
         <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
-          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);">⭐ Top 3 Kedvenc Állatod az Albumban</h4>
+          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);">⭐ Top 3 Kedvenc Állatod <strong style="color:var(--amber);">* (Kötelező)</strong></h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
             Jelöld meg a 3 legkedvesebb matricádat! Ezzel szavazol a Közönségkedvenc állatra:
           </p>
@@ -895,6 +898,7 @@
           <select id="admin-msg-format" class="input-field">
             <option value="banner">Felső hírsáv (Banner)</option>
             <option value="popup">Egyszer felugró Pop-up ablak</option>
+            <option value="both">Mindkettő (Banner és Pop-up is)</option>
           </select>
         </div>
         <div class="form-group">
@@ -911,9 +915,12 @@
     </section>
   </main>
 
+  <!-- ❤️ KÜLÖN DOBOZOS DONABLY ADOMÁNYOZÓS SZEKCIÓ PIROS GOMBBAL -->
   <footer class="support-footer">
-    <p style="margin:0 0 6px;"><strong>Tetszik az oldal és segített a cserében?</strong></p>
-    <p style="margin:0 0 10px; font-size:0.8rem;">Ha szívesen támogatnád a platform ingyenes működését:</p>
+    <p style="margin:0 0 6px; font-weight:700; font-size:1.05rem;">Tetszik az oldal és segített a cserében? ☕</p>
+    <p style="margin:0 0 14px; font-size:0.85rem; color:var(--sand);">
+      Ha szívesen támogatnád a platform ingyenes működését és szerverét egy kávé árával:
+    </p>
     <a href="https://www.donably.com/cserebere" target="_blank" rel="noopener" class="btn btn-donably">
       ☕ Támogatás a Donably-n
     </a>
@@ -938,7 +945,7 @@
   </div>
 </div>
 
-<!-- 📊 TÖBB PARTNERES CSERE-TERVEZŐ & ÜTKÖZÉSVIZSGÁLÓ MODAL -->
+<!-- 📊 TÖBB PARTNERES CSERE-TERVEZŐ MODAL -->
 <div id="modal-trade-planner" class="modal-overlay">
   <div class="modal-card" style="max-width:580px;">
     <button class="modal-close" id="btn-close-trade-planner">✕</button>
@@ -947,13 +954,8 @@
       A szimulátor összehangolja a kiválasztott partnereket, hogy ne ígérd oda kétszer ugyanazt a matricát, és a lehető legtöbb hiányzódat szerezd meg.
     </p>
 
-    <!-- 1. Ütköző matricák doboz -->
     <div id="trade-plan-conflicts-section" style="margin-bottom:14px;"></div>
-
-    <!-- 2. Partnerenkénti leosztás -->
     <div id="trade-plan-partners-breakdown" style="margin-bottom:14px;"></div>
-
-    <!-- 3. Összesített kombinált eredmény -->
     <div id="trade-plan-summary-box" class="card" style="background:rgba(0,0,0,0.3); border:1.5px solid var(--amber); margin-bottom:14px; padding:12px;"></div>
 
     <div style="display:flex; justify-content:flex-end; gap:8px;">

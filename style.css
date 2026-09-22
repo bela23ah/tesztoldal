@@ -1,5 +1,5 @@
 /* =========================================================================
-   Lutra Album Cserebere (Lidl 2026) - style.css (v3.4 Teljes, Egységesített)
+   Lutra Album Cserebere (Lidl 2026) - style.css (v3.5 Végleges, Teljes)
    ========================================================================= */
 
 :root {
@@ -8,7 +8,7 @@
   --water-light: #1D5750;
   --surface-card: rgba(20, 69, 63, 0.75);
   
-  /* Szigorú matrica állapot színek (MÁSRA NEM HASZNÁLJUK!) */
+  /* Szigorú matrica állapot színek */
   --moss: #6B8A5A;
   --moss-soft: #93B382;
   --fur-brown: #8B5E3C;
@@ -88,7 +88,7 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* 3.0-S FŐNAVIGÁCIÓ (ASZTALI HOVER DROPDOWN + MOBIL SÁV) */
+/* 3.0-S FŐNAVIGÁCIÓ (MOBILON 2x2 RÁCS, ASZTALIN 4 OSZLOP) */
 .primary-nav {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -96,6 +96,14 @@ header {
   margin-bottom: 8px;
   position: relative;
 }
+
+@media (max-width: 520px) {
+  .primary-nav {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+}
+
 .nav-dropdown-item {
   position: relative;
 }
@@ -446,13 +454,19 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .planner-info { font-size: 0.85rem; color: var(--sand); font-weight: 600; }
 
-/* ⚡ STATISZTIKAI GYORSUGRÓ SÁV (ANCHOR BAR) */
+/* ⚡ STATISZTIKAI GYORSUGRÓ SÁV + NYÍL */
+.stats-quicknav-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
 .stats-quicknav {
   display: flex;
   overflow-x: auto;
   gap: 6px;
-  padding: 4px 0 10px;
-  margin-bottom: 12px;
+  padding: 4px 30px 6px 0;
+  width: 100%;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -460,12 +474,12 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 .btn-stat-jump {
   background: var(--water-mid);
-  border: 1px solid rgba(216, 155, 74, 0.3);
+  border: 1px solid rgba(216, 155, 74, 0.35);
   color: var(--sand);
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
@@ -478,7 +492,24 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   font-weight: 700;
 }
 
-/* Szekciók görgetési margója (hogy a fejléc ne takarja ki a címet ugráskor) */
+.quicknav-arrow {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent 0%, var(--water-deep) 60%);
+  color: var(--amber);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 6px 4px 6px 14px;
+  pointer-events: none;
+  animation: bounceRight 1.5s infinite;
+}
+@keyframes bounceRight {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50% { transform: translateY(-50%) translateX(3px); }
+}
+
 .stat-section-anchor {
   scroll-margin-top: 100px;
 }
@@ -559,16 +590,16 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   transition: all 0.15s ease;
 }
 .btn:hover { background: var(--amber-hover); }
-.btn-sm { padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius-sm); }
+.btn-sm { padding: 5px 12px; font-size: 0.78rem; border-radius: var(--radius-sm); }
 
 /* 🟢 ZÖLD KAPCSOLATFELVÉTEL GOMB */
 .btn-contact-green {
-  background: var(--moss);
-  color: var(--water-deep);
+  background: var(--moss) !important;
+  color: var(--water-deep) !important;
   font-weight: 700;
 }
 .btn-contact-green:hover {
-  background: var(--moss-soft);
+  background: var(--moss-soft) !important;
 }
 
 .btn-primary { background: var(--amber); color: var(--water-deep); }
@@ -638,4 +669,25 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   padding: 24px 16px; text-align: center; color: var(--sand); margin-bottom: 14px;
 }
 .cert-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--amber); margin: 0 0 6px; }
-.cert-name { font-size: 1.3rem; font-weight: 700; col
+.cert-name { font-size: 1.3rem; font-weight: 700; color: #FFF; margin: 8px 0; border-bottom: 1px dashed var(--amber); padding-bottom: 6px; }
+
+/* ❤️ KÜLÖN DOBOZOS DONABLY SZEKCIÓ PIROS GOMBBAL */
+.support-footer {
+  margin-top: 40px; padding: 22px 16px; border-radius: var(--radius-md);
+  background: rgba(20, 69, 63, 0.7); border: 1.5px solid rgba(216, 155, 74, 0.35);
+  text-align: center; color: var(--text-primary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.btn-donably {
+  background: #E85A4F !important; color: #FFFFFF !important; font-weight: 800; font-size: 0.92rem;
+  padding: 10px 22px; text-decoration: none; border-radius: var(--radius-sm);
+  box-shadow: 0 4px 14px rgba(232, 90, 79, 0.45); display: inline-flex;
+}
+.btn-donably:hover { filter: brightness(1.12); }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--amber); color: var(--water-deep); padding: 10px 20px;
+  border-radius: 999px; font-weight: 700; font-size: 0.85rem; display: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
+}

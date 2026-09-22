@@ -1,15 +1,20 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v3.4 Teljes Kód - 1. RÉSZ)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v3.5 Teljes Kód - 1. RÉSZ)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// Biztonsági eseménykezelő segédfüggvény (Crash-Proof DOM handling)
-function safeAddListener(id, event, handler) {
+// Golyóálló eseménykezelő (2 és 3 paraméterrel is hibátlanul működik!)
+function safeAddListener(id, eventOrHandler, handler) {
   const el = document.getElementById(id);
-  if (el) el.addEventListener(event, handler);
+  if (!el) return;
+  if (typeof eventOrHandler === 'function') {
+    el.addEventListener('click', eventOrHandler);
+  } else if (typeof eventOrHandler === 'string' && typeof handler === 'function') {
+    el.addEventListener(eventOrHandler, handler);
+  }
 }
 
 function escapeHtml(str) {
@@ -310,7 +315,6 @@ FEJEZETEK.forEach(f => {
   });
 });
 
-// Kedvenc állat választó mezők feltöltése mind a 108 matricával
 function initFavoriteSelects() {
   ['prof-fav-1', 'prof-fav-2', 'prof-fav-3'].forEach((id, idx) => {
     const sel = document.getElementById(id);
@@ -331,6 +335,7 @@ function initFavoriteSelects() {
       if (!myProfile.favorites) myProfile.favorites = [];
       myProfile.favorites[idx] = isNaN(val) ? 0 : val;
       localStorage.setItem('lutra_favorites', JSON.stringify(myProfile.favorites));
+      checkMandatoryProfile();
     });
   });
 }
@@ -661,7 +666,7 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('#qty-popover') && !e.target.closest('[data-num]')) hideQtyPopover();
 });
 
-safeAddListener('btn-toggle-batch', 'click', () => {
+safeAddListener('btn-toggle-batch', () => {
   const box = document.getElementById('batch-input-box');
   if (box) box.style.display = box.style.display === 'block' ? 'none' : 'block';
 });
@@ -685,7 +690,7 @@ function parseBatchInput(raw) {
   return parsed;
 }
 
-safeAddListener('btn-apply-batch-van', 'click', () => {
+safeAddListener('btn-apply-batch-van', () => {
   const raw = document.getElementById('batch-input-text')?.value.trim() || '';
   if (!raw) return showToast("Írj be számokat!");
   const parsed = parseBatchInput(raw);
@@ -706,7 +711,7 @@ safeAddListener('btn-apply-batch-van', 'click', () => {
   showToast(`${count} db matrica mentve a Duplákhoz.`);
 });
 
-safeAddListener('btn-apply-batch-kell', 'click', () => {
+safeAddListener('btn-apply-batch-kell', () => {
   const raw = document.getElementById('batch-input-text')?.value.trim() || '';
   if (!raw) return showToast("Írj be számokat!");
   const parsed = parseBatchInput(raw);
@@ -726,7 +731,7 @@ safeAddListener('btn-apply-batch-kell', 'click', () => {
   showToast(`${count} db matrica mentve a Hiányzókhoz.`);
 });
 
-safeAddListener('btn-apply-batch-foglalva', 'click', () => {
+safeAddListener('btn-apply-batch-foglalva', () => {
   const raw = document.getElementById('batch-input-text')?.value.trim() || '';
   if (!raw) return showToast("Írj be számokat!");
   const parsed = parseBatchInput(raw);
@@ -746,7 +751,7 @@ safeAddListener('btn-apply-batch-foglalva', 'click', () => {
   showToast(`${count} db matrica mentve a Foglalthoz.`);
 });
 
-safeAddListener('btn-copy-fb-post', 'click', () => {
+safeAddListener('btn-copy-fb-post', () => {
   const vanSorted = [...myProfile.van].sort((a, b) => a - b);
   const kellSorted = [...myProfile.kell].sort((a, b) => a - b);
   const vanText = vanSorted.length ? vanSorted.map(n => {
@@ -761,7 +766,7 @@ safeAddListener('btn-copy-fb-post', 'click', () => {
   showToast("Csereposzt kimásolva a vágólapra!");
 });
 
-safeAddListener('btn-mode-grid', 'click', () => {
+safeAddListener('btn-mode-grid', () => {
   document.getElementById('btn-mode-grid')?.classList.add('active');
   document.getElementById('btn-mode-album')?.classList.remove('active');
   if (document.getElementById('grid-view-container')) document.getElementById('grid-view-container').style.display = 'block';
@@ -769,7 +774,7 @@ safeAddListener('btn-mode-grid', 'click', () => {
   renderGrid();
 });
 
-safeAddListener('btn-mode-album', 'click', () => {
+safeAddListener('btn-mode-album', () => {
   document.getElementById('btn-mode-album')?.classList.add('active');
   document.getElementById('btn-mode-grid')?.classList.remove('active');
   if (document.getElementById('grid-view-container')) document.getElementById('grid-view-container').style.display = 'none';
@@ -777,11 +782,11 @@ safeAddListener('btn-mode-album', 'click', () => {
   renderAlbumChapter();
 });
 
-safeAddListener('btn-album-prev', 'click', () => {
+safeAddListener('btn-album-prev', () => {
   if (currentChapterIndex > 0) { currentChapterIndex--; renderAlbumChapter(); }
 });
 
-safeAddListener('btn-album-next', 'click', () => {
+safeAddListener('btn-album-next', () => {
   if (currentChapterIndex < FEJEZETEK.length - 1) { currentChapterIndex++; renderAlbumChapter(); }
 });
 
@@ -795,7 +800,7 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
 });
 
 // =========================================================================
-// 3.0-S KÉTSZINTŰ NAVIGÁCIÓS ROUTER (HOVER + MOBIL TÁMOGATÁS)
+// 3.0-S KÉTSZINTŰ NAVIGÁCIÓS ROUTER
 // =========================================================================
 function switchCategory(catName) {
   document.querySelectorAll('.primary-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === catName));
@@ -924,7 +929,7 @@ function setActiveMatchFilter(btn, filterType) {
   renderMatches();
 }
 
-safeAddListener('btn-refresh-matches', 'click', () => {
+safeAddListener('btn-refresh-matches', () => {
   renderMatches();
   showToast("Adatok frissítve.");
 });
@@ -1457,7 +1462,7 @@ safeAddListener('radar-photo-input', 'change', (e) => {
   reader.readAsDataURL(file);
 });
 
-safeAddListener('btn-submit-radar', 'click', async () => {
+safeAddListener('btn-submit-radar', async () => {
   if (!currentUser) return showToast("Bejelentéshez előbb lépj be a fiókodba!");
 
   const lastReportTime = parseInt(localStorage.getItem('lutra_last_radar_report') || '0', 10);
@@ -1514,7 +1519,7 @@ safeAddListener('btn-submit-radar', 'click', async () => {
   }
 });
 
-safeAddListener('btn-refresh-radar', 'click', () => {
+safeAddListener('btn-refresh-radar', () => {
   renderRadarReports();
   showToast("Radar lista frissítve.");
 });
@@ -1642,7 +1647,7 @@ safeAddListener('meetup-photo-input', 'change', (e) => {
   reader.readAsDataURL(file);
 });
 
-safeAddListener('btn-submit-meetup', 'click', async () => {
+safeAddListener('btn-submit-meetup', async () => {
   if (!currentUser) return showToast("Találkozó meghirdetéséhez lépj be a fiókodba!");
 
   const lastMeetupTime = parseInt(localStorage.getItem('lutra_last_meetup_post') || '0', 10);
@@ -1686,7 +1691,7 @@ safeAddListener('btn-submit-meetup', 'click', async () => {
   }
 });
 
-safeAddListener('btn-refresh-meetups', 'click', () => {
+safeAddListener('btn-refresh-meetups', () => {
   renderMeetups();
   showToast("Találkozók frissítve.");
 });
@@ -1951,7 +1956,6 @@ function renderHeatmap() {
   let totalPoolCount = 0;
   let totalMissingCount = 0;
 
-  // Halmozódási mutatókhoz
   const stickerHolderCount = {};
   const stickerTotalQty = {};
   for (let i = 1; i <= ALBUM_SIZE; i++) {
@@ -1981,7 +1985,6 @@ function renderHeatmap() {
     });
   });
 
-  // 1. Összes dupla, átlagok és Leginkább halmozódó matrica
   const poolEl = document.getElementById('stats-total-pool-count');
   if (poolEl) poolEl.textContent = `${totalPoolCount.toLocaleString('hu-HU')} db`;
 
@@ -1998,7 +2001,6 @@ function renderHeatmap() {
     avgProgressEl.textContent = `${avgProg}%`;
   }
 
-  // Leginkább halmozódó matrica kiszámítása (Összes darab / Tartók száma)
   let maxHoardAvg = 0;
   let maxHoardNum = null;
   for (let i = 1; i <= ALBUM_SIZE; i++) {
@@ -2020,7 +2022,6 @@ function renderHeatmap() {
     }
   }
 
-  // 2. JÁTÉKOS FIZIKAI MÉRETEK
   const totalMeters = (totalPoolCount * 0.076);
   const totalKm = (totalMeters / 1000).toFixed(2);
   const highwayKmEl = document.getElementById('fun-stat-highway-km');
@@ -2038,7 +2039,6 @@ function renderHeatmap() {
     towerTextEl.innerHTML = `Magasabb, mint a lakás belmagassága (2.6 m), és ${(totalTowerM / 2.51).toFixed(1)}× olyan magas, mint a világ legmagasabb embere!`;
   }
 
-  // 3. Csereláz index képlet: (Gyűjtők * 10) + (Duplák * 2) + Hiányzók
   const sortedCities = Object.values(cityStats).sort((a, b) => {
     const scoreA = (a.users * 10) + (a.duplicates * 2) + a.missing;
     const scoreB = (b.users * 10) + (b.duplicates * 2) + b.missing;
@@ -2104,7 +2104,7 @@ safeAddListener('btn-toggle-all-cities', () => {
   renderHeatmap();
 });
 
-// GYORSUGRÓ NAVIGÁCIÓS GOMBOK A STATISZTIKA FÜLÖN
+// GYORSUGRÓ GOMBOK ÉS GÖRDÍTÉS FIGYELŐ
 document.querySelectorAll('.btn-stat-jump').forEach(btn => {
   btn.addEventListener('click', () => {
     const targetId = btn.dataset.target;
@@ -2114,6 +2114,19 @@ document.querySelectorAll('.btn-stat-jump').forEach(btn => {
     }
   });
 });
+
+const quicknavBar = document.getElementById('stats-quicknav-bar');
+const quicknavArrow = document.getElementById('stats-quicknav-arrow');
+if (quicknavBar && quicknavArrow) {
+  quicknavBar.addEventListener('scroll', () => {
+    const maxScroll = quicknavBar.scrollWidth - quicknavBar.clientWidth;
+    if (quicknavBar.scrollLeft >= maxScroll - 10) {
+      quicknavArrow.style.opacity = '0';
+    } else {
+      quicknavArrow.style.opacity = '1';
+    }
+  });
+}
 
 function filterMatchesByCityName(cityName) {
   myProfile.telepules = cityName;
@@ -2272,7 +2285,7 @@ safeAddListener('scanner-tags-box', 'click', (e) => {
   renderScannerTags();
 });
 
-safeAddListener('btn-scanner-add-manual', 'click', () => {
+safeAddListener('btn-scanner-add-manual', () => {
   const input = document.getElementById('scanner-manual-num');
   const num = parseInt(input?.value || '0', 10);
   if (num >= 1 && num <= ALBUM_SIZE) {
@@ -2751,12 +2764,14 @@ function checkAndDisplayAnnouncements() {
 
   if (!relevant) return;
 
-  if (relevant.format === 'banner' || !relevant.format) {
+  // 📢 Banner és Both megjelenítés kezelése
+  if (relevant.format === 'banner' || relevant.format === 'both' || !relevant.format) {
     const icon = relevant.type === 'event' ? '📅' : relevant.type === 'feature' ? '🚀' : '📢';
     triggerTopNotification(icon, `${relevant.title}: ${relevant.content.slice(0, 50)}...`, () => showAnnouncementModal(relevant));
   }
 
-  if (relevant.format === 'popup') {
+  // 🎉 Pop-up és Both megjelenítés kezelése
+  if (relevant.format === 'popup' || relevant.format === 'both') {
     const dismissedKey = `dismissed_announcement_${relevant.id}`;
     if (!localStorage.getItem(dismissedKey)) {
       showAnnouncementModal(relevant);
@@ -3001,11 +3016,16 @@ safeAddListener('btn-save-profile', () => {
   if (!em || !emailRegex.test(em)) return showToast("Kérlek adj meg egy érvényes e-mail címet!");
   if (!gdpr) return showToast("A cserékhez el kell fogadnod az adatkezelést!");
 
+  // ⭐ KÖTELEZŐ TOP 3 KEDVENC ÁLLAT ELLENŐRZÉSE
   const f1 = parseInt(document.getElementById('prof-fav-1')?.value || '0', 10);
   const f2 = parseInt(document.getElementById('prof-fav-2')?.value || '0', 10);
   const f3 = parseInt(document.getElementById('prof-fav-3')?.value || '0', 10);
-  myProfile.favorites = [f1, f2, f3].filter(n => n >= 1 && n <= ALBUM_SIZE);
 
+  if (!f1 || !f2 || !f3 || f1 < 1 || f2 < 1 || f3 < 1) {
+    return showToast("Kérlek válaszd ki mind a 3 kedvenc állatodat!");
+  }
+
+  myProfile.favorites = [f1, f2, f3];
   myProfile.nev = nev;
   myProfile.telepules = tel;
   myProfile.email = em;
@@ -3156,9 +3176,12 @@ function initFirebase() {
 
 function checkMandatoryProfile() {
   const warning = document.getElementById('profile-warning');
+  const favs = ensureArray(myProfile.favorites || []);
+  const isFavoritesMissing = favs.length < 3 || favs.some(n => !n || n < 1);
+
   const isMissing = !myProfile.nev || !myProfile.nev.trim() || myProfile.nev === 'Vendég gyűjtő' ||
                     !myProfile.telepules || !myProfile.telepules.trim() ||
-                    !myProfile.email || !myProfile.email.trim() || !myProfile.gdprAccepted;
+                    !myProfile.email || !myProfile.email.trim() || !myProfile.gdprAccepted || isFavoritesMissing;
 
   if (currentUser && isMissing && warning) {
     warning.style.display = 'block';
