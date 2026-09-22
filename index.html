@@ -65,7 +65,7 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- FŐNAVIGÁCIÓ (MOBILON 2x2 RÁCS, ASZTALIN 4 OSZLOP) -->
+  <!-- FŐNAVIGÁCIÓ (HOVER-HÍDDAL VÉDETT ASZTALI MENÜ + MOBIL RÁCS) -->
   <nav class="primary-nav" id="main-primary-nav">
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
@@ -154,7 +154,6 @@
         </div>
       </div>
 
-      <!-- 4-Állapotú Jelmagyarázat -->
       <div class="legend-box">
         <div class="legend-item"><span class="legend-chip state-van"></span> 1x = <strong>Dupla (Van)</strong></div>
         <div class="legend-item"><span class="legend-chip state-kell"></span> 2x = <strong>Hiányzik (Kell)</strong></div>
@@ -172,7 +171,6 @@
         </div>
       </div>
 
-      <!-- Tömeges beviteli doboz -->
       <div id="batch-input-box" class="batch-box">
         <label style="display:block; font-size:0.85rem; margin-bottom:6px; font-weight:600;">
           Másold be a számokat (pl. <code>12, 12, 12, 45, 88</code> vagy <code>12*3, 45*2, 88</code>):
@@ -187,7 +185,6 @@
         </div>
       </div>
 
-      <!-- Rácsos nézet konténer -->
       <div id="grid-view-container">
         <div class="grid-controls">
           <div class="filter-group">
@@ -205,7 +202,6 @@
         <div id="matrica-grid"></div>
       </div>
 
-      <!-- Album nézet konténer -->
       <div id="album-view-container" style="display:none;">
         <div class="book-nav">
           <button class="btn btn-secondary" id="btn-album-prev" style="padding:4px 10px; font-size:0.75rem;">◀ Előző fejezet</button>
@@ -438,7 +434,7 @@
             <option value="Nagyatád – Árpád utca 49.">
             <option value="Nagykáta – Dózsa György út 16.">
             <option value="Nagykanizsa – Balatoni utca 41.">
-            <option file="Nagykőrös – Kecskeméti út 73.">
+            <option value="Nagykőrös – Kecskeméti út 73.">
             <option value="Nyíregyháza – Debreceni u. 106/c.">
             <option value="Nyíregyháza – Pazonyi út 37/a.">
             <option value="Orosháza – Hóvirág u. 1-5.">
@@ -613,7 +609,7 @@
       <div id="messages-inbox-list">Bejelentkezés szükséges az üzenetek megtekintéséhez.</div>
     </section>
 
-    <!-- 7. PROFIL & ADATOK: STATISZTIKA & HŐTÉRKÉP NÉZET (ÁTRENDEZETT SORRENDDEL ÉS GYORSUGRÓVAL) -->
+    <!-- 7. PROFIL & ADATOK: STATISZTIKA & HŐTÉRKÉP NÉZET -->
     <section id="view-statisztika" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
         <h2>Statisztika & Aktivitási Hőtérkép</h2>
@@ -809,9 +805,9 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT (KÖTELEZŐ) -->
+        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT/MATRICA (KÖTELEZŐ) -->
         <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
-          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);">⭐ Top 3 Kedvenc Állatod <strong style="color:var(--amber);">* (Kötelező)</strong></h4>
+          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);">⭐ Top 3 Kedvenc Állatod/Matricád <strong style="color:var(--amber);">* (Kötelező)</strong></h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
             Jelöld meg a 3 legkedvesebb matricádat! Ezzel szavazol a Közönségkedvenc állatra:
           </p>
@@ -915,7 +911,7 @@
     </section>
   </main>
 
-  <!-- ❤️ KÜLÖN DOBOZOS DONABLY ADOMÁNYOZÓS SZEKCIÓ PIROS GOMBBAL -->
+  <!-- ❤️ KÜLÖN DOBOZOS DONABLY SZEKCIÓ PIROS GOMBBAL -->
   <footer class="support-footer">
     <p style="margin:0 0 6px; font-weight:700; font-size:1.05rem;">Tetszik az oldal és segített a cserében? ☕</p>
     <p style="margin:0 0 14px; font-size:0.85rem; color:var(--sand);">

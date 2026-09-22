@@ -1,5 +1,5 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v3.5 Teljes Kód - 1. RÉSZ)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v3.6 Teljes Kód - 1. RÉSZ)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
@@ -160,6 +160,7 @@ let activeContactTarget = {
   subject: ''
 };
 
+// Város koordináták a valósághű térképhez (%-ban megadva)
 const CITY_COORDINATES = {
   "budapest": { x: 52.5, y: 39.0 },
   "győr": { x: 26.0, y: 27.0 },
@@ -485,15 +486,9 @@ function renderAlbumChapter() {
 
 let activePopoverNum = null;
 const popover = document.getElementById('qty-popover');
-let lastToggleTime = 0;
-let lastToggleNum = 0;
 
+// ⚡ AZONNALI ÉS PONTOS KATTINTÁS (Debounce blokkolás nélkül)
 function toggleStickerState(num) {
-  const now = Date.now();
-  if (lastToggleNum === num && (now - lastToggleTime) < 300) return;
-  lastToggleTime = now;
-  lastToggleNum = num;
-
   hideQtyPopover();
   const vanIdx = myProfile.van.indexOf(num);
   const kellIdx = myProfile.kell.indexOf(num);
@@ -1343,7 +1338,7 @@ function normalizeText(text) {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-safeAddListener('btn-search', 'click', () => {
+safeAddListener('btn-search', () => {
   const raw = document.getElementById('search-input')?.value.trim() || '';
   if (!raw) return showToast("Írj be egy keresőszót!");
   const queryNorm = normalizeText(raw);
@@ -1373,7 +1368,7 @@ safeAddListener('btn-search', 'click', () => {
   renderSearchResults(matchedNums.sort((a, b) => a - b), `Keresés: „${raw}”`);
 });
 
-safeAddListener('btn-search-all-missing', 'click', () => {
+safeAddListener('btn-search-all-missing', () => {
   if (myProfile.kell.length === 0) return showToast("Nincs bejelölt hiányzó matricád.");
   renderSearchResults(myProfile.kell, `Összes hiányzód (${myProfile.kell.length} db)`);
 });
@@ -1922,12 +1917,11 @@ function renderChapterDifficulty() {
 }
 
 function renderCompletionOdds() {
-  const oddsCard = document.getElementById('completion-odds-card');
   const oddsPct = document.getElementById('completion-odds-pct');
   const oddsBar = document.getElementById('completion-odds-bar');
   const oddsText = document.getElementById('completion-odds-text');
 
-  if (!oddsCard || !oddsPct || !oddsBar || !oddsText) return;
+  if (!oddsPct || !oddsBar || !oddsText) return;
 
   const myMissing = ensureArray(myProfile.kell);
   if (myMissing.length === 0) {
@@ -2104,7 +2098,7 @@ safeAddListener('btn-toggle-all-cities', () => {
   renderHeatmap();
 });
 
-// GYORSUGRÓ GOMBOK ÉS GÖRDÍTÉS FIGYELŐ
+// GYORSUGRÓ GOMBOK ÉS EGÉRGÖRGŐ KEZELŐ
 document.querySelectorAll('.btn-stat-jump').forEach(btn => {
   btn.addEventListener('click', () => {
     const targetId = btn.dataset.target;
@@ -2118,6 +2112,14 @@ document.querySelectorAll('.btn-stat-jump').forEach(btn => {
 const quicknavBar = document.getElementById('stats-quicknav-bar');
 const quicknavArrow = document.getElementById('stats-quicknav-arrow');
 if (quicknavBar && quicknavArrow) {
+  // Vízszintes görgetés egérgörgővel PC-n
+  quicknavBar.addEventListener('wheel', (e) => {
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      quicknavBar.scrollLeft += e.deltaY;
+    }
+  });
+
   quicknavBar.addEventListener('scroll', () => {
     const maxScroll = quicknavBar.scrollWidth - quicknavBar.clientWidth;
     if (quicknavBar.scrollLeft >= maxScroll - 10) {
@@ -2764,13 +2766,11 @@ function checkAndDisplayAnnouncements() {
 
   if (!relevant) return;
 
-  // 📢 Banner és Both megjelenítés kezelése
   if (relevant.format === 'banner' || relevant.format === 'both' || !relevant.format) {
     const icon = relevant.type === 'event' ? '📅' : relevant.type === 'feature' ? '🚀' : '📢';
     triggerTopNotification(icon, `${relevant.title}: ${relevant.content.slice(0, 50)}...`, () => showAnnouncementModal(relevant));
   }
 
-  // 🎉 Pop-up és Both megjelenítés kezelése
   if (relevant.format === 'popup' || relevant.format === 'both') {
     const dismissedKey = `dismissed_announcement_${relevant.id}`;
     if (!localStorage.getItem(dismissedKey)) {
