@@ -1,12 +1,11 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v3.2 Teljes Kód - 1. RÉSZ)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v3.3 Teljes Kód - 1. RÉSZ)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// Biztonsági eseménykezelő segédfüggvény (Crash-Proof DOM handling)
 function safeAddListener(id, event, handler) {
   const el = document.getElementById(id);
   if (el) el.addEventListener(event, handler);
@@ -122,6 +121,8 @@ let myOutgoingMessages = [];
 let radarReports = [];
 let meetupEvents = [];
 let activeAnnouncements = [];
+let selectedTradePlanUids = new Set();
+let tradePlanManualOverrides = {};
 let previousIncomingCount = null;
 let previousRadarCount = null;
 let radarAttachedBase64 = '';
@@ -153,7 +154,6 @@ let activeContactTarget = {
   subject: ''
 };
 
-// Város koordináták a valósághű térképhez (%-ban megadva)
 const CITY_COORDINATES = {
   "budapest": { x: 52.5, y: 39.0 },
   "győr": { x: 26.0, y: 27.0 },
@@ -309,7 +309,6 @@ FEJEZETEK.forEach(f => {
   });
 });
 
-// Kedvenc állat választó mezők feltöltése mind a 108 matricával
 function initFavoriteSelects() {
   ['prof-fav-1', 'prof-fav-2', 'prof-fav-3'].forEach((id, idx) => {
     const sel = document.getElementById(id);
@@ -794,7 +793,7 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
 });
 
 // =========================================================================
-// 3.0-S KÉTSZINTŰ NAVIGÁCIÓS ROUTER (HOVER + MOBIL TÁMOGATÁS)
+// 3.0-S KÉTSZINTŰ NAVIGÁCIÓS ROUTER
 // =========================================================================
 function switchCategory(catName) {
   document.querySelectorAll('.primary-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === catName));
@@ -1042,7 +1041,9 @@ function renderMatches() {
     return;
   }
 
-  list.innerHTML = matches.map((m) => `
+  list.innerHTML = matches.map((m) => {
+    const isCheckedInPlan = selectedTradePlanUids.has(m.id);
+    return `
     <div class="card ${m.isSameCity ? 'card-local' : ''}">
       <div class="card-header-row">
         <div>
@@ -1061,17 +1062,245 @@ function renderMatches() {
         const qty = (m.vanCounts && m.vanCounts[n] > 1) ? ` (${m.vanCounts[n]} db)` : '';
         return `#${n}${qty}`;
       }).join(', ')}</p>
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button class="btn btn-contact-green" data-action="contact-match" data-uid="${escapeHtml(m.id)}" style="flex:1;">
-          Kapcsolatfelvétel
-        </button>
-        <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
-          Adatlap
-        </button>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(243,238,223,0.1); padding-top:8px;">
+        <label class="checkbox-label" style="margin:0; font-size:0.8rem; color:var(--sand); font-weight:600;">
+          <input type="checkbox" class="trade-plan-check" data-uid="${escapeHtml(m.id)}" ${isCheckedInPlan ? 'checked' : ''}>
+          📊 Hozzáadás a Csere-tervhez
+        </label>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-contact-green btn-sm" data-action="contact-match" data-uid="${escapeHtml(m.id)}">
+            Kapcsolatfelvétel
+          </button>
+          <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
+            Adatlap
+          </button>
+        </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
+
+  updateTradePlannerBar();
 }
+
+// CSERE-TERVEZŐ JELÖLŐNÉGYZETEK ÉS LEBEGŐ SÁV
+safeAddListener('matches-list', 'change', (e) => {
+  const check = e.target.closest('.trade-plan-check');
+  if (!check) return;
+  const uid = check.dataset.uid;
+  if (check.checked) {
+    selectedTradePlanUids.add(uid);
+  } else {
+    selectedTradePlanUids.delete(uid);
+  }
+  updateTradePlannerBar();
+});
+
+function updateTradePlannerBar() {
+  const bar = document.getElementById('trade-planner-floating-bar');
+  const countSpan = document.getElementById('planner-selected-count');
+  if (!bar || !countSpan) return;
+
+  const count = selectedTradePlanUids.size;
+  countSpan.textContent = count;
+  if (count >= 2) {
+    bar.style.display = 'flex';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+safeAddListener('btn-clear-trade-plan', 'click', () => {
+  selectedTradePlanUids.clear();
+  tradePlanManualOverrides = {};
+  document.querySelectorAll('.trade-plan-check').forEach(c => c.checked = false);
+  updateTradePlannerBar();
+});
+
+safeAddListener('btn-open-trade-planner', 'click', () => {
+  renderTradePlannerModal();
+  document.getElementById('modal-trade-planner')?.classList.add('open');
+});
+
+safeAddListener('btn-close-trade-planner', 'click', () => {
+  document.getElementById('modal-trade-planner')?.classList.remove('open');
+});
+safeAddListener('btn-close-trade-planner-2', 'click', () => {
+  document.getElementById('modal-trade-planner')?.classList.remove('open');
+});
+
+// 📊 INTELLIGENS CSERE-TERVEZŐ & ÜTKÖZÉSVIZSGÁLÓ SZIMULÁTOR ALGORITMUS
+function renderTradePlannerModal() {
+  const conflictBox = document.getElementById('trade-plan-conflicts-section');
+  const breakdownBox = document.getElementById('trade-plan-partners-breakdown');
+  const summaryBox = document.getElementById('trade-plan-summary-box');
+
+  if (!conflictBox || !breakdownBox || !summaryBox) return;
+
+  const selectedUsers = allUsersData.filter(u => selectedTradePlanUids.has(u.id));
+  if (selectedUsers.length < 2) return;
+
+  const myVanSet = new Set(ensureArray(myProfile.van));
+  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
+  const myCity = (myProfile.telepules || '').trim().toLowerCase();
+
+  // 1. Összes matrica, amit bármelyik kijelölt partner kér
+  const stickerDemandMap = {}; // { stickerNum: [ { user, totalGivesToMe, isSameCity } ] }
+  selectedUsers.forEach(u => {
+    const uVanSet = new Set(ensureArray(u.van));
+    const uKellSet = new Set(ensureArray(u.kell).filter(n => !uVanSet.has(n)));
+    
+    // Hány hiányzómat tudja adni ez a partner:
+    const totalGivesToMe = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).length;
+    const isSameCity = myCity && (u.telepules || '').trim().toLowerCase() === myCity;
+
+    [...myVanSet].filter(n => uKellSet.has(n)).forEach(stickerNum => {
+      if (!stickerDemandMap[stickerNum]) stickerDemandMap[stickerNum] = [];
+      stickerDemandMap[stickerNum].push({ user: u, totalGivesToMe, isSameCity });
+    });
+  });
+
+  // 2. Ütközések felderítése (ha többen kérik, mint ahány darab van)
+  const conflicts = [];
+  const allocation = {}; // { userUid: [ stickerNums ] }
+  selectedUsers.forEach(u => allocation[u.id] = []);
+
+  Object.entries(stickerDemandMap).forEach(([nStr, demandList]) => {
+    const num = parseInt(nStr, 10);
+    const myQty = myProfile.vanCounts?.[num] || 1;
+
+    if (demandList.length > myQty) {
+      // 🚨 ÜTKÖZÉS!
+      conflicts.push({ num, demandList, myQty });
+
+      // Ki kapja az intelligens 4-lépcsős döntési hierarchia szerint:
+      let assignedUid = tradePlanManualOverrides[num];
+      if (!assignedUid) {
+        // Döntési hierarchia: 1. Több matrica ➔ 2. Helyi város ➔ 3. Sorrend
+        const sortedCandidate = [...demandList].sort((a, b) => {
+          if (b.totalGivesToMe !== a.totalGivesToMe) return b.totalGivesToMe - a.totalGivesToMe;
+          if (b.isSameCity !== a.isSameCity) return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
+          return 0;
+        })[0];
+        assignedUid = sortedCandidate.user.id;
+      }
+      if (allocation[assignedUid]) allocation[assignedUid].push(num);
+    } else {
+      // Nincs ütközés, mindenkinek jut
+      demandList.forEach(d => {
+        if (allocation[d.user.id]) allocation[d.user.id].push(num);
+      });
+    }
+  });
+
+  // 3. Ütköző matricák doboz renderelése kézi átkapcsolóval
+  if (conflicts.length === 0) {
+    conflictBox.innerHTML = `
+      <div class="notice-banner" style="background:rgba(107,138,90,0.15); border-color:var(--moss-soft); color:var(--text-primary);">
+        ✅ <strong>Nincs matricaütközés:</strong> Mind a ${selectedUsers.length} partnernek jut az általuk kért összes dupládból!
+      </div>
+    `;
+  } else {
+    conflictBox.innerHTML = `
+      <div class="card" style="border:1.5px solid var(--danger); background:rgba(232,90,79,0.12);">
+        <h4 style="margin:0 0 6px; color:#FFC0BA; font-size:0.95rem;">🚨 Ütköző matricák (${conflicts.length} db)</h4>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+          Ezeket a matricákat többen is kérik, mint amennyi duplád van. A rendszer a legtöbb matricát adó, illetve helyi partnert javasolja:
+        </p>
+        ${conflicts.map(c => {
+          const currentWinnerUid = tradePlanManualOverrides[c.num] || [...c.demandList].sort((a, b) => {
+            if (b.totalGivesToMe !== a.totalGivesToMe) return b.totalGivesToMe - a.totalGivesToMe;
+            if (b.isSameCity !== a.isSameCity) return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
+            return 0;
+          })[0].user.id;
+
+          return `
+            <div style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <div>
+                <strong>#${c.num} ${escapeHtml(STICKER_NAMES[c.num] || '')}</strong> (Készlet: ${c.myQty} db)
+              </div>
+              <div style="display:flex; gap:8px;">
+                ${c.demandList.map(d => `
+                  <label class="radio-label" style="margin:0; font-size:0.75rem; color:${d.user.id === currentWinnerUid ? 'var(--amber)' : 'var(--text-muted)'};">
+                    <input type="radio" name="conflict-sticker-${c.num}" value="${d.user.id}" ${d.user.id === currentWinnerUid ? 'checked' : ''} data-action="override-conflict" data-num="${c.num}">
+                    ${escapeHtml(d.user.nev)} ${d.isSameCity ? '📍' : ''} (+${d.totalGivesToMe}db)
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // 4. Partnerenkénti szimulált leosztás
+  let totalNewStickersGained = new Set();
+  let totalStickersGivenCount = 0;
+
+  breakdownBox.innerHTML = selectedUsers.map(u => {
+    const uVanSet = new Set(ensureArray(u.van));
+    const givesToMe = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).sort((a, b) => a - b);
+    givesToMe.forEach(n => totalNewStickersGained.add(n));
+
+    const allocatedToHim = (allocation[u.id] || []).sort((a, b) => a - b);
+    totalStickersGivenCount += allocatedToHim.length;
+
+    return `
+      <div class="card" style="margin-bottom:8px; padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+          <h4 style="margin:0; font-size:0.92rem;">👤 ${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
+          <span style="font-size:0.75rem; color:var(--amber); font-weight:700;">+${givesToMe.length} új matrica tőle</span>
+        </div>
+        <div style="font-size:0.8rem; line-height:1.5;">
+          <p style="margin:2px 0;"><strong>Neki adod a terv szerint (${allocatedToHim.length} db):</strong> ${allocatedToHim.length ? allocatedToHim.map(n => `#${n}`).join(', ') : '<em>(Nem jut neki dupla)</em>'}</p>
+          <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle kapod (${givesToMe.length} db):</strong> ${givesToMe.map(n => `#${n}`).join(', ')}</p>
+        </div>
+        <div style="margin-top:8px;">
+          <button class="btn btn-contact-green btn-sm" data-action="contact-planned-partner" data-uid="${escapeHtml(u.id)}" data-give="${allocatedToHim.map(n => `#${n}`).join(', ')}" data-get="${givesToMe.map(n => `#${n}`).join(', ')}">
+            ✉️ Személyre szabott üzenet küldése ${escapeHtml(u.nev)}-nek
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 5. Kombinált végeredmény kártya
+  summaryBox.innerHTML = `
+    <div style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--amber); margin-bottom:4px; font-weight:700;">
+      🏆 Szimulált Végeredmény (${selectedUsers.length} csere után):
+    </div>
+    <div style="font-size:1.15rem; font-weight:800; color:#FFF;">
+      +${totalNewStickersGained.size} új matrica az albumodba • -${totalStickersGivenCount} elcserélt dupla
+    </div>
+    <p style="font-size:0.78rem; color:var(--sand); margin:4px 0 0;">
+      Megszerzett matricák: ${[...totalNewStickersGained].sort((a,b)=>a-b).map(n=>`#${n}`).join(', ')}
+    </p>
+  `;
+}
+
+// KÉZI FELÜLBÍRÁLÁS ESEMÉNYKEZELŐJE A CSERE-TERVEZŐBEN
+safeAddListener('trade-plan-conflicts-section', 'change', (e) => {
+  const radio = e.target.closest('[data-action="override-conflict"]');
+  if (!radio) return;
+  const num = parseInt(radio.dataset.num, 10);
+  tradePlanManualOverrides[num] = radio.value;
+  renderTradePlannerModal();
+});
+
+safeAddListener('trade-plan-partners-breakdown', 'click', (e) => {
+  const btn = e.target.closest('[data-action="contact-planned-partner"]');
+  if (!btn) return;
+  const uid = btn.dataset.uid;
+  const targetUser = allUsersData.find(u => u.id === uid);
+  if (!targetUser) return;
+
+  const giveText = btn.dataset.give || 'egyeztetés alatt';
+  const getText = btn.dataset.get || '';
+
+  document.getElementById('modal-trade-planner')?.classList.remove('open');
+  openContactModal(targetUser, giveText, getText, targetUser.isGiftOffering);
+});
 
 safeAddListener('matches-list', 'click', (e) => {
   const btn = e.target.closest('[data-action]');
@@ -1539,9 +1768,9 @@ function renderFavoritesRanking() {
 
   allUsersData.forEach(u => {
     const favs = ensureArray(u.favorites || []);
-    if (favs[0]) favScores[favs[0]] = (favScores[favs[0]] || 0) + 3; // 1. hely = 3 pont
-    if (favs[1]) favScores[favs[1]] = (favScores[favs[1]] || 0) + 2; // 2. hely = 2 pont
-    if (favs[2]) favScores[favs[2]] = (favScores[favs[2]] || 0) + 1; // 3. hely = 1 pont
+    if (favs[0]) favScores[favs[0]] = (favScores[favs[0]] || 0) + 3;
+    if (favs[1]) favScores[favs[1]] = (favScores[favs[1]] || 0) + 2;
+    if (favs[2]) favScores[favs[2]] = (favScores[favs[2]] || 0) + 1;
   });
 
   const rankedFavs = Object.entries(favScores)
@@ -1649,7 +1878,6 @@ function renderChapterDifficulty() {
     });
   });
 
-  // Nehézségi pontszám: Minél több a hiányzó és kevesebb a dupla, annál nehezebb
   const rankedChapters = FEJEZETEK.slice(1).map(f => {
     const miss = chapterMissing[f.id] || 0;
     const dupes = chapterDupes[f.id] || 0;
@@ -1686,13 +1914,7 @@ function renderChapterDifficulty() {
     `;
   }).join('');
 }
-```
 
----
-
-### 📦 `app.js` — 2. RÉSZ (Hőtérképtől a fájl legvégéig)
-
-```javascript
 function renderCompletionOdds() {
   const oddsCard = document.getElementById('completion-odds-card');
   const oddsPct = document.getElementById('completion-odds-pct');
@@ -2301,9 +2523,6 @@ safeAddListener('messages-inbox-list', 'click', async (e) => {
   }
 });
 
-// =========================================================================
-// GYŰJTŐ ADATLAP MODAL (KEDVENCEK MEGJELENÍTÉSÉVEL)
-// =========================================================================
 function openUserProfileModal(uid) {
   const targetUser = allUsersData.find(u => u.id === uid);
   if (!targetUser) return showToast("Gyűjtő adatai nem találhatók.");
@@ -2316,7 +2535,6 @@ function openUserProfileModal(uid) {
   if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
   if (cityEl) cityEl.textContent = targetUser.telepules ? `📍 Település: ${targetUser.telepules}` : '📍 Nincs megadva település';
 
-  // Kedvenc állatok megjelenítése
   const favBox = document.getElementById('user-profile-favorites-box');
   const favText = document.getElementById('user-profile-favorites-text');
   const favs = ensureArray(targetUser.favorites || []);
@@ -2334,7 +2552,6 @@ function openUserProfileModal(uid) {
   const mBox = document.getElementById('user-profile-missing-tags');
   const vBox = document.getElementById('user-profile-van-tags');
 
-  // Hiányzók listája rendezve
   if (mBox) {
     if (targetUser.allowInspect === false) {
       mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
@@ -2348,7 +2565,6 @@ function openUserProfileModal(uid) {
     }
   }
 
-  // Duplikátumok listája rendezve
   if (vBox) {
     if (!targetUser.van || targetUser.van.length === 0) {
       vBox.innerHTML = '<em style="color:var(--text-muted);">Jelenleg nincs cserélhető duplája.</em>';
@@ -2726,7 +2942,6 @@ safeAddListener('btn-save-profile', 'click', async () => {
   if (!em || !emailRegex.test(em)) return showToast("Kérlek adj meg egy érvényes e-mail címet!");
   if (!gdpr) return showToast("A cserékhez el kell fogadnod az adatkezelést!");
 
-  // Kedvenc állatok beolvasása
   const f1 = parseInt(document.getElementById('prof-fav-1')?.value || '0', 10);
   const f2 = parseInt(document.getElementById('prof-fav-2')?.value || '0', 10);
   const f3 = parseInt(document.getElementById('prof-fav-3')?.value || '0', 10);
@@ -2960,7 +3175,6 @@ function listenToMyProfile(uid) {
       const aiI = document.getElementById('prof-allow-inspect'); if (aiI) aiI.checked = myProfile.allowInspect !== false;
       const gdI = document.getElementById('prof-gdpr'); if (gdI) gdI.checked = !!myProfile.gdprAccepted;
 
-      // Kedvenc állat select mezők értékének frissítése
       initFavoriteSelects();
       if (myProfile.favorites) {
         if (document.getElementById('prof-fav-1')) document.getElementById('prof-fav-1').value = myProfile.favorites[0] || '';
