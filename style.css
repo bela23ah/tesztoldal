@@ -1,5 +1,5 @@
 /* =========================================================================
-   Lutra Album Cserebere (Lidl 2026) - style.css (v3.3 Teljes, Egységesített)
+   Lutra Album Cserebere (Lidl 2026) - style.css (v3.4 Teljes, Egységesített)
    ========================================================================= */
 
 :root {
@@ -16,7 +16,7 @@
   --reserved-blue: #2B6CB0;
   --reserved-blue-soft: #63B3ED;
 
-  /* Elsődleges Arany / Akcent színek (Gombok, kiemelések, aktív fülek) */
+  /* Elsődleges Arany / Akcent színek */
   --amber: #D89B4A;
   --amber-hover: #E5A855;
   --gift-gold: #FFD166;
@@ -29,7 +29,7 @@
   --page-bg: #143834;
   --slot-border: rgba(227, 213, 184, 0.25);
   
-  /* Egységes, modern lekerekítések (Nincs több felemás sarok!) */
+  /* Egységes lekerekítések */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -192,7 +192,7 @@ header {
   font-family: var(--font-body);
   font-size: 0.78rem;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
@@ -250,8 +250,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
 .filter-btn {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); color: var(--text-muted);
-  font-size: 0.75rem; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-family: var(--font-body);
-  transition: all 0.15s ease;
+  font-size: 0.75rem; padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; font-family: var(--font-body);
 }
 .filter-btn.active { background: var(--amber); color: var(--water-deep); font-weight: 700; border-color: var(--amber); }
 
@@ -423,7 +422,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 /* 📊 LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
 .trade-planner-bar {
   position: fixed;
-  bottom: 16px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   max-width: 720px;
@@ -438,7 +437,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   align-items: center;
   gap: 10px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-  z-index: 2000;
+  z-index: 2500;
   animation: slideUp 0.3s ease;
 }
 @keyframes slideUp {
@@ -446,6 +445,43 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   to { transform: translate(-50%, 0); opacity: 1; }
 }
 .planner-info { font-size: 0.85rem; color: var(--sand); font-weight: 600; }
+
+/* ⚡ STATISZTIKAI GYORSUGRÓ SÁV (ANCHOR BAR) */
+.stats-quicknav {
+  display: flex;
+  overflow-x: auto;
+  gap: 6px;
+  padding: 4px 0 10px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.stats-quicknav::-webkit-scrollbar { display: none; }
+
+.btn-stat-jump {
+  background: var(--water-mid);
+  border: 1px solid rgba(216, 155, 74, 0.3);
+  color: var(--sand);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.btn-stat-jump:hover {
+  background: var(--amber);
+  color: var(--water-deep);
+  border-color: var(--amber);
+  font-weight: 700;
+}
+
+/* Szekciók görgetési margója (hogy a fejléc ne takarja ki a címet ugráskor) */
+.stat-section-anchor {
+  scroll-margin-top: 100px;
+}
 
 /* VÁROSI HŐTÉRKÉP & TÉRKÉP STÍLUSOK */
 .map-heatmap-container {
@@ -493,7 +529,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   100% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); }
 }
 
-/* A) ÖTLET: TELÍTETTSÉGI KÁRTYÁK */
+/* TELÍTETTSÉGI KÁRTYÁK */
 .segment-card {
   background: rgba(0, 0, 0, 0.25);
   padding: 10px 8px;
@@ -501,7 +537,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   text-align: center;
 }
 
-/* B) ÖTLET: FEJEZETI NEHÉZSÉGI SÁVOK */
+/* FEJEZETI NEHÉZSÉGI SÁVOK */
 .difficulty-bar-row {
   display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem;
 }
@@ -515,7 +551,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   height: 100%; border-radius: 999px; transition: width 0.6s ease;
 }
 
-/* GOMBOK ÉS MEZŐK (EGYSÉGES 8-12px RADIUS) */
+/* GOMBOK ÉS MEZŐK */
 .btn {
   background: var(--amber); color: var(--water-deep); border: none; border-radius: var(--radius-sm);
   padding: 8px 16px; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none;
@@ -523,7 +559,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   transition: all 0.15s ease;
 }
 .btn:hover { background: var(--amber-hover); }
-.btn-sm { padding: 5px 12px; font-size: 0.78rem; border-radius: var(--radius-sm); }
+.btn-sm { padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius-sm); }
 
 /* 🟢 ZÖLD KAPCSOLATFELVÉTEL GOMB */
 .btn-contact-green {
@@ -602,20 +638,4 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   padding: 24px 16px; text-align: center; color: var(--sand); margin-bottom: 14px;
 }
 .cert-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--amber); margin: 0 0 6px; }
-.cert-name { font-size: 1.3rem; font-weight: 700; color: #FFF; margin: 8px 0; border-bottom: 1px dashed var(--amber); padding-bottom: 6px; }
-
-.support-footer {
-  margin-top: 40px; padding: 18px; border-radius: var(--radius-md);
-  background: rgba(20, 69, 63, 0.6); border: 1px solid rgba(243,238,223,0.12);
-  text-align: center; font-size: 0.85rem; color: var(--text-muted);
-}
-.btn-donably {
-  background: #E85A4F; color: #FFFFFF; font-weight: 700; margin-top: 10px; text-decoration: none; border-radius: var(--radius-sm);
-}
-
-.toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: var(--amber); color: var(--water-deep); padding: 10px 20px;
-  border-radius: 999px; font-weight: 700; font-size: 0.85rem; display: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
-}
+.cert-name { font-size: 1.3rem; font-weight: 700; col
