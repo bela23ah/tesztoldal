@@ -53,7 +53,7 @@
     </div>
     
     <div id="auth-area" class="auth-box">
-      <button class="btn btn-sm" id="btn-open-auth">Belépés / Fiók</button>
+      <button class="btn btn-sm btn-primary" id="btn-open-auth">Belépés / Fiók</button>
     </div>
   </header>
 
@@ -217,12 +217,21 @@
     </section>
 
     <!-- 2. MATRICÁIM: PÁROSÍTÁSOK NÉZET -->
-    <section id="view-cserek" class="view">
+    <section id="view-cserek" class="view" style="position:relative;">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2>Cserelehetőségek</h2>
         <button class="btn btn-secondary" id="btn-refresh-matches" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Azok a gyűjtők, akikkel kölcsönösen vagy körcserében tudtok egymásnak matricát adni.</p>
+
+      <!-- 💡 KIEMELT FELHÍVÓ SÁV A CSERE-TERVEZŐHÖZ -->
+      <div class="notice-banner" style="background:rgba(216,155,74,0.15); border:1.5px solid var(--amber); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span style="font-size:0.84rem; line-height:1.4;">
+          📊 <strong>Több partneres Csere-Tervező:</strong> Pipálj ki legalább 2 partnert a kártyáikon lévő jelölőnégyzettel, és nézd meg az ütközésvizsgáló szimulátort! Segít eldönteni, hogyan jársz a legjobban.
+        </span>
+        <button class="btn btn-primary btn-sm" id="btn-top-open-planner" style="display:none; white-space:nowrap; font-weight:700;">
+          🔍 Szimuláció indítása (<span id="planner-top-count">0</span>)
+        </button>
+      </div>
       
       <div class="filter-group" style="margin-bottom: 14px;">
         <button class="filter-btn active" id="btn-match-all">🌟 Legjobb cserék (Összes)</button>
@@ -232,6 +241,21 @@
       </div>
 
       <div id="matches-list">Adatok betöltése...</div>
+
+      <!-- LEBEGŐ CSERE-TERVEZŐ SÁV -->
+      <div id="trade-planner-floating-bar" class="trade-planner-bar" style="display:none;">
+        <div class="planner-info">
+          📊 <strong><span id="planner-selected-count">0</span> partner</strong> kijelölve a tervhez
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-primary btn-sm" id="btn-open-trade-planner">
+            🔍 Ütközések ellenőrzése
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-clear-trade-plan">
+            Mégse
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- 3. MATRICÁIM: KERESŐ NÉZET -->
@@ -589,16 +613,28 @@
       <div id="messages-inbox-list">Bejelentkezés szükséges az üzenetek megtekintéséhez.</div>
     </section>
 
-    <!-- 7. PROFIL & ADATOK: STATISZTIKA & HŐTÉRKÉP NÉZET -->
+    <!-- 7. PROFIL & ADATOK: STATISZTIKA & HŐTÉRKÉP NÉZET (ÁTRENDEZETT SORRENDDEL ÉS GYORSUGRÓVAL) -->
     <section id="view-statisztika" class="view">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
         <h2>Statisztika & Aktivitási Hőtérkép</h2>
         <button class="btn btn-secondary" id="btn-refresh-stats" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Valós idejű közösségi adatok az országos matricakínálatról, méretekről és az aktív csererégiókról.</p>
-      
-      <!-- A) Közösségi Dupla Kínálat és Átlagok -->
-      <div class="card" style="text-align:center; padding:18px;">
+      <p class="view-intro" style="margin-bottom:10px;">Valós idejű közösségi adatok, méretkalkulációk és cserepiaci aktivitás.</p>
+
+      <!-- ⚡ GYORSUGRÓ NAVIGÁCIÓS SÁV A STATISZTIKÁHOZ -->
+      <div class="stats-quicknav">
+        <button class="btn-stat-jump" data-target="stat-sec-pool">📦 Kínálat</button>
+        <button class="btn-stat-jump" data-target="stat-sec-favs">🏆 Kedvencek</button>
+        <button class="btn-stat-jump" data-target="stat-sec-fun">📏 Méretek</button>
+        <button class="btn-stat-jump" data-target="stat-sec-odds">🎯 Esélyek</button>
+        <button class="btn-stat-jump" data-target="stat-sec-map">🗺️ Hőtérkép</button>
+        <button class="btn-stat-jump" data-target="stat-sec-dist">📊 Telítettség</button>
+        <button class="btn-stat-jump" data-target="stat-sec-diff">⛰️ Nehézség</button>
+        <button class="btn-stat-jump" data-target="stat-sec-rare">🔍 Ritkaságok</button>
+      </div>
+
+      <!-- 1. KÖZÖSSÉGI DUPLA KÍNÁLAT & ÁTLAGOK & HALMOZÓDÁSI MUTATÓ -->
+      <div class="card stat-section-anchor" id="stat-sec-pool" style="text-align:center; padding:18px;">
         <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
           📦 Közösségi Dupla Kínálat
         </div>
@@ -608,52 +644,25 @@
         <p style="font-size:0.82rem; color:var(--sand); margin:4px 0 10px;">
           felesleges dupla matrica vár gazdára és cserére a közösségben a kidobás helyett!
         </p>
-        <div style="display:flex; justify-content:center; gap:16px; font-size:0.82rem; color:var(--text-muted); border-top:1px solid rgba(243,238,223,0.1); padding-top:10px;">
-          <span>Átlagos duplikátum: <strong id="stats-avg-dupes" style="color:var(--text-primary);">0</strong> db/fő</span>
-          <span>Átlagos albumtelítettség: <strong id="stats-avg-progress" style="color:var(--text-primary);">0%</strong></span>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px; border-top:1px solid rgba(243,238,223,0.1); padding-top:10px; font-size:0.8rem; color:var(--text-muted);">
+          <div>Átlagos duplikátum: <strong id="stats-avg-dupes" style="color:var(--text-primary); display:block; font-size:1rem;">0 db/fő</strong></div>
+          <div>Átlagos albumtelítettség: <strong id="stats-avg-progress" style="color:var(--text-primary); display:block; font-size:1rem;">0%</strong></div>
+          <div>Leginkább halmozódó: <strong id="stats-hoarding-sticker" style="color:var(--amber); display:block; font-size:0.95rem;">Számítás...</strong></div>
         </div>
       </div>
 
-      <!-- B) KÖZÖNSÉGKEDVENC MATRICÁK (TOP 5 ÁLLAT SZAVAZÁS) -->
-      <div class="card" style="border-left:4px solid var(--amber);">
+      <!-- 2. KÖZÖNSÉGKEDVENC ÁLLATOK (TOP 5) -->
+      <div class="card stat-section-anchor" id="stat-sec-favs" style="border-left:4px solid var(--amber);">
         <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--amber);">🏆 A Közösség Kedvenc Állatai (Top 5)</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-          A gyűjtők által a profiljukban megjelölt 1., 2. és 3. legkedvesebb állat összesített ranglistája:
+          A gyűjtők által a profiljukban megjelölt 1., 2. és 3. legkedvesebb állat súlyozott ranglistája:
         </p>
         <div id="stats-favorites-ranking" class="stats-ranking-list">Szavazatok számítása...</div>
       </div>
 
-      <!-- C) A ÖTLET: „HOL TART AZ ORSZÁG?” (KÖZÖSSÉGI TELÍTETTSÉG) -->
-      <div class="card">
-        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">📊 Hol tart az ország? (Közösségi album-telítettség)</h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">A regisztrált gyűjtők haladása a 108 matrica összegyűjtésében:</p>
-        
-        <!-- Többszegmenses színes folyamatcsík -->
-        <div style="display:flex; height:12px; border-radius:999px; overflow:hidden; margin-bottom:12px; background:rgba(0,0,0,0.3);">
-          <div id="dist-bar-complete" style="background:#FFD166; width:0%;" title="Betelt (100%)"></div>
-          <div id="dist-bar-near" style="background:var(--amber); width:0%;" title="Célegyenesben (80-99%)"></div>
-          <div id="dist-bar-half" style="background:var(--moss-soft); width:0%;" title="Félúton (50-79%)"></div>
-          <div id="dist-bar-starter" style="background:var(--water-light); width:0%;" title="Kezdők (0-49%)"></div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px;" id="dist-segments-grid">
-          <!-- JS tölti fel a 4 kategória kártyáit -->
-        </div>
-      </div>
-
-      <!-- D) B ÖTLET: FEJEZETI NEHÉZSÉGI INDEX -->
-      <div class="card">
-        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">⛰️ Fejezeti Nehézségi Index: Melyik oldalt a legnehezebb betölteni?</h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-          Országos hiány-arány a fejezetekben (piros = nehéz beszerezni, zöld = sok a cserepéldány):
-        </p>
-        <div id="stats-difficulty-bars" style="display:flex; flex-direction:column; gap:8px;">
-          Adatok számítása...
-        </div>
-      </div>
-
-      <!-- E) JÁTÉKOS FIZIKAI MÉRETKALKULÁTOR -->
-      <div class="card" style="border-left:4px solid var(--amber);">
+      <!-- 3. JÁTÉKOS FIZIKAI MÉRETKALKULÁTOR -->
+      <div class="card stat-section-anchor" id="stat-sec-fun" style="border-left:4px solid var(--amber);">
         <h3 style="margin:0 0 8px; font-size:1.05rem; color:var(--amber);">📏 Ha egymás mellé tennénk az összes matricát...</h3>
         
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:8px;">
@@ -673,8 +682,8 @@
         </div>
       </div>
 
-      <!-- F) Személyre Szabott Befejezési Esélykalkulátor -->
-      <div class="card" id="completion-odds-card">
+      <!-- 4. BEFEJEZÉSI ESÉLYKALKULÁTOR -->
+      <div class="card stat-section-anchor" id="stat-sec-odds">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <h3 style="margin:0; font-size:1rem; color:var(--amber);">🎯 Befejezési Esélykalkulátor</h3>
           <span style="font-size:1.1rem; font-weight:800; color:#FFF;" id="completion-odds-pct">0%</span>
@@ -687,8 +696,8 @@
         </p>
       </div>
 
-      <!-- G) Városi Hőtérkép -->
-      <div class="card">
+      <!-- 5. VÁROSI HŐTÉRKÉP -->
+      <div class="card stat-section-anchor" id="stat-sec-map">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--amber);">🗺️ Városi Hőtérkép: Hol izzik a csere?</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
           Kattints egy városra a térképen vagy a listában a helyi cserepartnerek azonnali szűréséhez!
@@ -723,21 +732,45 @@
         </button>
       </div>
 
-      <!-- H) Ritkaság Rangsorok -->
-      <div class="card">
+      <!-- 6. HOL TART AZ ORSZÁG? (TELÍTETTSÉG) -->
+      <div class="card stat-section-anchor" id="stat-sec-dist">
+        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">📊 Hol tart az ország? (Közösségi album-telítettség)</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">A regisztrált gyűjtők haladása a 108 matrica összegyűjtésében:</p>
+        
+        <div style="display:flex; height:12px; border-radius:999px; overflow:hidden; margin-bottom:12px; background:rgba(0,0,0,0.3);">
+          <div id="dist-bar-complete" style="background:#FFD166; width:0%;" title="Betelt (100%)"></div>
+          <div id="dist-bar-near" style="background:var(--amber); width:0%;" title="Célegyenesben (80-99%)"></div>
+          <div id="dist-bar-half" style="background:var(--moss-soft); width:0%;" title="Félúton (50-79%)"></div>
+          <div id="dist-bar-starter" style="background:var(--water-light); width:0%;" title="Kezdők (0-49%)"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px;" id="dist-segments-grid"></div>
+      </div>
+
+      <!-- 7. FEJEZETI NEHÉZSÉGI INDEX -->
+      <div class="card stat-section-anchor" id="stat-sec-diff">
+        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">⛰️ Fejezeti Nehézségi Index: Melyik oldalt a legnehezebb betölteni?</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+          Országos hiány-arány a fejezetekben (piros = nehéz beszerezni, zöld = sok a cserepéldány):
+        </p>
+        <div id="stats-difficulty-bars" style="display:flex; flex-direction:column; gap:8px;">
+          Adatok számítása...
+        </div>
+      </div>
+
+      <!-- 8. RITKASÁGOK & REGISZTRÁLT TAGOK -->
+      <div class="card stat-section-anchor" id="stat-sec-rare">
         <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--amber);">Top 5 legkeresettebb matrica (Legritkábbak)</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Ezeket keresik a legtöbben az országban:</p>
         <div id="stats-rarest-list" class="stats-ranking-list">Adatok számítása...</div>
-      </div>
 
-      <div class="card">
-        <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--sand);">Top 5 leggyakoribb matrica</h3>
+        <h3 style="margin:14px 0 4px; font-size:1.05rem; color:var(--sand);">Top 5 leggyakoribb matrica</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Ezekből áll a legtöbb felesleges duplikátum:</p>
         <div id="stats-common-list" class="stats-ranking-list">Adatok számítása...</div>
-      </div>
 
-      <div class="card" style="font-size:0.85rem; color:var(--text-muted);">
-        <p style="margin:0;">Regisztrált cserepartnerek száma: <strong id="stats-users-count" style="color:var(--text-primary);">0</strong> fő</p>
+        <div style="margin-top:14px; border-top:1px solid rgba(243,238,223,0.1); padding-top:10px; font-size:0.85rem; color:var(--text-muted); text-align:center;">
+          Regisztrált cserepartnerek száma: <strong id="stats-users-count" style="color:var(--text-primary);">0</strong> fő
+        </div>
       </div>
     </section>
 
@@ -746,7 +779,7 @@
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <!-- Privát Jegyzettömb (200 karakteres) -->
+      <!-- Privát Jegyzettömb -->
       <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
           <span>📝 Saját Privát Jegyzettömb</span>
@@ -758,7 +791,7 @@
         <textarea id="prof-private-note" class="input-field" rows="4" maxlength="200" placeholder="Pl. #12 és #45 félretéve Marcinak; Postázás szerdán..."></textarea>
       </div>
 
-      <!-- Profil Űrlap (Top 3 Kedvenc Állattal) -->
+      <!-- Profil Űrlap -->
       <div class="card">
         <div class="form-group">
           <label for="prof-nev">Megjelenő név <strong style="color:var(--amber);">* (Kötelező)</strong></label>
@@ -773,7 +806,7 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT MEGJELÖLÉSE -->
+        <!-- 🥇🥈🥉 TOP 3 KEDVENC ÁLLAT -->
         <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
           <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);">⭐ Top 3 Kedvenc Állatod az Albumban</h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
@@ -905,6 +938,30 @@
   </div>
 </div>
 
+<!-- 📊 TÖBB PARTNERES CSERE-TERVEZŐ & ÜTKÖZÉSVIZSGÁLÓ MODAL -->
+<div id="modal-trade-planner" class="modal-overlay">
+  <div class="modal-card" style="max-width:580px;">
+    <button class="modal-close" id="btn-close-trade-planner">✕</button>
+    <h3 style="margin-top:0; color:var(--amber);">📊 Több partneres Csere-Tervező & Szimulátor</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
+      A szimulátor összehangolja a kiválasztott partnereket, hogy ne ígérd oda kétszer ugyanazt a matricát, és a lehető legtöbb hiányzódat szerezd meg.
+    </p>
+
+    <!-- 1. Ütköző matricák doboz -->
+    <div id="trade-plan-conflicts-section" style="margin-bottom:14px;"></div>
+
+    <!-- 2. Partnerenkénti leosztás -->
+    <div id="trade-plan-partners-breakdown" style="margin-bottom:14px;"></div>
+
+    <!-- 3. Összesített kombinált eredmény -->
+    <div id="trade-plan-summary-box" class="card" style="background:rgba(0,0,0,0.3); border:1.5px solid var(--amber); margin-bottom:14px; padding:12px;"></div>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button class="btn btn-secondary" id="btn-close-trade-planner-2">Bezárás</button>
+    </div>
+  </div>
+</div>
+
 <!-- FOTÓBEOLVASÓ MODAL -->
 <div id="modal-scanner" class="modal-overlay">
   <div class="modal-card" style="max-width:540px;">
@@ -1008,14 +1065,13 @@
   </div>
 </div>
 
-<!-- GYŰJTŐTELJES ADATLAP MODAL (KEDVENCEK MEGJELENÍTÉSÉVEL) -->
+<!-- GYŰJTŐTELJES ADATLAP MODAL -->
 <div id="modal-user-profile" class="modal-overlay">
   <div class="modal-card" style="max-width:500px;">
     <button class="modal-close" id="btn-close-user-profile">✕</button>
     <h3 id="user-profile-modal-name" style="margin-top:0;">Gyűjtő adatlapja</h3>
     <p id="user-profile-modal-city" style="font-size:0.85rem; color:var(--text-muted); margin:0 0 8px;"></p>
     
-    <!-- Gyűjtő kedvenc állatai -->
     <div id="user-profile-favorites-box" style="display:none; background:rgba(216,155,74,0.15); border:1px solid rgba(216,155,74,0.4); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:12px; font-size:0.82rem;">
       <strong>⭐ Kedvenc állatai:</strong> <span id="user-profile-favorites-text" style="color:var(--sand);"></span>
     </div>
