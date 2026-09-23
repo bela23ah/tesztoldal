@@ -489,7 +489,7 @@ const popover = document.getElementById('qty-popover');
 let lastToggleTimestamp = 0;
 let lastToggledStickerNum = null;
 
-// ⚡ GOLYÓÁLLÓ MATRICA ÁLLAPOTVÁLTÓ (Színátugrás és fantom-kattintás elleni védelemmel)
+//GOLYÓÁLLÓ MATRICA ÁLLAPOTVÁLTÓ (Színátugrás és fantom-kattintás elleni védelemmel)
 function toggleStickerState(num) {
   const now = Date.now();
   if (num === lastToggledStickerNum && now - lastToggleTimestamp < 220) {
@@ -1012,18 +1012,18 @@ function renderMatches() {
 
     list.innerHTML = `
       <div class="notice-banner" style="margin-bottom:12px;">
-        <span>🔄 <strong>Körcsere javaslat:</strong> Te adsz B-nek, B ad C-nek, C pedig ad Neked!</span>
+        <span><strong>Körcsere javaslat:</strong> Te adsz B-nek, B ad C-nek, C pedig ad Neked!</span>
       </div>
       ${loops.slice(0, 10).map((l, loopIdx) => `
         <div class="card ${l.isLocalLoop ? 'card-local' : ''}">
           <div class="card-header-row">
             <h3 style="margin:0;">Körcsere: Te ➔ ${escapeHtml(l.userB.nev || 'B')} ➔ ${escapeHtml(l.userC.nev || 'C')} ➔ Te</h3>
-            ${l.isLocalLoop ? '<span class="badge-local">📍 Helyi csere</span>' : ''}
+            ${l.isLocalLoop ? '<span class="badge-local"> Helyi csere</span>' : ''}
           </div>
           <div style="font-size:0.85rem; margin:8px 0; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;">
-            <p style="margin:0;">1️⃣ <strong>Te adsz neki:</strong> ${escapeHtml(l.userB.nev)} (${escapeHtml(l.userB.telepules || '')}) ➔ ${l.giveToB.map(n => `#${n}`).join(', ')}</p>
-            <p style="margin:0;">2️⃣ <strong>Ő ad tovább:</strong> ${escapeHtml(l.userB.nev)} ad ${escapeHtml(l.userC.nev)}-nek ➔ ${l.giveBtoC.map(n => `#${n}`).join(', ')}</p>
-            <p style="margin:0; color:var(--moss-soft);">3️⃣ <strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0;">1<strong>Te adsz neki:</strong> ${escapeHtml(l.userB.nev)} (${escapeHtml(l.userB.telepules || '')}) ➔ ${l.giveToB.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0;">2<strong>Ő ad tovább:</strong> ${escapeHtml(l.userB.nev)} ad ${escapeHtml(l.userC.nev)}-nek ➔ ${l.giveBtoC.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0; color:var(--moss-soft);">3<strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="btn btn-primary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
@@ -1075,12 +1075,12 @@ function renderMatches() {
       <div class="card-header-row">
         <div>
           <h3 style="margin:0; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
-            ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} 🔍
+            ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} 
           </h3>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          ${m.isSameCity ? '<span class="badge-local">📍 Helyi csere</span>' : ''}
-          ${m.isGift ? '<span class="badge-gift">🎁 Ingyen felajánló</span>' : ''}
+          ${m.isSameCity ? '<span class="badge-local"> Helyi csere</span>' : ''}
+          ${m.isGift ? '<span class="badge-gift"> Ingyen felajánló</span>' : ''}
           <span class="badge-ratio">${m.give.length} db ⇄ ${m.get.length} db</span>
         </div>
       </div>
@@ -1093,7 +1093,7 @@ function renderMatches() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(243,238,223,0.1); padding-top:8px;">
         <label class="checkbox-label" style="margin:0; font-size:0.8rem; color:var(--sand); font-weight:600;">
           <input type="checkbox" class="trade-plan-check" data-uid="${escapeHtml(m.id)}" ${isCheckedInPlan ? 'checked' : ''}>
-          📊 Hozzáadás a Csere-tervhez
+          Hozzáadás a Csere-tervhez
         </label>
         <div style="display:flex; gap:6px;">
           <button class="btn btn-contact-green btn-sm" data-action="contact-match" data-uid="${escapeHtml(m.id)}">
@@ -1226,13 +1226,13 @@ function renderTradePlannerModal() {
   if (conflicts.length === 0) {
     conflictBox.innerHTML = `
       <div class="notice-banner" style="background:rgba(107,138,90,0.15); border-color:var(--moss-soft); color:var(--text-primary);">
-        ✅ <strong>Nincs matricaütközés:</strong> Mind a ${selectedUsers.length} partnernek jut az általuk kért összes dupládból!
+        <strong>Nincs matricaütközés:</strong> Mind a ${selectedUsers.length} partnernek jut az általuk kért összes dupládból!
       </div>
     `;
   } else {
     conflictBox.innerHTML = `
       <div class="card" style="border:1.5px solid var(--danger); background:rgba(232,90,79,0.12);">
-        <h4 style="margin:0 0 6px; color:#FFC0BA; font-size:0.95rem;">🚨 Ütköző matricák (${conflicts.length} db)</h4>
+        <h4 style="margin:0 0 6px; color:#FFC0BA; font-size:0.95rem;"> Ütköző matricák (${conflicts.length} db)</h4>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
           Ezeket a matricákat többen is kérik, mint amennyi duplád van. A rendszer a legtöbb matricát adó, illetve helyi partnert javasolja:
         </p>
@@ -1252,7 +1252,7 @@ function renderTradePlannerModal() {
                 ${c.demandList.map(d => `
                   <label class="radio-label" style="margin:0; font-size:0.75rem; color:${d.user.id === currentWinnerUid ? 'var(--amber)' : 'var(--text-muted)'};">
                     <input type="radio" name="conflict-sticker-${c.num}" value="${d.user.id}" ${d.user.id === currentWinnerUid ? 'checked' : ''} data-action="override-conflict" data-num="${c.num}">
-                    ${escapeHtml(d.user.nev)} ${d.isSameCity ? '📍' : ''} (+${d.totalGivesToMe}db)
+                    ${escapeHtml(d.user.nev)} ${d.isSameCity ? '' : ''} (+${d.totalGivesToMe}db)
                   </label>
                 `).join('')}
               </div>
@@ -1286,7 +1286,7 @@ function renderTradePlannerModal() {
         </div>
         <div style="margin-top:8px;">
           <button class="btn btn-contact-green btn-sm" data-action="contact-planned-partner" data-uid="${escapeHtml(u.id)}" data-give="${allocatedToHim.map(n => `#${n}`).join(', ')}" data-get="${givesToMe.map(n => `#${n}`).join(', ')}">
-            ✉️ Személyre szabott üzenet küldése ${escapeHtml(u.nev)}-nek
+             Személyre szabott üzenet küldése ${escapeHtml(u.nev)}-nek
           </button>
         </div>
       </div>
@@ -1295,7 +1295,7 @@ function renderTradePlannerModal() {
 
   summaryBox.innerHTML = `
     <div style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--amber); margin-bottom:4px; font-weight:700;">
-      🏆 Szimulált Végeredmény (${selectedUsers.length} csere után):
+      Szimulált Végeredmény (${selectedUsers.length} csere után):
     </div>
     <div style="font-size:1.15rem; font-weight:800; color:#FFF;">
       +${totalNewStickersGained.size} új matrica az albumodba • -${totalStickersGivenCount} elcserélt dupla
@@ -1423,9 +1423,9 @@ function renderSearchResults(targetNums, titleText) {
       <div class="card">
         <div class="card-header-row">
           <h3 style="cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
-            ${escapeHtml(u.nev || 'Névtelen')} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''} 🔍
+            ${escapeHtml(u.nev || 'Névtelen')} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''} 
           </h3>
-          ${u.isGiftOffering ? '<span class="badge-gift">🎁 Ingyen adja</span>' : ''}
+          ${u.isGiftOffering ? '<span class="badge-gift"> Ingyen adja</span>' : ''}
         </div>
         <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n} (${escapeHtml(STICKER_NAMES[n] || '')})`).join(', ')}</p>
         <button class="btn btn-contact-green" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
@@ -1572,7 +1572,7 @@ function renderRadarReports() {
       <div class="radar-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
           <div>
-            <strong>📍 ${escapeHtml(storeLabel)}</strong>
+            <strong> ${escapeHtml(storeLabel)}</strong>
           </div>
           <span class="${r.status ? 'badge-radar-van' : 'badge-radar-nincs'}">
             ${r.status ? '🟢 Kapható' : '🔴 Elfogyott'}
@@ -1581,7 +1581,7 @@ function renderRadarReports() {
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
         ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" onclick="window.open(this.src)">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-          <span>👤 ${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
+          <span>👤 ${escapeHtml(r.reporterName || 'Gyűjtő')} •  ${timeStr}</span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
       </div>
@@ -1705,7 +1705,7 @@ safeAddListener('btn-submit-meetup', async () => {
     if (document.getElementById('meetup-photo-input')) document.getElementById('meetup-photo-input').value = '';
     if (document.getElementById('meetup-photo-preview-box')) document.getElementById('meetup-photo-preview-box').style.display = 'none';
 
-    showToast("🎉 Találkozó sikeresen közzétéve!");
+    showToast(" Találkozó sikeresen közzétéve!");
   } catch (err) {
     showToast("Hiba: " + err.message);
   }
@@ -1732,9 +1732,9 @@ function renderMeetups() {
       <div class="meetup-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
           <div>
-            <h3 style="margin:0; font-size:1.05rem;">📍 ${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
+            <h3 style="margin:0; font-size:1.05rem;"> ${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
           </div>
-          <span class="meetup-time-badge">🕒 ${escapeHtml(m.time)}</span>
+          <span class="meetup-time-badge"> ${escapeHtml(m.time)}</span>
         </div>
         ${m.description ? `<p style="font-size:0.86rem; margin:6px 0; color:var(--text-primary); white-space:pre-wrap;">${escapeHtml(m.description)}</p>` : ''}
         ${m.photoBase64 ? `<img src="${m.photoBase64}" class="radar-attached-img" alt="Plakát" onclick="window.open(this.src)">` : ''}
@@ -1857,22 +1857,22 @@ function renderCompletionDistribution() {
   if (grid) {
     grid.innerHTML = `
       <div class="segment-card" style="border-top:3px solid #FFD166;">
-        <div style="font-size:0.75rem; color:var(--sand);">🏆 Betelt (100%)</div>
+        <div style="font-size:0.75rem; color:var(--sand);">Betelt (100%)</div>
         <strong style="font-size:1rem; color:#FFF;">${complete} fő</strong>
         <div style="font-size:0.7rem; color:var(--text-muted);">${pComplete}%</div>
       </div>
       <div class="segment-card" style="border-top:3px solid var(--amber);">
-        <div style="font-size:0.75rem; color:var(--sand);">🔥 Célegyenes (80-99%)</div>
+        <div style="font-size:0.75rem; color:var(--sand);">Célegyenes (80-99%)</div>
         <strong style="font-size:1rem; color:#FFF;">${near} fő</strong>
         <div style="font-size:0.7rem; color:var(--text-muted);">${pNear}%</div>
       </div>
       <div class="segment-card" style="border-top:3px solid var(--moss-soft);">
-        <div style="font-size:0.75rem; color:var(--sand);">🏃 Félúton (50-79%)</div>
+        <div style="font-size:0.75rem; color:var(--sand);">Félúton (50-79%)</div>
         <strong style="font-size:1rem; color:#FFF;">${half} fő</strong>
         <div style="font-size:0.7rem; color:var(--text-muted);">${pHalf}%</div>
       </div>
       <div class="segment-card" style="border-top:3px solid var(--water-light);">
-        <div style="font-size:0.75rem; color:var(--sand);">🌱 Kezdők (0-49%)</div>
+        <div style="font-size:0.75rem; color:var(--sand);">Kezdők (0-49%)</div>
         <strong style="font-size:1rem; color:#FFF;">${starter} fő</strong>
         <div style="font-size:0.7rem; color:var(--text-muted);">${pStarter}%</div>
       </div>
@@ -1952,7 +1952,7 @@ function renderCompletionOdds() {
   if (myMissing.length === 0) {
     oddsPct.textContent = '100%';
     oddsBar.style.width = '100%';
-    oddsText.innerHTML = '<span style="color:var(--amber);">Gratulálunk! Az albumod betelt! 🎉</span>';
+    oddsText.innerHTML = '<span style="color:var(--amber);">Gratulálunk! Az albumod betelt! </span>';
     return;
   }
 
@@ -2145,7 +2145,7 @@ function renderHeatmap() {
 safeAddListener('btn-toggle-all-cities', () => {
   showAllHeatmapCities = !showAllHeatmapCities;
   const btn = document.getElementById('btn-toggle-all-cities');
-  if (btn) btn.textContent = showAllHeatmapCities ? '▲ Csak a legaktívabb városok mutatása' : '📋 Összes aktív város mutatása';
+  if (btn) btn.textContent = showAllHeatmapCities ? '▲ Csak a legaktívabb városok mutatása' : 'Összes aktív város mutatása';
   renderHeatmap();
 });
 
@@ -2222,7 +2222,7 @@ function filterMatchesByCityName(cityName) {
   switchView('cserek');
   const cityBtn = document.getElementById('btn-match-city');
   if (cityBtn) setActiveMatchFilter(cityBtn, 'city');
-  showToast(`📍 Szűrés: ${cityName}`);
+  showToast(` Szűrés: ${cityName}`);
 }
 
 function renderStatistics() {
@@ -2560,7 +2560,7 @@ safeAddListener('btn-send-message', () => {
         console.warn("Értesítési e-mail figyelmeztetés:", e);
       }
 
-      showToast("✨ Üzeneted sikeresen elküldve a partnernek!");
+      showToast("Üzeneted sikeresen elküldve a partnernek!");
       document.getElementById('modal-contact')?.classList.remove('open');
     } catch (err) {
       showToast("Küldési hiba: " + err.message);
@@ -2637,7 +2637,7 @@ function renderMessages() {
       <div class="message-card ${isIncoming ? 'incoming' : 'outgoing'}">
         <div class="message-header">
           <div>
-            <strong>${isIncoming ? '📩 Feladó:' : '📤 Címzett:'} ${escapeHtml(partnerName)} ${escapeHtml(partnerCity)}</strong>
+            <strong>${isIncoming ? 'Feladó:' : 'Címzett:'} ${escapeHtml(partnerName)} ${escapeHtml(partnerCity)}</strong>
           </div>
           <span style="font-size:0.75rem; color:var(--text-muted);">${dateStr}</span>
         </div>
@@ -2690,7 +2690,7 @@ function openUserProfileModal(uid) {
   const nameEl = document.getElementById('user-profile-modal-name');
   const cityEl = document.getElementById('user-profile-modal-city');
   if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
-  if (cityEl) cityEl.textContent = targetUser.telepules ? `📍 Település: ${targetUser.telepules}` : '📍 Nincs megadva település';
+  if (cityEl) cityEl.textContent = targetUser.telepules ? `Település: ${targetUser.telepules}` : 'Nincs megadva település';
 
   const favBox = document.getElementById('user-profile-favorites-box');
   const favText = document.getElementById('user-profile-favorites-text');
@@ -2713,7 +2713,7 @@ function openUserProfileModal(uid) {
     if (targetUser.allowInspect === false) {
       mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
     } else if (!targetUser.kell || targetUser.kell.length === 0) {
-      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki! 🎉</span>';
+      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki! </span>';
     } else {
       mBox.innerHTML = targetUser.kell
         .sort((a, b) => a - b)
@@ -2812,8 +2812,8 @@ function listenToMyMessages(uid) {
       if ("vibrate" in navigator) {
         navigator.vibrate([180, 90, 180]);
       }
-      triggerTopNotification('📩', "Új belső üzeneted érkezett egy cserepartnertől!", () => switchView('uzeneteim'));
-      showToast("📩 Új üzeneted érkezett!");
+      triggerTopNotification("Új belső üzeneted érkezett egy cserepartnertől!", () => switchView('uzeneteim'));
+      showToast("Új üzeneted érkezett!");
     }
     previousIncomingCount = newCount;
 
@@ -2854,7 +2854,7 @@ function checkAndDisplayAnnouncements() {
   if (!relevant) return;
 
   if (relevant.format === 'banner' || relevant.format === 'both' || !relevant.format) {
-    const icon = relevant.type === 'event' ? '📅' : relevant.type === 'feature' ? '🚀' : '📢';
+    const icon = relevant.type === 'event' ? '' : relevant.type === 'feature' ? '' : '';
     triggerTopNotification(icon, `${relevant.title}: ${relevant.content.slice(0, 50)}...`, () => showAnnouncementModal(relevant));
   }
 
@@ -2873,7 +2873,7 @@ function showAnnouncementModal(announcement) {
   const titleEl = document.getElementById('announcement-modal-title');
   const bodyEl = document.getElementById('announcement-modal-body');
 
-  if (iconEl) iconEl.textContent = announcement.type === 'event' ? '📅' : announcement.type === 'feature' ? '🚀' : '🎉';
+  if (iconEl) iconEl.textContent = announcement.type === 'event' ? '' : announcement.type === 'feature' ? '' : '';
   if (titleEl) titleEl.textContent = announcement.title;
   if (bodyEl) bodyEl.textContent = announcement.content;
 
@@ -2917,7 +2917,7 @@ safeAddListener('btn-admin-publish-msg', () => {
 
       if (document.getElementById('admin-msg-title')) document.getElementById('admin-msg-title').value = '';
       if (document.getElementById('admin-msg-content')) document.getElementById('admin-msg-content').value = '';
-      showToast("🎉 Rendszerüzenet sikeresen élesítve!");
+      showToast(" Rendszerüzenet sikeresen élesítve!");
     } catch (err) {
       showToast("Hiba: " + err.message);
     }
@@ -3053,7 +3053,7 @@ function downloadCertificateImage() {
   link.download = `Lutra_Szuperhos_Oklevel_${(myProfile.nev || 'Gyujto').replace(/\s+/g, '_')}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
-  showToast("📥 Oklevél kép letöltve!");
+  showToast("Oklevél kép letöltve!");
 }
 
 safeAddListener('btn-view-certificate', () => {
@@ -3423,9 +3423,9 @@ safeAddListener('btn-pwa-install', () => {
     })();
   } else {
     if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      showToast("💡 iPhone-on: Kattints a Megosztás (négyzetből felfelé nyíl) gombra, majd válaszd a 'Főképernyőhöz adás' lehetőséget!");
+      showToast("iPhone-on: Kattints a Megosztás (négyzetből felfelé nyíl) gombra, majd válaszd a 'Főképernyőhöz adás' lehetőséget!");
     } else {
-      showToast("💡 PC-n: Kattints a böngésző címsorának jobb szélén lévő ⊕ (Telepítés) ikonra!");
+      showToast("PC-n: Kattints a böngésző címsorának jobb szélén lévő ⊕ (Telepítés) ikonra!");
     }
   }
 });
