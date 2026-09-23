@@ -1277,7 +1277,7 @@ function renderTradePlannerModal() {
     return `
       <div class="card" style="margin-bottom:8px; padding:12px;">
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-          <h4 style="margin:0; font-size:0.92rem;">👤 ${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
+          <h4 style="margin:0; font-size:0.92rem;">${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
           <span style="font-size:0.75rem; color:var(--amber); font-weight:700;">+${givesToMe.length} új matrica tőle</span>
         </div>
         <div style="font-size:0.8rem; line-height:1.5;">
@@ -1581,7 +1581,7 @@ function renderRadarReports() {
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
         ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" onclick="window.open(this.src)">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-          <span>👤 ${escapeHtml(r.reporterName || 'Gyűjtő')} •  ${timeStr}</span>
+          <span> ${escapeHtml(r.reporterName || 'Gyűjtő')} •  ${timeStr}</span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
       </div>
@@ -3223,7 +3223,7 @@ function initFirebase() {
 
         if (authArea) {
           authArea.innerHTML = `
-            <div class="user-badge"><span>👤 ${escapeHtml(user.displayName || user.email.split('@')[0])}</span></div>
+            <div class="user-badge"><span> ${escapeHtml(user.displayName || user.email.split('@')[0])}</span></div>
             <button class="btn btn-secondary btn-sm" id="btn-logout" style="padding:4px 10px; font-size:0.75rem;">Kilépés</button>
           `;
           document.getElementById('btn-logout')?.addEventListener('click', () => auth.signOut());
