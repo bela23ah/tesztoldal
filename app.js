@@ -1,12 +1,12 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v3.6 Teljes Kód - 1. RÉSZ)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v3.7 - 1. RÉSZ)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// Golyóálló eseménykezelő (2 és 3 paraméterrel is hibátlanul működik!)
+// Golyóálló eseménykezelő
 function safeAddListener(id, eventOrHandler, handler) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -486,9 +486,18 @@ function renderAlbumChapter() {
 
 let activePopoverNum = null;
 const popover = document.getElementById('qty-popover');
+let lastToggleTimestamp = 0;
+let lastToggledStickerNum = null;
 
-// ⚡ AZONNALI ÉS PONTOS KATTINTÁS (Debounce blokkolás nélkül)
+// ⚡ GOLYÓÁLLÓ MATRICA ÁLLAPOTVÁLTÓ (Színátugrás és fantom-kattintás elleni védelemmel)
 function toggleStickerState(num) {
+  const now = Date.now();
+  if (num === lastToggledStickerNum && now - lastToggleTimestamp < 220) {
+    return;
+  }
+  lastToggleTimestamp = now;
+  lastToggledStickerNum = num;
+
   hideQtyPopover();
   const vanIdx = myProfile.van.indexOf(num);
   const kellIdx = myProfile.kell.indexOf(num);
@@ -562,6 +571,7 @@ function attachStickerInteraction(container) {
   if (!container) return;
   let longPressTimer = null;
   let isLongPress = false;
+  let touchMoved = false;
 
   container.addEventListener('contextmenu', (e) => {
     const target = e.target.closest('[data-num]');
@@ -575,18 +585,33 @@ function attachStickerInteraction(container) {
     const target = e.target.closest('[data-num]');
     if (!target) return;
     isLongPress = false;
+    touchMoved = false;
+    clearTimeout(longPressTimer);
     longPressTimer = setTimeout(() => {
-      isLongPress = true;
-      showQtyPopover(parseInt(target.dataset.num, 10), target);
+      if (!touchMoved) {
+        isLongPress = true;
+        showQtyPopover(parseInt(target.dataset.num, 10), target);
+      }
     }, 450);
   }, { passive: true });
 
-  container.addEventListener('touchend', () => clearTimeout(longPressTimer));
-  container.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+  container.addEventListener('touchmove', () => {
+    touchMoved = true;
+    clearTimeout(longPressTimer);
+  }, { passive: true });
+
+  container.addEventListener('touchend', (e) => {
+    clearTimeout(longPressTimer);
+    if (isLongPress) {
+      e.preventDefault();
+      isLongPress = false;
+    }
+  });
 
   container.addEventListener('click', (e) => {
-    if (isLongPress) {
+    if (isLongPress || touchMoved) {
       isLongPress = false;
+      touchMoved = false;
       return;
     }
     const target = e.target.closest('[data-num]');
@@ -2038,14 +2063,13 @@ function renderHeatmap() {
     towerTextEl.innerHTML = `Magasabb, mint egy lakás belmagassága (2.6 m), és <strong>${humanRatio}× olyan magas</strong>, mint a világ legmagasabb embere!`;
   }
 
-  // --- 3. CSISZOLT HŐTÉRKÉP SZÁMÍTÁS (Egy ember önmagában nem generálhat "Izzik a csere" szintet) ---
+  // --- 3. CSISZOLT HŐTÉRKÉP SZÁMÍTÁS ---
   const getCityHeatData = (c) => {
     const score = (c.users * 15) + (c.duplicates * 2) + c.missing;
     let heatCls = 'cool';
     let label = '🟢 Éledezve';
     let pinSize = 18;
 
-    // "Izzik a csere" feltétele: legalább 3 regisztrált tag és magas aktivitás
     if (c.users >= 3 && score >= 75) {
       heatCls = 'fire';
       label = '🔥 Izzik a csere';
@@ -2137,9 +2161,27 @@ document.querySelectorAll('.btn-stat-jump').forEach(btn => {
 });
 
 const quicknavBar = document.getElementById('stats-quicknav-bar');
-const quicknavArrow = document.getElementById('stats-quicknav-arrow');
-if (quicknavBar && quicknavArrow) {
-  // Vízszintes görgetés egérgörgővel PC-n
+const quicknavArrowRight = document.getElementById('stats-quicknav-arrow');
+const quicknavArrowLeft = document.getElementById('stats-quicknav-arrow-left');
+
+if (quicknavBar) {
+  const updateQuicknavArrows = () => {
+    const maxScroll = quicknavBar.scrollWidth - quicknavBar.clientWidth;
+    const currentScroll = quicknavBar.scrollLeft;
+
+    if (quicknavArrowLeft) {
+      quicknavArrowLeft.style.opacity = currentScroll > 15 ? '1' : '0';
+      quicknavArrowLeft.style.pointerEvents = currentScroll > 15 ? 'auto' : 'none';
+    }
+
+    if (quicknavArrowRight) {
+      quicknavArrowRight.style.opacity = currentScroll >= maxScroll - 15 ? '0' : '1';
+      quicknavArrowRight.style.pointerEvents = currentScroll >= maxScroll - 15 ? 'none' : 'auto';
+    }
+  };
+
+  quicknavBar.addEventListener('scroll', updateQuicknavArrows);
+
   quicknavBar.addEventListener('wheel', (e) => {
     if (e.deltaY !== 0) {
       e.preventDefault();
@@ -2147,14 +2189,32 @@ if (quicknavBar && quicknavArrow) {
     }
   });
 
-  quicknavBar.addEventListener('scroll', () => {
-    const maxScroll = quicknavBar.scrollWidth - quicknavBar.clientWidth;
-    if (quicknavBar.scrollLeft >= maxScroll - 10) {
-      quicknavArrow.style.opacity = '0';
-    } else {
-      quicknavArrow.style.opacity = '1';
+  let autoScrollInterval = null;
+  quicknavBar.addEventListener('mousemove', (e) => {
+    const rect = quicknavBar.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+
+    clearInterval(autoScrollInterval);
+    if (x < 60) {
+      autoScrollInterval = setInterval(() => { quicknavBar.scrollLeft -= 6; }, 16);
+    } else if (x > width - 60) {
+      autoScrollInterval = setInterval(() => { quicknavBar.scrollLeft += 6; }, 16);
     }
   });
+
+  quicknavBar.addEventListener('mouseleave', () => {
+    clearInterval(autoScrollInterval);
+  });
+
+  if (quicknavArrowRight) {
+    quicknavArrowRight.onclick = () => quicknavBar.scrollBy({ left: 160, behavior: 'smooth' });
+  }
+  if (quicknavArrowLeft) {
+    quicknavArrowLeft.onclick = () => quicknavBar.scrollBy({ left: -160, behavior: 'smooth' });
+  }
+
+  setTimeout(updateQuicknavArrows, 300);
 }
 
 function filterMatchesByCityName(cityName) {
@@ -2585,7 +2645,7 @@ function renderMessages() {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           ${isIncoming ? `
             <button class="btn btn-sm btn-primary" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}">
-              ↩️ Válasz ${escapeHtml(msg.fromName)}-nek
+              ↩ Válasz ${escapeHtml(msg.fromName)}-nek
             </button>
           ` : '<div></div>'}
           <button class="btn btn-secondary btn-sm" data-action="delete-message" data-msg-id="${escapeHtml(msg.id)}" style="color:var(--danger); border-color:var(--danger);">
@@ -3043,7 +3103,6 @@ safeAddListener('btn-save-profile', () => {
   if (!em || !emailRegex.test(em)) return showToast("Kérlek adj meg egy érvényes e-mail címet!");
   if (!gdpr) return showToast("A cserékhez el kell fogadnod az adatkezelést!");
 
-  // ⭐ KÖTELEZŐ TOP 3 KEDVENC ÁLLAT ELLENŐRZÉSE
   const f1 = parseInt(document.getElementById('prof-fav-1')?.value || '0', 10);
   const f2 = parseInt(document.getElementById('prof-fav-2')?.value || '0', 10);
   const f3 = parseInt(document.getElementById('prof-fav-3')?.value || '0', 10);

@@ -65,7 +65,7 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- FŐNAVIGÁCIÓ (HOVER-HÍDDAL VÉDETT ASZTALI MENÜ + MOBIL RÁCS) -->
+  <!-- FŐNAVIGÁCIÓ -->
   <nav class="primary-nav" id="main-primary-nav">
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
@@ -219,7 +219,6 @@
         <button class="btn btn-secondary" id="btn-refresh-matches" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
 
-      <!-- 💡 KIEMELT FELHÍVÓ SÁV A CSERE-TERVEZŐHÖZ -->
       <div class="notice-banner" style="background:rgba(216,155,74,0.15); border:1.5px solid var(--amber); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <span style="font-size:0.84rem; line-height:1.4;">
           📊 <strong>Több partneres Csere-Tervező:</strong> Pipálj ki legalább 2 partnert a kártyáikon lévő jelölőnégyzettel, és nézd meg az ütközésvizsgáló szimulátort! Segít eldönteni, hogyan jársz a legjobban.
@@ -617,8 +616,9 @@
       </div>
       <p class="view-intro" style="margin-bottom:10px;">Valós idejű közösségi adatok, méretkalkulációk és cserepiaci aktivitás.</p>
 
-      <!-- ⚡ GYORSUGRÓ NAVIGÁCIÓS SÁV A STATISZTIKÁHOZ (NYÍLLAL ELLÁTVA) -->
+      <!-- ⚡ GYORSUGRÓ NAVIGÁCIÓS SÁV (BALRA ÉS JOBBRA MUTATÓ NYILAKKAL) -->
       <div class="stats-quicknav-wrapper">
+        <div class="quicknav-arrow-left" id="stats-quicknav-arrow-left" style="opacity:0;">◀</div>
         <div class="stats-quicknav" id="stats-quicknav-bar">
           <button class="btn-stat-jump" data-target="stat-sec-pool">📦 Kínálat</button>
           <button class="btn-stat-jump" data-target="stat-sec-favs">🏆 Kedvencek</button>
@@ -632,7 +632,7 @@
         <div class="quicknav-arrow" id="stats-quicknav-arrow">▶</div>
       </div>
 
-      <!-- 1. KÖZÖSSÉGI DUPLA KÍNÁLAT & ÁTLAGOK & HALMOZÓDÁSI MUTATÓ -->
+      <!-- 1. KÖZÖSSÉGI DUPLA KÍNÁLAT & ÁTLAGOK -->
       <div class="card stat-section-anchor" id="stat-sec-pool" style="text-align:center; padding:18px;">
         <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
           📦 Közösségi Dupla Kínálat
@@ -660,7 +660,7 @@
         <div id="stats-favorites-ranking" class="stats-ranking-list">Szavazatok számítása...</div>
       </div>
 
-      <!-- 3. JÁTÉKOS FIZIKAI MÉRETKALKULÁTOR -->
+      <!-- 3. JÁTÉKOS FIZIKAI MÉRETKALKULÁTOR (KÉT KÜLÖN AMBER DOBOZZAL) -->
       <div class="card stat-section-anchor" id="stat-sec-fun" style="border-left:4px solid var(--amber);">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--amber);">📏 Ha egymás mellé tennénk az összes matricát...</h3>
         <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:12px;">
@@ -921,7 +921,7 @@
     </section>
   </main>
 
-  <!-- ❤️ KÜLÖN DOBOZOS DONABLY SZEKCIÓ PIROS GOMBBAL -->
+  <!-- ❤️ DONABLY SZEKCIÓ -->
   <footer class="support-footer">
     <p style="margin:0 0 6px; font-weight:700; font-size:1.05rem;">Tetszik az oldal és segített a cserében? ☕</p>
     <p style="margin:0 0 14px; font-size:0.85rem; color:var(--sand);">
