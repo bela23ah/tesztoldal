@@ -516,11 +516,25 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 /* VÁROSI HŐTÉRKÉP & TÉRKÉP STÍLUSOK */
 .map-heatmap-container {
-  position: relative; width: 100%; background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
-  border-radius: var(--radius-md); border: 1px solid rgba(216, 155, 74, 0.3);
-  overflow: hidden; padding: 8px; margin-bottom: 12px;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(216, 155, 74, 0.3);
+  overflow: hidden;
+  padding: 8px;
+  margin-bottom: 12px;
 }
-.hungary-svg-map { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+
+.hungary-svg-map {
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  display: block;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
 .map-outline {
   fill: rgba(20, 69, 63, 0.75); stroke: var(--amber); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round;
 }
