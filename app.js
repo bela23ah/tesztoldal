@@ -2016,27 +2016,57 @@ function renderHeatmap() {
     }
   }
 
+  // --- 1. JAVÍTOTT SZÖVEGEZÉS: EGYMÁS MELLÉ TETT MATRICÁK ---
   const totalMeters = (totalPoolCount * 0.076);
   const totalKm = (totalMeters / 1000).toFixed(2);
   const highwayKmEl = document.getElementById('fun-stat-highway-km');
   const highwayTextEl = document.getElementById('fun-stat-highway-text');
   if (highwayKmEl) highwayKmEl.textContent = totalKm;
   if (highwayTextEl) {
-    highwayTextEl.innerHTML = `Több mint <strong>${(totalMeters / 607).toFixed(1)}× olyan hosszú</strong>, mint a Margit híd (607 m), vagy ${(totalMeters / 330).toFixed(1)}× magasabb, mint az Eiffel-torony!`;
+    const margitRatio = (totalMeters / 607).toFixed(1);
+    const eiffelRatio = (totalMeters / 330).toFixed(1);
+    highwayTextEl.innerHTML = `Több mint <strong>${margitRatio}× olyan hosszú</strong>, mint a Margit híd (607 m), ez a sor élére állítva <strong>${eiffelRatio}× magasabb</strong>, mint az Eiffel-torony!`;
   }
 
+  // --- 2. JAVÍTOTT SZÖVEGEZÉS: EGYMÁSRA TETT MATRICÁK ---
   const totalTowerM = (totalPoolCount * 0.00015).toFixed(2);
   const towerMEl = document.getElementById('fun-stat-tower-m');
   const towerTextEl = document.getElementById('fun-stat-tower-text');
   if (towerMEl) towerMEl.textContent = totalTowerM;
   if (towerTextEl) {
-    towerTextEl.innerHTML = `Magasabb, mint a lakás belmagassága (2.6 m), és ${(totalTowerM / 2.51).toFixed(1)}× olyan magas, mint a világ legmagasabb embere!`;
+    const humanRatio = (totalTowerM / 2.51).toFixed(1);
+    towerTextEl.innerHTML = `Magasabb, mint egy lakás belmagassága (2.6 m), és <strong>${humanRatio}× olyan magas</strong>, mint a világ legmagasabb embere!`;
   }
 
+  // --- 3. CSISZOLT HŐTÉRKÉP SZÁMÍTÁS (Egy ember önmagában nem generálhat "Izzik a csere" szintet) ---
+  const getCityHeatData = (c) => {
+    const score = (c.users * 15) + (c.duplicates * 2) + c.missing;
+    let heatCls = 'cool';
+    let label = '🟢 Éledezve';
+    let pinSize = 18;
+
+    // "Izzik a csere" feltétele: legalább 3 regisztrált tag és magas aktivitás
+    if (c.users >= 3 && score >= 75) {
+      heatCls = 'fire';
+      label = '🔥 Izzik a csere';
+      pinSize = 32;
+    } else if ((c.users >= 2 && score >= 35) || (c.users === 1 && c.duplicates >= 25)) {
+      heatCls = 'warm';
+      label = '🟡 Pörög';
+      pinSize = 24;
+    } else {
+      heatCls = 'cool';
+      label = '🟢 Éledezve';
+      pinSize = 18;
+    }
+
+    return { score, heatCls, label, pinSize };
+  };
+
   const sortedCities = Object.values(cityStats).sort((a, b) => {
-    const scoreA = (a.users * 10) + (a.duplicates * 2) + a.missing;
-    const scoreB = (b.users * 10) + (b.duplicates * 2) + b.missing;
-    return scoreB - scoreA;
+    const dataA = getCityHeatData(a);
+    const dataB = getCityHeatData(b);
+    return dataB.score - dataA.score;
   });
 
   const pinsOverlay = document.getElementById('heatmap-overlay-pins');
@@ -2046,17 +2076,15 @@ function renderHeatmap() {
       const norm = normalizeText(c.name);
       const coords = CITY_COORDINATES[norm];
       if (coords) {
-        const score = (c.users * 10) + (c.duplicates * 2) + c.missing;
-        const heatCls = score >= 80 ? 'fire' : score >= 35 ? 'warm' : 'cool';
-        const size = score >= 80 ? 32 : score >= 35 ? 24 : 18;
+        const { score, heatCls, pinSize } = getCityHeatData(c);
 
         const pin = document.createElement('div');
         pin.className = `heat-pin ${heatCls}`;
         pin.style.left = `${coords.x}%`;
         pin.style.top = `${coords.y}%`;
-        pin.style.width = `${size}px`;
-        pin.style.height = `${size}px`;
-        pin.title = `${c.name}: ${c.users} gyűjtő, ${c.duplicates} dupla matrica (Csereláz: ${score})`;
+        pin.style.width = `${pinSize}px`;
+        pin.style.height = `${pinSize}px`;
+        pin.title = `${c.name}: ${c.users} gyűjtő, ${c.duplicates} dupla matrica (Csereláz pont: ${score})`;
         pin.textContent = c.users;
         pin.onclick = () => filterMatchesByCityName(c.name);
         pinsOverlay.appendChild(pin);
@@ -2074,9 +2102,8 @@ function renderHeatmap() {
     const displayedCities = showAllHeatmapCities ? sortedCities : sortedCities.slice(0, 8);
 
     cityListEl.innerHTML = displayedCities.map((c, idx) => {
-      const score = (c.users * 10) + (c.duplicates * 2) + c.missing;
-      const badgeCls = score >= 80 ? 'heat-chip-fire' : score >= 35 ? 'heat-chip-warm' : 'heat-chip-cool';
-      const label = score >= 80 ? '🔥 Izzik a csere' : score >= 35 ? '🟡 Pörög' : '🟢 Éledezve';
+      const { heatCls, label } = getCityHeatData(c);
+      const badgeCls = heatCls === 'fire' ? 'heat-chip-fire' : heatCls === 'warm' ? 'heat-chip-warm' : 'heat-chip-cool';
 
       return `
         <div class="stats-ranking-item" onclick="filterMatchesByCityName('${escapeHtml(c.name)}')">
