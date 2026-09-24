@@ -688,7 +688,27 @@ document.addEventListener('click', (e) => {
 
 safeAddListener('btn-toggle-batch', () => {
   const box = document.getElementById('batch-input-box');
-  if (box) box.style.display = box.style.display === 'block' ? 'none' : 'block';
+  const btn = document.getElementById('btn-toggle-batch');
+  if (!box) return;
+
+  const isOpen = box.style.display === 'block';
+  box.style.display = isOpen ? 'none' : 'block';
+  
+  if (btn) {
+    btn.classList.toggle('active', !isOpen);
+    btn.textContent = !isOpen ? '📦 Tömeges bevitel ✕' : '📦 Tömeges bevitel';
+  }
+});
+
+// A dobozon belüli "Bezárás" gomb kezelése
+safeAddListener('btn-close-batch-box', () => {
+  const box = document.getElementById('batch-input-box');
+  const btn = document.getElementById('btn-toggle-batch');
+  if (box) box.style.display = 'none';
+  if (btn) {
+    btn.classList.remove('active');
+    btn.textContent = '📦 Tömeges bevitel';
+  }
 });
 
 function parseBatchInput(raw) {

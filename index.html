@@ -172,9 +172,15 @@
       </div>
 
       <div id="batch-input-box" class="batch-box">
-        <label style="display:block; font-size:0.85rem; margin-bottom:6px; font-weight:600;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <label style="font-size:0.85rem; font-weight:700; color:var(--amber); margin:0;">
+            Tömeges számbemásolás
+          </label>
+          <button id="btn-close-batch-box" style="background:none; border:none; color:var(--sand); font-size:1rem; cursor:pointer; padding:0 4px;">✕</button>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
           Másold be a számokat (pl. <code>12, 12, 12, 45, 88</code> vagy <code>12*3, 45*2, 88</code>):
-        </label>
+        </p>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
           <input type="text" id="batch-input-text" class="input-field" placeholder="12*3, 45*2, 88">
         </div>

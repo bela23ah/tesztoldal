@@ -737,3 +737,10 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   border-radius: 999px; font-weight: 700; font-size: 0.85rem; display: none;
   box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
 }
+
+#btn-toggle-batch.active {
+  background: var(--amber) !important;
+  color: var(--water-deep) !important;
+  border-color: var(--amber) !important;
+  font-weight: 700;
+}
