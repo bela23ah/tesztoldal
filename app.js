@@ -696,7 +696,7 @@ safeAddListener('btn-toggle-batch', () => {
   
   if (btn) {
     btn.classList.toggle('active', !isOpen);
-    btn.textContent = !isOpen ? '📦 Tömeges bevitel ✕' : '📦 Tömeges bevitel';
+    btn.textContent = !isOpen ? 'Tömeges bevitel ✕' : 'Tömeges bevitel';
   }
 });
 
@@ -707,7 +707,7 @@ safeAddListener('btn-close-batch-box', () => {
   if (box) box.style.display = 'none';
   if (btn) {
     btn.classList.remove('active');
-    btn.textContent = '📦 Tömeges bevitel';
+    btn.textContent = 'Tömeges bevitel';
   }
 });
 
