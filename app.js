@@ -1579,7 +1579,7 @@ function renderRadarReports() {
           </span>
         </div>
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
-        ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" onclick="window.open(this.src)">` : ''}
+        ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
           <span> ${escapeHtml(r.reporterName || 'Gyűjtő')} •  ${timeStr}</span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
@@ -1737,7 +1737,7 @@ function renderMeetups() {
           <span class="meetup-time-badge"> ${escapeHtml(m.time)}</span>
         </div>
         ${m.description ? `<p style="font-size:0.86rem; margin:6px 0; color:var(--text-primary); white-space:pre-wrap;">${escapeHtml(m.description)}</p>` : ''}
-        ${m.photoBase64 ? `<img src="${m.photoBase64}" class="radar-attached-img" alt="Plakát" onclick="window.open(this.src)">` : ''}
+        ${m.photoBase64 ? `<img src="${m.photoBase64}" class="radar-attached-img" alt="Plakát" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
           <span>Szervező: <strong>${escapeHtml(m.organizerName || 'Gyűjtő')}</strong></span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-meetup" data-id="${m.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
@@ -3435,6 +3435,25 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => console.warn("SW regisztráció:", err));
   });
 }
+
+// Globális képnagyító (Lightbox) kezelő
+document.addEventListener('click', (e) => {
+  const img = e.target.closest('[data-action="open-lightbox"]');
+  if (img) {
+    const lightbox = document.getElementById('modal-image-lightbox');
+    const lightboxImg = document.getElementById('lightbox-full-image');
+    if (lightbox && lightboxImg) {
+      lightboxImg.src = img.src;
+      lightbox.classList.add('open');
+    }
+  }
+});
+
+// Lightbox bezárása kattintásra (bárhova kattintva)
+document.getElementById('modal-image-lightbox')?.addEventListener('click', () => {
+  document.getElementById('modal-image-lightbox')?.classList.remove('open');
+});
+
 
 // Biztonsági inicializálás
 try {
