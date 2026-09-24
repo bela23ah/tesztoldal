@@ -1021,9 +1021,9 @@ function renderMatches() {
             ${l.isLocalLoop ? '<span class="badge-local"> Helyi csere</span>' : ''}
           </div>
           <div style="font-size:0.85rem; margin:8px 0; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;">
-            <p style="margin:0;">1<strong>Te adsz neki:</strong> ${escapeHtml(l.userB.nev)} (${escapeHtml(l.userB.telepules || '')}) ➔ ${l.giveToB.map(n => `#${n}`).join(', ')}</p>
-            <p style="margin:0;">2<strong>Ő ad tovább:</strong> ${escapeHtml(l.userB.nev)} ad ${escapeHtml(l.userC.nev)}-nek ➔ ${l.giveBtoC.map(n => `#${n}`).join(', ')}</p>
-            <p style="margin:0; color:var(--moss-soft);">3<strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0;">1 <strong>Te adsz neki:</strong> ${escapeHtml(l.userB.nev)} (${escapeHtml(l.userB.telepules || '')}) ➔ ${l.giveToB.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0;">2 <strong>Ő ad tovább:</strong> ${escapeHtml(l.userB.nev)} ad ${escapeHtml(l.userC.nev)}-nek ➔ ${l.giveBtoC.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0; color:var(--moss-soft);">3 <strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="btn btn-primary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
@@ -1166,7 +1166,7 @@ safeAddListener('btn-close-trade-planner-2', () => {
   document.getElementById('modal-trade-planner')?.classList.remove('open');
 });
 
-// 📊 INTELLIGENS CSERE-TERVEZŐ & ÜTKÖZÉSVIZSGÁLÓ SZIMULÁTOR ALGORITMUS
+// INTELLIGENS CSERE-TERVEZŐ & ÜTKÖZÉSVIZSGÁLÓ SZIMULÁTOR ALGORITMUS
 function renderTradePlannerModal() {
   const conflictBox = document.getElementById('trade-plan-conflicts-section');
   const breakdownBox = document.getElementById('trade-plan-partners-breakdown');
@@ -1263,13 +1263,19 @@ function renderTradePlannerModal() {
     `;
   }
 
-  let totalNewStickersGained = new Set();
+
+let totalNewStickersGained = new Set();
   let totalStickersGivenCount = 0;
+  const gainedStickerCounts = {}; // Átfedések (többszörösen kapott matricák) nyilvántartása
 
   breakdownBox.innerHTML = selectedUsers.map(u => {
     const uVanSet = new Set(ensureArray(u.van));
     const givesToMe = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).sort((a, b) => a - b);
-    givesToMe.forEach(n => totalNewStickersGained.add(n));
+    
+    givesToMe.forEach(n => {
+      totalNewStickersGained.add(n);
+      gainedStickerCounts[n] = (gainedStickerCounts[n] || 0) + 1;
+    });
 
     const allocatedToHim = (allocation[u.id] || []).sort((a, b) => a - b);
     totalStickersGivenCount += allocatedToHim.length;
@@ -1277,7 +1283,7 @@ function renderTradePlannerModal() {
     return `
       <div class="card" style="margin-bottom:8px; padding:12px;">
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-          <h4 style="margin:0; font-size:0.92rem;">${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
+          <h4 style="margin:0; font-size:0.92rem;"> ${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
           <span style="font-size:0.75rem; color:var(--amber); font-weight:700;">+${givesToMe.length} új matrica tőle</span>
         </div>
         <div style="font-size:0.8rem; line-height:1.5;">
@@ -1286,12 +1292,21 @@ function renderTradePlannerModal() {
         </div>
         <div style="margin-top:8px;">
           <button class="btn btn-contact-green btn-sm" data-action="contact-planned-partner" data-uid="${escapeHtml(u.id)}" data-give="${allocatedToHim.map(n => `#${n}`).join(', ')}" data-get="${givesToMe.map(n => `#${n}`).join(', ')}">
-             Személyre szabott üzenet küldése ${escapeHtml(u.nev)}-nek
+            Személyre szabott üzenet küldése ${escapeHtml(u.nev)}-nek
           </button>
         </div>
       </div>
     `;
   }).join('');
+
+  // Formázott lista készítése az átfedések (2+ db) arany kiemelésével
+  const formattedGainedList = [...totalNewStickersGained].sort((a, b) => a - b).map(n => {
+    const qty = gainedStickerCounts[n] || 1;
+    if (qty > 1) {
+      return `<strong style="color:var(--amber); background:rgba(216,155,74,0.18); padding:1px 6px; border-radius:4px; border:1px solid rgba(216,155,74,0.4);">#${n} (${qty} db)</strong>`;
+    }
+    return `#${n}`;
+  }).join(', ');
 
   summaryBox.innerHTML = `
     <div style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--amber); margin-bottom:4px; font-weight:700;">
@@ -1300,10 +1315,11 @@ function renderTradePlannerModal() {
     <div style="font-size:1.15rem; font-weight:800; color:#FFF;">
       +${totalNewStickersGained.size} új matrica az albumodba • -${totalStickersGivenCount} elcserélt dupla
     </div>
-    <p style="font-size:0.78rem; color:var(--sand); margin:4px 0 0;">
-      Megszerzett matricák: ${[...totalNewStickersGained].sort((a,b)=>a-b).map(n=>`#${n}`).join(', ')}
+    <p style="font-size:0.78rem; color:var(--sand); margin:6px 0 0; line-height:1.6;">
+      Megszerzett matricák: ${formattedGainedList}
     </p>
   `;
+ 
 }
 
 safeAddListener('trade-plan-conflicts-section', 'change', (e) => {
@@ -2428,6 +2444,13 @@ safeAddListener('btn-scanner-save-foglalva', () => {
   saveMyState();
   closeScannerModal();
   showToast(`${scannerRecognizedNums.length} db matrica mentve a Foglalthoz.`);
+});
+
+safeAddListener('btn-scanner-copy-list', () => {
+  if (scannerRecognizedNums.length === 0) return showToast("Nincs másolható szám.");
+  const formattedText = scannerRecognizedNums.map(n => `#${n}`).join(', ');
+  navigator.clipboard.writeText(formattedText);
+  showToast("Számsor kimásolva a vágólapra!");
 });
 
 function showToast(msg) {
