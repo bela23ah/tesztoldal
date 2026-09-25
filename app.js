@@ -1,5 +1,5 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v3.7 - 1. RÉSZ)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v3.8 - 1. RÉSZ)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
@@ -489,7 +489,7 @@ const popover = document.getElementById('qty-popover');
 let lastToggleTimestamp = 0;
 let lastToggledStickerNum = null;
 
-//GOLYÓÁLLÓ MATRICA ÁLLAPOTVÁLTÓ (Színátugrás és fantom-kattintás elleni védelemmel)
+// GOLYÓÁLLÓ MATRICA ÁLLAPOTVÁLTÓ (Színátugrás és fantom-kattintás elleni védelemmel)
 function toggleStickerState(num) {
   const now = Date.now();
   if (num === lastToggledStickerNum && now - lastToggleTimestamp < 220) {
@@ -1038,12 +1038,12 @@ function renderMatches() {
         <div class="card ${l.isLocalLoop ? 'card-local' : ''}">
           <div class="card-header-row">
             <h3 style="margin:0;">Körcsere: Te ➔ ${escapeHtml(l.userB.nev || 'B')} ➔ ${escapeHtml(l.userC.nev || 'C')} ➔ Te</h3>
-            ${l.isLocalLoop ? '<span class="badge-local"> Helyi csere</span>' : ''}
+            ${l.isLocalLoop ? '<span class="badge-local">Helyi csere</span>' : ''}
           </div>
           <div style="font-size:0.85rem; margin:8px 0; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;">
-            <p style="margin:0;">1 <strong>Te adsz neki:</strong> ${escapeHtml(l.userB.nev)} (${escapeHtml(l.userB.telepules || '')}) ➔ ${l.giveToB.map(n => `#${n}`).join(', ')}</p>
-            <p style="margin:0;">2 <strong>Ő ad tovább:</strong> ${escapeHtml(l.userB.nev)} ad ${escapeHtml(l.userC.nev)}-nek ➔ ${l.giveBtoC.map(n => `#${n}`).join(', ')}</p>
-            <p style="margin:0; color:var(--moss-soft);">3 <strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0;">1️⃣ <strong>Te adsz neki:</strong> ${escapeHtml(l.userB.nev)} (${escapeHtml(l.userB.telepules || '')}) ➔ ${l.giveToB.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0;">2️⃣ <strong>Ő ad tovább:</strong> ${escapeHtml(l.userB.nev)} ad ${escapeHtml(l.userC.nev)}-nek ➔ ${l.giveBtoC.map(n => `#${n}`).join(', ')}</p>
+            <p style="margin:0; color:var(--moss-soft);">3️⃣ <strong>Te kapsz tőle:</strong> ${escapeHtml(l.userC.nev)} (${escapeHtml(l.userC.telepules || '')}) ➔ ${l.giveCtoMe.map(n => `#${n}`).join(', ')}</p>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="btn btn-primary" style="flex:1; font-size:0.8rem;" data-action="contact-loop-b" data-loop-idx="${loopIdx}">
@@ -1095,12 +1095,12 @@ function renderMatches() {
       <div class="card-header-row">
         <div>
           <h3 style="margin:0; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
-            ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} 
+            ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} 🔍
           </h3>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          ${m.isSameCity ? '<span class="badge-local"> Helyi csere</span>' : ''}
-          ${m.isGift ? '<span class="badge-gift"> Ingyen felajánló</span>' : ''}
+          ${m.isSameCity ? '<span class="badge-local">Helyi csere</span>' : ''}
+          ${m.isGift ? '<span class="badge-gift">Ingyen felajánló</span>' : ''}
           <span class="badge-ratio">${m.give.length} db ⇄ ${m.get.length} db</span>
         </div>
       </div>
@@ -1283,10 +1283,9 @@ function renderTradePlannerModal() {
     `;
   }
 
-
-let totalNewStickersGained = new Set();
+  let totalNewStickersGained = new Set();
   let totalStickersGivenCount = 0;
-  const gainedStickerCounts = {}; // Átfedések (többszörösen kapott matricák) nyilvántartása
+  const gainedStickerCounts = {};
 
   breakdownBox.innerHTML = selectedUsers.map(u => {
     const uVanSet = new Set(ensureArray(u.van));
@@ -1303,7 +1302,7 @@ let totalNewStickersGained = new Set();
     return `
       <div class="card" style="margin-bottom:8px; padding:12px;">
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-          <h4 style="margin:0; font-size:0.92rem;"> ${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
+          <h4 style="margin:0; font-size:0.92rem;">${escapeHtml(u.nev)} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''}</h4>
           <span style="font-size:0.75rem; color:var(--amber); font-weight:700;">+${givesToMe.length} új matrica tőle</span>
         </div>
         <div style="font-size:0.8rem; line-height:1.5;">
@@ -1319,7 +1318,6 @@ let totalNewStickersGained = new Set();
     `;
   }).join('');
 
-  // Formázott lista készítése az átfedések (2+ db) arany kiemelésével
   const formattedGainedList = [...totalNewStickersGained].sort((a, b) => a - b).map(n => {
     const qty = gainedStickerCounts[n] || 1;
     if (qty > 1) {
@@ -1339,7 +1337,6 @@ let totalNewStickersGained = new Set();
       Megszerzett matricák: ${formattedGainedList}
     </p>
   `;
- 
 }
 
 safeAddListener('trade-plan-conflicts-section', 'change', (e) => {
@@ -1459,9 +1456,9 @@ function renderSearchResults(targetNums, titleText) {
       <div class="card">
         <div class="card-header-row">
           <h3 style="cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
-            ${escapeHtml(u.nev || 'Névtelen')} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''} 
+            ${escapeHtml(u.nev || 'Névtelen')} ${u.telepules ? `(${escapeHtml(u.telepules)})` : ''} 🔍
           </h3>
-          ${u.isGiftOffering ? '<span class="badge-gift"> Ingyen adja</span>' : ''}
+          ${u.isGiftOffering ? '<span class="badge-gift">Ingyen adja</span>' : ''}
         </div>
         <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n} (${escapeHtml(STICKER_NAMES[n] || '')})`).join(', ')}</p>
         <button class="btn btn-contact-green" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
@@ -1482,7 +1479,6 @@ safeAddListener('search-results', 'click', (e) => {
     openUserProfileModal(btn.dataset.uid);
   }
 });
-
 // =========================================================================
 // ALBUMRADAR & FOTÓCSATOLÁS (10 PERCES KORLÁTTAL)
 // =========================================================================
@@ -1608,7 +1604,7 @@ function renderRadarReports() {
       <div class="radar-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
           <div>
-            <strong> ${escapeHtml(storeLabel)}</strong>
+            <strong>📍 ${escapeHtml(storeLabel)}</strong>
           </div>
           <span class="${r.status ? 'badge-radar-van' : 'badge-radar-nincs'}">
             ${r.status ? '🟢 Kapható' : '🔴 Elfogyott'}
@@ -1617,7 +1613,7 @@ function renderRadarReports() {
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
         ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-          <span> ${escapeHtml(r.reporterName || 'Gyűjtő')} •  ${timeStr}</span>
+          <span>👤 ${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
       </div>
@@ -1741,7 +1737,7 @@ safeAddListener('btn-submit-meetup', async () => {
     if (document.getElementById('meetup-photo-input')) document.getElementById('meetup-photo-input').value = '';
     if (document.getElementById('meetup-photo-preview-box')) document.getElementById('meetup-photo-preview-box').style.display = 'none';
 
-    showToast(" Találkozó sikeresen közzétéve!");
+    showToast("🎉 Találkozó sikeresen közzétéve!");
   } catch (err) {
     showToast("Hiba: " + err.message);
   }
@@ -1768,9 +1764,9 @@ function renderMeetups() {
       <div class="meetup-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
           <div>
-            <h3 style="margin:0; font-size:1.05rem;"> ${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
+            <h3 style="margin:0; font-size:1.05rem;">📍 ${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
           </div>
-          <span class="meetup-time-badge"> ${escapeHtml(m.time)}</span>
+          <span class="meetup-time-badge">🕒 ${escapeHtml(m.time)}</span>
         </div>
         ${m.description ? `<p style="font-size:0.86rem; margin:6px 0; color:var(--text-primary); white-space:pre-wrap;">${escapeHtml(m.description)}</p>` : ''}
         ${m.photoBase64 ? `<img src="${m.photoBase64}" class="radar-attached-img" alt="Plakát" data-action="open-lightbox">` : ''}
@@ -1988,7 +1984,7 @@ function renderCompletionOdds() {
   if (myMissing.length === 0) {
     oddsPct.textContent = '100%';
     oddsBar.style.width = '100%';
-    oddsText.innerHTML = '<span style="color:var(--amber);">Gratulálunk! Az albumod betelt! </span>';
+    oddsText.innerHTML = '<span style="color:var(--amber);">Gratulálunk! Az albumod betelt! 🎉</span>';
     return;
   }
 
@@ -2077,7 +2073,6 @@ function renderHeatmap() {
     }
   }
 
-  // --- 1. JAVÍTOTT SZÖVEGEZÉS: EGYMÁS MELLÉ TETT MATRICÁK ---
   const totalMeters = (totalPoolCount * 0.076);
   const totalKm = (totalMeters / 1000).toFixed(2);
   const highwayKmEl = document.getElementById('fun-stat-highway-km');
@@ -2089,7 +2084,6 @@ function renderHeatmap() {
     highwayTextEl.innerHTML = `Több mint <strong>${margitRatio}× olyan hosszú</strong>, mint a Margit híd (607 m), ez a sor élére állítva <strong>${eiffelRatio}× magasabb</strong>, mint az Eiffel-torony!`;
   }
 
-  // --- 2. JAVÍTOTT SZÖVEGEZÉS: EGYMÁSRA TETT MATRICÁK ---
   const totalTowerM = (totalPoolCount * 0.00015).toFixed(2);
   const towerMEl = document.getElementById('fun-stat-tower-m');
   const towerTextEl = document.getElementById('fun-stat-tower-text');
@@ -2099,7 +2093,6 @@ function renderHeatmap() {
     towerTextEl.innerHTML = `Magasabb, mint egy lakás belmagassága (2.6 m), és <strong>${humanRatio}× olyan magas</strong>, mint a világ legmagasabb embere!`;
   }
 
-  // --- 3. CSISZOLT HŐTÉRKÉP SZÁMÍTÁS ---
   const getCityHeatData = (c) => {
     const score = (c.users * 15) + (c.duplicates * 2) + c.missing;
     let heatCls = 'cool';
@@ -2181,7 +2174,7 @@ function renderHeatmap() {
 safeAddListener('btn-toggle-all-cities', () => {
   showAllHeatmapCities = !showAllHeatmapCities;
   const btn = document.getElementById('btn-toggle-all-cities');
-  if (btn) btn.textContent = showAllHeatmapCities ? '▲ Csak a legaktívabb városok mutatása' : 'Összes aktív város mutatása';
+  if (btn) btn.textContent = showAllHeatmapCities ? '▲ Csak a legaktívabb városok mutatása' : '📋 Összes aktív város mutatása';
   renderHeatmap();
 });
 
@@ -2258,7 +2251,7 @@ function filterMatchesByCityName(cityName) {
   switchView('cserek');
   const cityBtn = document.getElementById('btn-match-city');
   if (cityBtn) setActiveMatchFilter(cityBtn, 'city');
-  showToast(` Szűrés: ${cityName}`);
+  showToast(`📍 Szűrés: ${cityName}`);
 }
 
 function renderStatistics() {
@@ -2470,7 +2463,7 @@ safeAddListener('btn-scanner-copy-list', () => {
   if (scannerRecognizedNums.length === 0) return showToast("Nincs másolható szám.");
   const formattedText = scannerRecognizedNums.map(n => `#${n}`).join(', ');
   navigator.clipboard.writeText(formattedText);
-  showToast("Számsor kimásolva a vágólapra!");
+  showToast("📋 Számsor kimásolva a vágólapra!");
 });
 
 function showToast(msg) {
@@ -2590,6 +2583,7 @@ safeAddListener('btn-send-message', () => {
             'Authorization': `Bearer ${idToken}`
           },
           body: JSON.stringify({
+            toEmail: activeContactTarget.email,
             toUid: activeContactTarget.uid,
             toName: activeContactTarget.nev,
             fromUid: currentUser ? currentUser.uid : '',
@@ -2603,7 +2597,7 @@ safeAddListener('btn-send-message', () => {
         console.warn("Értesítési e-mail figyelmeztetés:", e);
       }
 
-      showToast("Üzeneted sikeresen elküldve a partnernek!");
+      showToast(" Üzeneted sikeresen elküldve a partnernek!");
       document.getElementById('modal-contact')?.classList.remove('open');
     } catch (err) {
       showToast("Küldési hiba: " + err.message);
@@ -2680,7 +2674,7 @@ function renderMessages() {
       <div class="message-card ${isIncoming ? 'incoming' : 'outgoing'}">
         <div class="message-header">
           <div>
-            <strong>${isIncoming ? 'Feladó:' : 'Címzett:'} ${escapeHtml(partnerName)} ${escapeHtml(partnerCity)}</strong>
+            <strong>${isIncoming ? ' Feladó:' : ' Címzett:'} ${escapeHtml(partnerName)} ${escapeHtml(partnerCity)}</strong>
           </div>
           <span style="font-size:0.75rem; color:var(--text-muted);">${dateStr}</span>
         </div>
@@ -2688,7 +2682,7 @@ function renderMessages() {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           ${isIncoming ? `
             <button class="btn btn-sm btn-primary" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}">
-              ↩ Válasz ${escapeHtml(msg.fromName)}-nek
+              ↩️ Válasz ${escapeHtml(msg.fromName)}-nek
             </button>
           ` : '<div></div>'}
           <button class="btn btn-secondary btn-sm" data-action="delete-message" data-msg-id="${escapeHtml(msg.id)}" style="color:var(--danger); border-color:var(--danger);">
@@ -2733,7 +2727,7 @@ function openUserProfileModal(uid) {
   const nameEl = document.getElementById('user-profile-modal-name');
   const cityEl = document.getElementById('user-profile-modal-city');
   if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
-  if (cityEl) cityEl.textContent = targetUser.telepules ? `Település: ${targetUser.telepules}` : 'Nincs megadva település';
+  if (cityEl) cityEl.textContent = targetUser.telepules ? `📍 Település: ${targetUser.telepules}` : '📍 Nincs megadva település';
 
   const favBox = document.getElementById('user-profile-favorites-box');
   const favText = document.getElementById('user-profile-favorites-text');
@@ -2756,7 +2750,7 @@ function openUserProfileModal(uid) {
     if (targetUser.allowInspect === false) {
       mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
     } else if (!targetUser.kell || targetUser.kell.length === 0) {
-      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki! </span>';
+      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki! 🎉</span>';
     } else {
       mBox.innerHTML = targetUser.kell
         .sort((a, b) => a - b)
@@ -2855,8 +2849,8 @@ function listenToMyMessages(uid) {
       if ("vibrate" in navigator) {
         navigator.vibrate([180, 90, 180]);
       }
-      triggerTopNotification("Új belső üzeneted érkezett egy cserepartnertől!", () => switchView('uzeneteim'));
-      showToast("Új üzeneted érkezett!");
+      triggerTopNotification('', "Új belső üzeneted érkezett egy cserepartnertől!", () => switchView('uzeneteim'));
+      showToast(" Új üzeneted érkezett!");
     }
     previousIncomingCount = newCount;
 
@@ -2897,7 +2891,7 @@ function checkAndDisplayAnnouncements() {
   if (!relevant) return;
 
   if (relevant.format === 'banner' || relevant.format === 'both' || !relevant.format) {
-    const icon = relevant.type === 'event' ? '' : relevant.type === 'feature' ? '' : '';
+    const icon = relevant.type === 'event' ? '📅' : relevant.type === 'feature' ? '' : '';
     triggerTopNotification(icon, `${relevant.title}: ${relevant.content.slice(0, 50)}...`, () => showAnnouncementModal(relevant));
   }
 
@@ -2916,7 +2910,7 @@ function showAnnouncementModal(announcement) {
   const titleEl = document.getElementById('announcement-modal-title');
   const bodyEl = document.getElementById('announcement-modal-body');
 
-  if (iconEl) iconEl.textContent = announcement.type === 'event' ? '' : announcement.type === 'feature' ? '' : '';
+  if (iconEl) iconEl.textContent = announcement.type === 'event' ? '' : announcement.type === 'feature' ? '' : '🎉';
   if (titleEl) titleEl.textContent = announcement.title;
   if (bodyEl) bodyEl.textContent = announcement.content;
 
@@ -2960,7 +2954,7 @@ safeAddListener('btn-admin-publish-msg', () => {
 
       if (document.getElementById('admin-msg-title')) document.getElementById('admin-msg-title').value = '';
       if (document.getElementById('admin-msg-content')) document.getElementById('admin-msg-content').value = '';
-      showToast(" Rendszerüzenet sikeresen élesítve!");
+      showToast("Rendszerüzenet sikeresen élesítve!");
     } catch (err) {
       showToast("Hiba: " + err.message);
     }
@@ -3096,7 +3090,7 @@ function downloadCertificateImage() {
   link.download = `Lutra_Szuperhos_Oklevel_${(myProfile.nev || 'Gyujto').replace(/\s+/g, '_')}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
-  showToast("Oklevél kép letöltve!");
+  showToast("📥 Oklevél kép letöltve!");
 }
 
 safeAddListener('btn-view-certificate', () => {
@@ -3266,7 +3260,7 @@ function initFirebase() {
 
         if (authArea) {
           authArea.innerHTML = `
-            <div class="user-badge"><span> ${escapeHtml(user.displayName || user.email.split('@')[0])}</span></div>
+            <div class="user-badge"><span>${escapeHtml(user.displayName || user.email.split('@')[0])}</span></div>
             <button class="btn btn-secondary btn-sm" id="btn-logout" style="padding:4px 10px; font-size:0.75rem;">Kilépés</button>
           `;
           document.getElementById('btn-logout')?.addEventListener('click', () => auth.signOut());
@@ -3492,11 +3486,10 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Lightbox bezárása kattintásra (bárhova kattintva)
+// Lightbox bezárása kattintásra
 document.getElementById('modal-image-lightbox')?.addEventListener('click', () => {
   document.getElementById('modal-image-lightbox')?.classList.remove('open');
 });
-
 
 // Biztonsági inicializálás
 try {
@@ -3509,3 +3502,4 @@ try {
 } catch (err) {
   console.error("Indítási hiba:", err);
 }
+
