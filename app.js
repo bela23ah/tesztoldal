@@ -3585,3 +3585,4 @@ try {
   initFirebase();
 } catch (err) {
   console.error("Indítási hiba:", err);
+}
