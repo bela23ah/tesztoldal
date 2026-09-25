@@ -67,7 +67,7 @@ function extractUserData(data, docId) {
 
   const nev = getFirstValidString(data.nev, data.nickname, data.name, data.displayName) || 'Névtelen gyűjtő';
   const telepules = getFirstValidString(data.telepules, data.city, data.varos);
-  const email = getFirstValidString(data.email, data.mail);
+  const email = getFirstValidString(data.notifyEmail, data.email, data.mail);
 
   const rawVan = data.van || data.duplicates || data.duplak || [];
   const van = ensureArray(rawVan).sort((a, b) => a - b);
@@ -1318,12 +1318,12 @@ function renderTradePlannerModal() {
     `;
   }).join('');
 
-  const formattedGainedList = [...totalNewStickersGained].sort((a, b) => a - b).map(n => {
+ const formattedGainedList = [...totalNewStickersGained].sort((a, b) => a - b).map(n => {
     const qty = gainedStickerCounts[n] || 1;
     if (qty > 1) {
-      return `<strong style="color:var(--amber); background:rgba(216,155,74,0.18); padding:1px 6px; border-radius:4px; border:1px solid rgba(216,155,74,0.4);">#${n} (${qty} db)</strong>`;
+      return `<strong style="white-space: nowrap; color: var(--amber); background: rgba(216,155,74,0.18); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(216,155,74,0.4);">#${n} (${qty} db)</strong>`;
     }
-    return `#${n}`;
+    return `<span style="white-space: nowrap;">#${n}</span>`;
   }).join(', ');
 
   summaryBox.innerHTML = `
@@ -2930,35 +2930,59 @@ function showAnnouncementModal(announcement) {
   if (btnOk) btnOk.onclick = closeFn;
 }
 
-safeAddListener('btn-admin-publish-msg', () => {
+safeAddListener('btn-admin-preview-msg', () => {
+  const title = document.getElementById('admin-msg-title')?.value.trim() || 'Előnézeti Cím';
+  const content = document.getElementById('admin-msg-content')?.value.trim() || 'Ez egy előnézeti üzenet szövege.';
+  const link = document.getElementById('admin-msg-link')?.value.trim();
+  const type = document.getElementById('admin-msg-type')?.value || 'event';
+
+  let fullContent = content;
+  if (link) fullContent += `\n\nLink: ${link}`;
+
+  showAnnouncementModal({
+    id: 'preview',
+    title,
+    content: fullContent,
+    type
+  });
+});
+
+safeAddListener('btn-admin-publish-msg', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod!");
   const title = document.getElementById('admin-msg-title')?.value.trim() || '';
   const content = document.getElementById('admin-msg-content')?.value.trim() || '';
+  const link = document.getElementById('admin-msg-link')?.value.trim() || '';
+  const expiry = document.getElementById('admin-msg-expiry')?.value || '';
   const type = document.getElementById('admin-msg-type')?.value || 'event';
   const format = document.getElementById('admin-msg-format')?.value || 'banner';
   const city = document.getElementById('admin-msg-city')?.value.trim() || '';
 
   if (!title || !content) return showToast("Add meg az üzenet címét és szövegét!");
 
-  (async () => {
-    try {
-      await db.collection("announcements").add({
-        title,
-        content,
-        type,
-        format,
-        targetCity: city,
-        active: true,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+  try {
+    let finalContent = content;
+    if (link) finalContent += `\n\nLink: ${link}`;
 
-      if (document.getElementById('admin-msg-title')) document.getElementById('admin-msg-title').value = '';
-      if (document.getElementById('admin-msg-content')) document.getElementById('admin-msg-content').value = '';
-      showToast("Rendszerüzenet sikeresen élesítve!");
-    } catch (err) {
-      showToast("Hiba: " + err.message);
-    }
-  })();
+    await db.collection("announcements").add({
+      title,
+      content: finalContent,
+      link,
+      expiryDate: expiry ? new Date(expiry) : null,
+      type,
+      format,
+      targetCity: city,
+      active: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    if (document.getElementById('admin-msg-title')) document.getElementById('admin-msg-title').value = '';
+    if (document.getElementById('admin-msg-content')) document.getElementById('admin-msg-content').value = '';
+    if (document.getElementById('admin-msg-link')) document.getElementById('admin-msg-link').value = '';
+    if (document.getElementById('admin-msg-expiry')) document.getElementById('admin-msg-expiry').value = '';
+    showToast("Rendszerüzenet sikeresen élesítve.");
+  } catch (err) {
+    showToast("Hiba: " + err.message);
+  }
 });
 
 function renderAdminAnnouncements() {
@@ -3187,6 +3211,7 @@ safeAddListener('btn-save-profile', () => {
         telepules: myProfile.telepules,
         city: myProfile.telepules,
         email: myProfile.showEmailToUsers ? myProfile.email : '',
+        notifyEmail: myProfile.email, // Értesítésekhez szükséges belső mező
         favorites: myProfile.favorites,
         isGiftOffering: myProfile.isGiftOffering,
         showEmailToUsers: myProfile.showEmailToUsers,

@@ -898,7 +898,15 @@
           <textarea id="admin-msg-content" class="input-field" rows="3" placeholder="Szombaton 10:00-kor találkozunk..."></textarea>
         </div>
         <div class="form-group">
-          <label>Típus / Ikon:</label>
+          <label>Külső link (opcionális, pl. Facebook esemény):</label>
+          <input type="url" id="admin-msg-link" class="input-field" placeholder="https://facebook.com/events/...">
+        </div>
+        <div class="form-group">
+          <label>Lejárati dátum és időpont (ezután automatikusan eltűnik):</label>
+          <input type="datetime-local" id="admin-msg-expiry" class="input-field">
+        </div>
+        <div class="form-group">
+          <label>Típus / Kategória:</label>
           <select id="admin-msg-type" class="input-field">
             <option value="event">Találkozó / Esemény</option>
             <option value="feature">Új funkció bejelentés</option>
@@ -917,7 +925,10 @@
           <label>Célváros (Hagyd üresen, ha mindenkinek szól):</label>
           <input type="text" id="admin-msg-city" class="input-field" placeholder="Pl. Kecskemét (vagy üres = Országos)">
         </div>
-        <button class="btn btn-primary" id="btn-admin-publish-msg" style="width:100%;">Üzenet azonnali élesítése</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" id="btn-admin-preview-msg" style="flex: 1;">Előnézet megtekintése</button>
+          <button class="btn btn-primary" id="btn-admin-publish-msg" style="flex: 1;">Üzenet élesítése most</button>
+        </div>
       </div>
 
       <div class="card">
