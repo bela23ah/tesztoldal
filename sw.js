@@ -1,5 +1,5 @@
 // =========================================================================
-// Lutra Album Cserebere - Service Worker (sw.js v3.994)
+// Lutra Album Cserebere - Service Worker (sw.js v3.995)
 // =========================================================================
 
 const CACHE_NAME = 'lutra-csere-v2.0';

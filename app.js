@@ -1,5 +1,5 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v4.0 - 1. RÉSZ)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v4.1 Teljes Változat)
 // =========================================================================
 
 const ALBUM_SIZE = 108;
@@ -163,7 +163,6 @@ let activeContactTarget = {
   subject: ''
 };
 
-// Város koordináták a térképhez (%-ban megadva)
 const CITY_COORDINATES = {
   "budapest": { x: 52.5, y: 39.0 },
   "győr": { x: 26.0, y: 27.0 },
@@ -492,7 +491,6 @@ const popover = document.getElementById('qty-popover');
 let lastToggleTimestamp = 0;
 let lastToggledStickerNum = null;
 
-// Golyóálló matrica állapotváltó
 function toggleStickerState(num) {
   const now = Date.now();
   if (num === lastToggledStickerNum && now - lastToggleTimestamp < 220) {
@@ -1610,14 +1608,14 @@ function renderRadarReports() {
             <strong>${escapeHtml(storeLabel)}</strong>
           </div>
           <span class="${r.status ? 'badge-radar-van' : 'badge-radar-nincs'}">
-            ${r.status ? 'Kapható' : 'Elfogyott'}
+            ${r.status ? '🟢 Kapható' : '🔴 Elfogyott'}
           </span>
         </div>
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
         ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-          <span>${escapeHtml(r.reporterName || 'Gyűjtő')} • ${timeStr}</span>
-          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>` : ''}
+          <span>${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
+          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
       </div>
     `;
@@ -1659,7 +1657,7 @@ function listenToRadarReports() {
 
       if (!isInitial && newCount > previousRadarCount && radarReports.length > 0) {
         const latest = radarReports[0];
-        triggerTopNotification(`Új bolti készletjelentés: ${latest.city} (${latest.status ? 'Kapható' : 'Elfogyott'})`, () => switchView('radar'));
+        triggerTopNotification(`Új bolti készletjelentés: ${latest.city} (${latest.status ? '🟢 Kapható' : '🔴 Elfogyott'})`, () => switchView('radar'));
       }
       previousRadarCount = newCount;
 
@@ -1740,7 +1738,7 @@ safeAddListener('btn-submit-meetup', async () => {
     if (document.getElementById('meetup-photo-input')) document.getElementById('meetup-photo-input').value = '';
     if (document.getElementById('meetup-photo-preview-box')) document.getElementById('meetup-photo-preview-box').style.display = 'none';
 
-    showToast("Találkozó sikeresen közzétéve.");
+    showToast("🎉 Találkozó sikeresen közzétéve!");
   } catch (err) {
     showToast("Hiba: " + err.message);
   }
@@ -1767,15 +1765,15 @@ function renderMeetups() {
       <div class="meetup-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
           <div>
-            <h3 style="margin:0; font-size:1.05rem;">${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
+            <h3 style="margin:0; font-size:1.05rem;">📍 ${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
           </div>
-          <span class="meetup-time-badge">${escapeHtml(m.time)}</span>
+          <span class="meetup-time-badge">🕒 ${escapeHtml(m.time)}</span>
         </div>
         ${m.description ? `<p style="font-size:0.86rem; margin:6px 0; color:var(--text-primary); white-space:pre-wrap;">${escapeHtml(m.description)}</p>` : ''}
         ${m.photoBase64 ? `<img src="${m.photoBase64}" class="radar-attached-img" alt="Plakát" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
           <span>Szervező: <strong>${escapeHtml(m.organizerName || 'Gyűjtő')}</strong></span>
-          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-meetup" data-id="${m.id}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>` : ''}
+          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-meetup" data-id="${m.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
       </div>
     `;
@@ -2621,7 +2619,6 @@ safeAddListener('btn-copy-msg', () => {
   showToast("Üzenet kimásolva a vágólapra!");
 });
 
-// Partner e-mail címének másolása a vágólapra
 safeAddListener('btn-copy-partner-email', () => {
   const email = document.getElementById('contact-partner-email')?.textContent || '';
   if (!email) return showToast("Nincs másolható e-mail cím.");
@@ -2719,7 +2716,6 @@ safeAddListener('messages-inbox-list', (e) => {
         const msgId = btn.dataset.msgId;
         const isIncoming = activeInboxTab === 'inbox';
         
-        // Csak a saját oldalán jelöljük töröltnek
         await db.collection("messages").doc(msgId).update({
           [isIncoming ? "deletedByRecipient" : "deletedBySender"]: true
         });
@@ -2807,6 +2803,15 @@ document.getElementById('modal-user-profile')?.addEventListener('click', (e) => 
     e.target.classList.remove('open');
   }
 });
+```
+
+A fájlod első fele tökéletes. Most pedig másold be közvetlenül a fájl aljára (az utolsó sor után) a befejező 2. részt, és mentsd el:
+
+---
+
+### `app.js` — BEFEJEZŐ RÉSZ (Közvetlenül a fájl aljára másolandó!)
+
+```javascript
 function triggerTopNotification(iconOrText, textOrActionFn, actionFn) {
   const banner = document.getElementById('top-notification-banner');
   const iconEl = document.getElementById('top-banner-icon');
@@ -2888,18 +2893,9 @@ function listenToMyMessages(uid) {
     }
     previousIncomingCount = newCount;
 
-    // Csak azokat jelenítjük meg, amiket a címzett még nem törölt
     myIncomingMessages = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(m => m.deletedByRecipient !== true);
-    refresh();
-  }, err => console.error("messages listener:", err));
-
-  const unsubOut = db.collection("messages").where("fromUid", "==", uid).onSnapshot(snap => {
-    // Csak azokat jelenítjük meg, amiket a feladó még nem törölt
-    myOutgoingMessages = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(m => m.deletedBySender !== true);
     refresh();
   }, err => console.error("messages listener:", err));
 
@@ -3589,4 +3585,3 @@ try {
   initFirebase();
 } catch (err) {
   console.error("Indítási hiba:", err);
-}
