@@ -2719,6 +2719,7 @@ safeAddListener('messages-inbox-list', (e) => {
         const msgId = btn.dataset.msgId;
         const isIncoming = activeInboxTab === 'inbox';
         
+        // Csak a saját oldalán jelöljük töröltnek
         await db.collection("messages").doc(msgId).update({
           [isIncoming ? "deletedByRecipient" : "deletedBySender"]: true
         });
@@ -2887,9 +2888,18 @@ function listenToMyMessages(uid) {
     }
     previousIncomingCount = newCount;
 
+    // Csak azokat jelenítjük meg, amiket a címzett még nem törölt
     myIncomingMessages = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(m => m.deletedByRecipient !== true);
+    refresh();
+  }, err => console.error("messages listener:", err));
+
+  const unsubOut = db.collection("messages").where("fromUid", "==", uid).onSnapshot(snap => {
+    // Csak azokat jelenítjük meg, amiket a feladó még nem törölt
+    myOutgoingMessages = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(m => m.deletedBySender !== true);
     refresh();
   }, err => console.error("messages listener:", err));
 
