@@ -1095,7 +1095,7 @@ function renderMatches() {
       <div class="card-header-row">
         <div>
           <h3 style="margin:0; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
-            ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} 🔍
+            ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} 
           </h3>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -1604,7 +1604,7 @@ function renderRadarReports() {
       <div class="radar-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
           <div>
-            <strong>📍 ${escapeHtml(storeLabel)}</strong>
+            <strong>${escapeHtml(storeLabel)}</strong>
           </div>
           <span class="${r.status ? 'badge-radar-van' : 'badge-radar-nincs'}">
             ${r.status ? '🟢 Kapható' : '🔴 Elfogyott'}
@@ -1613,7 +1613,7 @@ function renderRadarReports() {
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
         ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-          <span>👤 ${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
+          <span>${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
           ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
         </div>
       </div>
@@ -2583,7 +2583,7 @@ safeAddListener('btn-send-message', () => {
             'Authorization': `Bearer ${idToken}`
           },
           body: JSON.stringify({
-            toEmail: activeContactTarget.email,
+            toEmail: activeContactTarget.email || '',
             toUid: activeContactTarget.uid,
             toName: activeContactTarget.nev,
             fromUid: currentUser ? currentUser.uid : '',
@@ -2597,7 +2597,7 @@ safeAddListener('btn-send-message', () => {
         console.warn("Értesítési e-mail figyelmeztetés:", e);
       }
 
-      showToast(" Üzeneted sikeresen elküldve a partnernek!");
+      showToast("Üzeneted sikeresen elküldve a partnernek!");
       document.getElementById('modal-contact')?.classList.remove('open');
     } catch (err) {
       showToast("Küldési hiba: " + err.message);
@@ -2616,6 +2616,14 @@ safeAddListener('btn-copy-msg', () => {
   const val = document.getElementById('contact-msg-input')?.value || '';
   navigator.clipboard.writeText(val);
   showToast("Üzenet kimásolva a vágólapra!");
+});
+
+// Partner e-mail címének másolása a vágólapra
+safeAddListener('btn-copy-partner-email', () => {
+  const email = document.getElementById('contact-partner-email')?.textContent || '';
+  if (!email) return showToast("Nincs másolható e-mail cím.");
+  navigator.clipboard.writeText(email);
+  showToast("Partner e-mail címe kimásolva a vágólapra.");
 });
 
 safeAddListener('btn-msg-tab-inbox', () => {
@@ -2682,7 +2690,7 @@ function renderMessages() {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           ${isIncoming ? `
             <button class="btn btn-sm btn-primary" data-action="reply-message" data-sender-uid="${escapeHtml(msg.fromUid)}" data-sender-name="${escapeHtml(msg.fromName)}">
-              ↩️ Válasz ${escapeHtml(msg.fromName)}-nek
+             Válasz ${escapeHtml(msg.fromName)}-nek
             </button>
           ` : '<div></div>'}
           <button class="btn btn-secondary btn-sm" data-action="delete-message" data-msg-id="${escapeHtml(msg.id)}" style="color:var(--danger); border-color:var(--danger);">
@@ -2727,7 +2735,7 @@ function openUserProfileModal(uid) {
   const nameEl = document.getElementById('user-profile-modal-name');
   const cityEl = document.getElementById('user-profile-modal-city');
   if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
-  if (cityEl) cityEl.textContent = targetUser.telepules ? `📍 Település: ${targetUser.telepules}` : '📍 Nincs megadva település';
+  if (cityEl) cityEl.textContent = targetUser.telepules ? `Település: ${targetUser.telepules}` : 'Nincs megadva település';
 
   const favBox = document.getElementById('user-profile-favorites-box');
   const favText = document.getElementById('user-profile-favorites-text');
@@ -2750,7 +2758,7 @@ function openUserProfileModal(uid) {
     if (targetUser.allowInspect === false) {
       mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
     } else if (!targetUser.kell || targetUser.kell.length === 0) {
-      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki! 🎉</span>';
+      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki!</span>';
     } else {
       mBox.innerHTML = targetUser.kell
         .sort((a, b) => a - b)
@@ -2790,7 +2798,7 @@ document.getElementById('modal-user-profile')?.addEventListener('click', (e) => 
   }
 });
 
-function triggerTopNotification(icon, text, actionFn) {
+function triggerTopNotification(iconOrText, textOrActionFn, actionFn) {
   const banner = document.getElementById('top-notification-banner');
   const iconEl = document.getElementById('top-banner-icon');
   const textEl = document.getElementById('top-banner-text');
@@ -2798,18 +2806,36 @@ function triggerTopNotification(icon, text, actionFn) {
   const closeBtn = document.getElementById('btn-top-banner-close');
 
   if (!banner || !textEl) return;
-  if (iconEl) iconEl.textContent = icon;
+
+  let icon = '';
+  let text = '';
+  let fn = null;
+
+  if (typeof textOrActionFn === 'function') {
+    text = iconOrText || '';
+    fn = textOrActionFn;
+  } else {
+    icon = iconOrText || '';
+    text = textOrActionFn || '';
+    fn = actionFn;
+  }
+
+  if (iconEl) {
+    iconEl.textContent = icon;
+    iconEl.style.display = icon ? 'inline' : 'none';
+  }
   textEl.textContent = text;
   banner.style.display = 'flex';
 
   if (actionBtn) {
     actionBtn.onclick = () => {
       banner.style.display = 'none';
-      if (actionFn) actionFn();
+      if (fn) fn();
     };
   }
   if (closeBtn) closeBtn.onclick = () => { banner.style.display = 'none'; };
 }
+
 
 function listenToMyMessages(uid) {
   if (!db) return;
@@ -2910,7 +2936,7 @@ function showAnnouncementModal(announcement) {
   const titleEl = document.getElementById('announcement-modal-title');
   const bodyEl = document.getElementById('announcement-modal-body');
 
-  if (iconEl) iconEl.textContent = announcement.type === 'event' ? '' : announcement.type === 'feature' ? '' : '🎉';
+  if (iconEl) iconEl.textContent = announcement.type === 'event' ? '' : announcement.type === 'feature' ? '' : '';
   if (titleEl) titleEl.textContent = announcement.title;
   if (bodyEl) bodyEl.textContent = announcement.content;
 
@@ -3006,7 +3032,6 @@ function renderAdminAnnouncements() {
     </div>
   `).join('');
 }
-
 safeAddListener('admin-active-announcements', (e) => {
   const btn = e.target.closest('[data-action="deactivate-announcement"]');
   if (!btn) return;
@@ -3114,7 +3139,7 @@ function downloadCertificateImage() {
   link.download = `Lutra_Szuperhos_Oklevel_${(myProfile.nev || 'Gyujto').replace(/\s+/g, '_')}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
-  showToast("📥 Oklevél kép letöltve!");
+  showToast("Oklevél kép letöltve!");
 }
 
 safeAddListener('btn-view-certificate', () => {
