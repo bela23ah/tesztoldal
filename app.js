@@ -2,7 +2,71 @@
 // Lutra Album Cserebere (Lidl 2026) - app.js (v4.1 Teljes Változat)
 // =========================================================================
 
-const ALBUM_SIZE = 108;
+// =========================================================================
+// 4.0 TÖBB-ALBUMOS REGISZTER & ADATSTRUKTÚRA
+// =========================================================================
+
+const ALBUMS_REGISTRY = {
+  "lidl-lutra-2026": {
+    id: "lidl-lutra-2026",
+    title: "Lutra Album",
+    subtitle: "Védett állatok a Föld körül",
+    publisher: "Lidl / WWF",
+    year: 2026,
+    totalItems: 108,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    hasRadar: true,
+    hasChapters: true
+  },
+  "panini-fifa-365": {
+    id: "panini-fifa-365",
+    title: "FIFA 365 – Adrenalyn XL",
+    subtitle: "Hivatalos kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 378,
+    type: "card",
+    typeLabel: "Kártya",
+    hasRadar: false,
+    hasChapters: false
+  },
+  "toy-story-5": {
+    id: "toy-story-5",
+    title: "Toy Story 5",
+    subtitle: "Hivatalos matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 192,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    hasRadar: false,
+    hasChapters: false
+  },
+  "stranger-things-cards": {
+    id: "stranger-things-cards",
+    title: "Stranger Things",
+    subtitle: "This is our story kártyák",
+    publisher: "Panini / Netflix",
+    year: 2025,
+    totalItems: 190,
+    type: "card",
+    typeLabel: "Kártya",
+    hasRadar: false,
+    hasChapters: false
+  }
+};
+
+let currentAlbumId = localStorage.getItem('lutra_active_album') || "lidl-lutra-2026";
+let currentHubFilter = "all";
+
+function getActiveAlbum() {
+  return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"];
+}
+
+function getActiveAlbumSize() {
+  return getActiveAlbum().totalItems;
+}
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
@@ -342,17 +406,114 @@ function initFavoriteSelects() {
     });
   });
 }
+function renderHub() {
+  const container = document.getElementById('hub-albums-grid');
+  if (!container) return;
 
+  const albumsList = Object.values(ALBUMS_REGISTRY).filter(album => {
+    if (currentHubFilter === 'sticker') return album.type === 'sticker';
+    if (currentHubFilter === 'card') return album.type === 'card';
+    if (currentHubFilter === 'my') {
+      const myCount = ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length;
+      return myCount > 0 || album.id === currentAlbumId;
+    }
+    return true;
+  });
+
+  container.innerHTML = albumsList.map(album => {
+    const isCurrent = album.id === currentAlbumId;
+    const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? myProfile.van : []));
+    const collectedCount = albumVan.length;
+    const pct = Math.min(100, Math.round((collectedCount / album.totalItems) * 100));
+
+    return `
+      <div class="album-hub-card ${isCurrent ? 'card-local' : ''}" data-album-id="${escapeHtml(album.id)}">
+        <div>
+          <div class="album-hub-header">
+            <div>
+              <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${album.year}</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--sand);">${album.totalItems} db</span>
+          </div>
+          <h3 style="margin:4px 0; font-size:1.1rem; color:#FFF;">${escapeHtml(album.title)}</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">${escapeHtml(album.publisher)} • ${escapeHtml(album.subtitle)}</p>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--sand);">
+            <span>Gyűjtve: <strong>${collectedCount} / ${album.totalItems} db</strong></span>
+            <strong>${pct}%</strong>
+          </div>
+          <div class="album-hub-progress-track">
+            <div class="album-hub-progress-bar" style="width:${pct}%;"></div>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn ${isCurrent ? 'btn-primary' : 'btn-secondary'} btn-sm" style="width:100%; font-size:0.8rem;" data-action="select-album" data-album-id="${escapeHtml(album.id)}">
+              ${isCurrent ? 'Megnyitás (Aktív)' : 'Átváltás erre a gyűjteményre'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Albumválasztás kezelése a Kezdőlapon
+safeAddListener('hub-albums-grid', (e) => {
+  const btn = e.target.closest('[data-action="select-album"]');
+  const card = e.target.closest('.album-hub-card');
+  const albumId = btn?.dataset.albumId || card?.dataset.albumId;
+  if (!albumId) return;
+
+  selectAlbum(albumId);
+});
+
+function selectAlbum(albumId) {
+  if (!ALBUMS_REGISTRY[albumId]) return;
+  currentAlbumId = albumId;
+  localStorage.setItem('lutra_active_album', albumId);
+
+  // Fejléc frissítése
+  const titleEl = document.getElementById('active-album-title');
+  const activeAlbum = getActiveAlbum();
+  if (titleEl) titleEl.textContent = `${activeAlbum.title} (${activeAlbum.year})`;
+
+  // Radar gomb elrejtése/megjelenítése
+  const radarNav = document.getElementById('nav-item-radar');
+  if (radarNav) radarNav.style.display = activeAlbum.hasRadar ? 'block' : 'none';
+
+  // Albumhoz tartozó helyi adatok betöltése
+  loadAlbumState(albumId);
+  switchView('matricaim');
+  showToast(`Aktív gyűjtemény: ${activeAlbum.title}`);
+}
+
+function loadAlbumState(albumId) {
+  myProfile.van = ensureArray(safeJsonParse(`lutra_van_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : [])).sort((a, b) => a - b);
+  myProfile.vanCounts = safeJsonParse(`lutra_van_counts_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_van_counts', {}) : {});
+  myProfile.kell = ensureArray(safeJsonParse(`lutra_kell_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_kell', []) : [])).sort((a, b) => a - b);
+  myProfile.foglalva = ensureArray(safeJsonParse(`lutra_foglalva_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_foglalva', []) : [])).sort((a, b) => a - b);
+  myProfile.foglalvaCounts = safeJsonParse(`lutra_foglalva_counts_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_foglalva_counts', {}) : {});
+
+  renderGrid();
+  renderHub();
+}
+
+safeAddListener('btn-switch-album', () => {
+  switchView('hub');
+});
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
 
+  const totalSize = getActiveAlbumSize();
   let html = '';
   const vanSet = new Set(ensureArray(myProfile.van));
   const kellSet = new Set(ensureArray(myProfile.kell));
   const foglalvaSet = new Set(ensureArray(myProfile.foglalva));
 
-  for (let i = 1; i <= ALBUM_SIZE; i++) {
+  for (let i = 1; i <= totalSize; i++) {
     const isVan = vanSet.has(i);
     const isKell = kellSet.has(i);
     const isFoglalva = foglalvaSet.has(i);
@@ -371,7 +532,7 @@ function renderGrid() {
     }
 
     const qtyBadge = ((isVan || isFoglalva) && qty > 1) ? `<span class="${badgeCls}">×${qty}</span>` : '';
-    const animalName = STICKER_NAMES[i] || `Matrica #${i}`;
+    const animalName = (currentAlbumId === 'lidl-lutra-2026') ? (STICKER_NAMES[i] || `Matrica #${i}`) : `Tétel #${i}`;
 
     html += `<div class="matrica-cell ${cls}" data-num="${i}" title="${i}. ${escapeHtml(animalName)}">
       ${i}
@@ -623,35 +784,36 @@ function attachStickerInteraction(container) {
 }
 
 function saveMyState() {
+  const albumId = currentAlbumId;
   myProfile.van = ensureArray(myProfile.van).sort((a, b) => a - b);
   myProfile.kell = ensureArray(myProfile.kell).filter(n => !myProfile.van.includes(n)).sort((a, b) => a - b);
   myProfile.foglalva = ensureArray(myProfile.foglalva).filter(n => !myProfile.van.includes(n) && !myProfile.kell.includes(n)).sort((a, b) => a - b);
-  myProfile.favorites = ensureArray(myProfile.favorites || []);
 
-  localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
-  localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
-  localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
-  localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
-  localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
-  localStorage.setItem('lutra_favorites', JSON.stringify(myProfile.favorites));
+  // Albumonként teljesen elkülönített localStorage mentés
+  localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
+  localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
+  localStorage.setItem(`lutra_kell_${albumId}`, JSON.stringify(myProfile.kell));
+  localStorage.setItem(`lutra_foglalva_${albumId}`, JSON.stringify(myProfile.foglalva));
+  localStorage.setItem(`lutra_foglalva_counts_${albumId}`, JSON.stringify(myProfile.foglalvaCounts || {}));
+
+  // Visszafelé kompatibilitás a Lutra 2026-hoz
+  if (albumId === 'lidl-lutra-2026') {
+    localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
+    localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
+    localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
+    localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
+    localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
+  }
   
   renderGrid();
-  renderAlbumChapter();
+  renderHub();
   refreshMatchesIfVisible();
   renderCompletionOdds();
 
+  // Firestore mentés az elkülönített albumpolcra
   if (currentUser && myProfile.gdprAccepted === true && db) {
-    db.collection("public_profiles").doc(currentUser.uid).set({
-      nev: myProfile.nev,
-      nickname: myProfile.nev,
-      telepules: myProfile.telepules,
-      city: myProfile.telepules,
-      isGiftOffering: !!myProfile.isGiftOffering,
-      showEmailToUsers: !!myProfile.showEmailToUsers,
-      emailNotifications: myProfile.emailNotifications !== false,
-      allowInspect: myProfile.allowInspect !== false,
-      gdprAccepted: true,
-      favorites: myProfile.favorites,
+    db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(albumId).set({
+      albumId: albumId,
       van: myProfile.van,
       vanCounts: myProfile.vanCounts || {},
       kell: myProfile.kell,
