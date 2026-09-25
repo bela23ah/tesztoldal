@@ -11,7 +11,22 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Lutra Csere">
-  <title>Lutra Album Cserebere, Radar & Találkozók (Lidl 2026)</title>
+  <title>Lutra Album Cserebere, Albumradar & Találkozók</title>
+
+<!-- Közösségi Megosztási Meta Tagek (Facebook, Messenger, Viber, WhatsApp) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://csereljokosan.hu/">
+  <meta property="og:title" content="Cserélj Okosan - Lutra Matricacsere & Gyűjtői Platform">
+  <meta property="og:description" content="Országos matricacsere, intelligens párosítás, valós idejű bolti készletradar és helyi találkozók a kedvenc albumaidhoz.">
+  <meta property="og:image" content="https://csereljokosan.hu/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter / X Megosztás -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cserélj Okosan - Lutra Matricacsere & Gyűjtői Platform">
+  <meta name="twitter:description" content="Országos matricacsere, intelligens párosítás és bolti készletradar.">
+  <meta name="twitter:image" content="https://csereljokosan.hu/og-image.png">
 
   <!-- Betűtípusok -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,17 +83,23 @@
   <!-- FŐNAVIGÁCIÓ -->
   <nav class="primary-nav" id="main-primary-nav">
     <div class="nav-dropdown-item">
-      <button class="primary-tab active" data-cat="matricaim">
+      <button class="primary-tab active" data-cat="hub" data-view="hub">
+        Gyűjtemények
+      </button>
+    </div>
+
+    <div class="nav-dropdown-item">
+      <button class="primary-tab" data-cat="matricaim">
         Matricáim <span class="dropdown-arrow">▾</span>
       </button>
       <div class="dropdown-menu">
-        <button class="dropdown-link active" data-view="matricaim">Gyűjtemény (108)</button>
+        <button class="dropdown-link active" data-view="matricaim">Gyűjtemény</button>
         <button class="dropdown-link" data-view="cserek">Párosítások</button>
         <button class="dropdown-link" data-view="kereso">Kereső</button>
       </div>
     </div>
 
-    <div class="nav-dropdown-item">
+    <div class="nav-dropdown-item" id="nav-item-radar">
       <button class="primary-tab tab-highlight-radar" data-cat="radar" data-view="radar">
         Albumradar <span id="radar-badge" class="nav-badge badge-radar-count" style="display:none;">0</span>
       </button>
@@ -86,7 +107,7 @@
 
     <div class="nav-dropdown-item">
       <button class="primary-tab" data-cat="cserebere">
-         Cserebere <span class="dropdown-arrow">▾</span>
+        Cserebere <span class="dropdown-arrow">▾</span>
         <span id="cserebere-badge" class="nav-badge alert-badge" style="display:none;">!</span>
       </button>
       <div class="dropdown-menu">
@@ -101,7 +122,7 @@
 
     <div class="nav-dropdown-item">
       <button class="primary-tab" data-cat="profil">
-         Profil & Adatok <span class="dropdown-arrow">▾</span>
+        Profil & Adatok <span class="dropdown-arrow">▾</span>
       </button>
       <div class="dropdown-menu">
         <button class="dropdown-link" data-view="profil">Profil & Jegyzet</button>
@@ -110,6 +131,17 @@
       </div>
     </div>
   </nav>
+
+  <!-- FEJLÉC AKTÍV ALBUM SÁV -->
+  <div id="active-album-bar" class="active-album-banner" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div>
+      <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Aktív Gyűjtemény</span>
+      <strong id="active-album-title" style="color:#FFF; font-size:0.95rem;">Lutra Album 2026</strong>
+    </div>
+    <button class="btn btn-secondary btn-sm" id="btn-switch-album" style="font-size:0.75rem; padding:4px 10px;">
+      Gyűjteményváltás
+    </button>
+  </div>
 
   <!-- MOBIL ALNAVIGÁCIÓS SÁV -->
   <div class="mobile-subnav-wrapper" id="mobile-subnav-bar">
@@ -134,8 +166,26 @@
   </div>
 
   <main>
-    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET -->
-    <section id="view-matricaim" class="view active">
+    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB) -->
+    <section id="view-hub" class="view active">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+        <h2>Elérhető Gyűjtemények</h2>
+      </div>
+      <p class="view-intro">Válaszd ki, melyik albumot vagy kártyasorozatot szeretnéd gyűjteni és cserélni:</p>
+
+      <div class="filter-group" style="margin-bottom: 16px;">
+        <button class="filter-btn active" data-hub-filter="all">Összes</button>
+        <button class="filter-btn" data-hub-filter="sticker">Matricaalbumok</button>
+        <button class="filter-btn" data-hub-filter="card">Kártyák</button>
+        <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
+      </div>
+
+      <div id="hub-albums-grid" class="hub-grid"></div>
+    </section>
+    
+
+<!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET -->
+    <section id="view-matricaim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2>Gyűjteményem</h2>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
