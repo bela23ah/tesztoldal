@@ -2804,15 +2804,6 @@ document.getElementById('modal-user-profile')?.addEventListener('click', (e) => 
     e.target.classList.remove('open');
   }
 });
-```
-
-A fájlod első része tökéletes! Most közvetlenül a fenti kód alá (az `openUserProfileModal(btn.dataset.uid); });` sor után) illeszd be a befejező részt:
-
----
-
-### `app.js` — 2. RÉSZ (Közvetlenül az 1. rész alá másolandó!)
-
-```javascript
 // =========================================================================
 // ALBUMRADAR & FOTÓCSATOLÁS (10 PERCES KORLÁTTAL)
 // =========================================================================
