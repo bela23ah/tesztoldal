@@ -1,5 +1,5 @@
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 - 1. RÉSZ)
+// Cserélj Okosan - app.js (v4.0 Javított — 1. RÉSZ)
 // =========================================================================
 
 const ALBUMS_REGISTRY = {
@@ -68,7 +68,7 @@ const ALBUMS_REGISTRY = {
 let currentAlbumId = localStorage.getItem('lutra_active_album') || "lidl-lutra-2026";
 let currentHubFilter = "all";
 let hubSearchQuery = "";
-let excludedStickersPerUser = {}; // Partnerenként kiixelve: { [uid]: Set([num1, num2]) }
+let excludedStickersPerUser = {}; // Partnerenként kizárt tételek: { [uid]: Set([num1, num2]) }
 let onlyActiveProfilesFilter = false;
 
 function getActiveAlbum() {
@@ -82,7 +82,236 @@ function getActiveAlbumSize() {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// Tétel nevének és azonosítójának lekérdezése
+// Pontos 221 darabos Lidl Áruházlista
+const STORE_DATABASES = {
+  lidl: [
+    "Egyéb helyszín / Nem listázott bolt (Lásd megjegyzésben)",
+    "Agárd – Akácfa utca 2.",
+    "Ajka – Hársfa utca 1/A",
+    "Aszód – Pesti út 14-16.",
+    "Baja – Bajcsy-Zsilinszky utca 9.",
+    "Balassagyarmat – Kóvári út 8",
+    "Balatonfűzfő – Vízmű utca 1.",
+    "Balatonlelle – Rákóczi F. út 307.",
+    "Balmazújváros – Böszörményi u. 1.",
+    "Barcs – Erkel F. utca 2.",
+    "Bátonyterenye – Berekgát köz 2.",
+    "Békés – Kossuth L. u. 31.",
+    "Békéscsaba – Corvin u. 29-33.",
+    "Békéscsaba – Szarvasi út 15-17.",
+    "Berettyóújfalu – Kossuth u. 98.",
+    "Biatorbágy – Budaörsi út 4., 7720/2 hrsz",
+    "Bicske – Szent László utca 55.",
+    "Bonyhád – Deák Ferenc utca 10/A",
+    "Budakeszi – Kert utca 27-29.",
+    "Budaörs – Károly király út 145.",
+    "Budapest – Ady Endre út 54-60.",
+    "Budapest – Alsómalom u. 8-10.",
+    "Budapest – Arany János utca 27-29.",
+    "Budapest – Bajcsy-Zsilinszky út 61.",
+    "Budapest – Bartók Béla út 47.",
+    "Budapest – Báthory u. 6.",
+    "Budapest – Bécsi út 325-337.",
+    "Budapest – Béke utca 2-4.",
+    "Budapest – Budaörsi út 121.",
+    "Budapest – Ciklámen u. 3.",
+    "Budapest – Csalogány u. 43",
+    "Budapest – Cziffra Gy. u. 115.",
+    "Budapest – Erdőkerülő utca 36.",
+    "Budapest – Fehérvári út 211.",
+    "Budapest – Ferenciek tere 2.",
+    "Budapest – Görgey Artúr u. 14-20",
+    "Budapest – Gubacsi út 34.",
+    "Budapest – Haraszti út 34.",
+    "Budapest – Huszti út 20",
+    "Budapest – János u. 196",
+    "Budapest – Leonardo da Vinci u. 23.",
+    "Budapest – Lobogó u. 12",
+    "Budapest – Madách utca 72.",
+    "Budapest – Maglódi út 17",
+    "Budapest – Margó Tivadar u. 83.",
+    "Budapest – Máriaremetei út 1.",
+    "Budapest – Megyeri út 53",
+    "Budapest – Mogyoródi út 23-29",
+    "Budapest – Nagy Lajos Király útja 121-123",
+    "Budapest – Nagykőrösi út 35-38.",
+    "Budapest – Nagytétényi út 216-218.",
+    "Budapest – Pesti út 237/H",
+    "Budapest – Rákóczi út 48-50.",
+    "Budapest – Régi Fóti u. 1",
+    "Budapest – Sibrik Miklós út 30/b.",
+    "Budapest – Szalay utca 14.",
+    "Budapest – Szentendrei út 251-253",
+    "Budapest – Teleki tér 1.",
+    "Budapest – Újszász u. 47/B",
+    "Budapest – Üllői út 112.",
+    "Budapest – Üllői út 379-381.",
+    "Budapest – VI. Király u. 112.",
+    "Budapest – Victor Hugo u. 11-15.",
+    "Budapest – VIII. Hungária körút 26.",
+    "Budapest – XIII. Váci út 201",
+    "Budapest – XVII. Pesti út 2.",
+    "Cegléd – Törteli út 2.",
+    "Csongrád – Fő u. 59.",
+    "Csorna – Soproni út 66/C.",
+    "Csurgó – Széchenyi tér 12-14.",
+    "Dabas – Bartók Béla út 63.",
+    "Debrecen – Balmazújvárosi út 7.",
+    "Debrecen – Derék u. 31.",
+    "Debrecen – Faraktár utca 58.",
+    "Debrecen – Mikepércsi út 168.",
+    "Debrecen – Széchenyi u. 59",
+    "Dombóvár – Kórház utca 55.",
+    "Dorog – Bányász körönd Hrsz. 1732/98",
+    "Dunaharaszti – Némedi út 102/A",
+    "Dunakeszi – Berek u. 2.",
+    "Dunaújváros – Magyar út 11.",
+    "Dunaújváros – Velinszky utca 1.",
+    "Eger – II. Rákóczi Ferenc u. 141.",
+    "Eger – Mátyás király út 144.",
+    "Enying – Rákóczi Ferenc utca 5.",
+    "Érd – Balatoni út 73-75.",
+    "Érd – Diósdi u. 2-4",
+    "Esztergom – Bánomi út 10.",
+    "Esztergom – Dobogókői út 39.",
+    "Fonyód – Ady Endre utca 57-59.",
+    "Fót – Keleti Márton u. 7.",
+    "Gödöllő – Ottó Ferenc utca 2-4.",
+    "Gyomaendrőd – Fő út 81/2.",
+    "Gyöngyös – Budai Nagy Antal tér 10.",
+    "Győr – Jereváni utca 42.",
+    "Győr – Kossuth Lajos utca 123.",
+    "Győr – Mécs László utca 1/A",
+    "Győr – Szeszgyár utca 6.",
+    "Győr – Tihanyi Árpád út 9.",
+    "Gyula – Szent István u. 69/1.",
+    "Hajdúböszörmény – Bánság tér 10.",
+    "Hajdúhadház – Dr. Földi János utca 55.",
+    "Hajdúnánás – Dorogi u. 108.",
+    "Hajdúsámson – Kiscsere utca 3.",
+    "Hajdúszoboszló – Dózsa György út 62.",
+    "Hatvan – Radnóti tér 19.",
+    "Heves – Kolozsvári út 2/A",
+    "Hódmezővásárhely – Hódtó u. 2.",
+    "Jászberény – Nagykátai út 7/a.",
+    "Kalocsa – Pataji út 31.",
+    "Kaposvár – Bereczk S. utca 2.",
+    "Kaposvár – Előd Vezér utca 3.",
+    "Kaposvár – Füredi út 97.",
+    "Kapuvár – Győri u. 60.",
+    "Kazincbarcika – Mátyás király út 34/A",
+    "Kecskemét – Izsáki út 2.",
+    "Kecskemét – Nyíri út 38/E",
+    "Kecskemét – Szolnoki út 18.",
+    "Keszthely – Sopron utca 43.",
+    "Keszthely – Tapolcai út 45/a",
+    "Kiskőrös – Kossuth utca 13.",
+    "Kiskunfélegyháza – Majsai út 5.",
+    "Kiskunhalas – Széchenyi út 1-3.",
+    "Kistarcsa – Szabadság útja 60",
+    "Kisújszállás – Deák Ferenc u. 10.",
+    "Kisvárda – Attila út 2/A",
+    "Komárom – Mártírok útja 80.",
+    "Komló – Tröszt utca 1.",
+    "Körmend – Dr. Remetei Filep utca 2.",
+    "Kőszeg – Cáki út 2.",
+    "Kunszentmárton – Kossuth Lajos u. 23",
+    "Makó – Szegedi u. 63.",
+    "Marcali – Rákóczi Ferenc utca 50.",
+    "Martfű – Földvári út 1.",
+    "Mezőkovácsháza – Árpád u. 135.",
+    "Mezőkövesd – Dohány út 2/A",
+    "Mezőtúr – Földvári út 21.",
+    "Miskolc – Csermőkei út 207.",
+    "Miskolc – József Attila u. 74.",
+    "Miskolc – Kiss Ernő u. 13/b.",
+    "Miskolc – Pesti út 5.",
+    "Mohács – Pécsi út 41.",
+    "Monor – Gém utca 1.",
+    "Mór – Akai utca 8.",
+    "Mosonmagyaróvár – Királyhidai utca 49.",
+    "Nagyatád – Árpád utca 49.",
+    "Nagykáta – Dózsa György út 16.",
+    "Nagykanizsa – Balatoni utca 41.",
+    "Nagykőrös – Kecskeméti út 73.",
+    "Nyíregyháza – Debreceni u. 106/c.",
+    "Nyíregyháza – Pazonyi út 37/a.",
+    "Orosháza – Hóvirág u. 1-5.",
+    "Oroszlány – Környei u. 2.",
+    "Ózd – Sárli út 2.",
+    "Paks – Tolnai út 70.",
+    "Pápa – Jókai Mór utca 57.",
+    "Pécs – Lahti utca 45.",
+    "Pécs – Lázár Vilmos utca 10.",
+    "Pécs – Málomi út 3.",
+    "Pécs – Puskin tér 22.",
+    "Pécs – Siklósi út 52/A",
+    "Pilisvörösvár – Budai út 18.",
+    "Pomáz – József Attila u. 32.",
+    "Püspökladány – Rákóczi utca 16-20.",
+    "Ráckeve – Lacházi út 26",
+    "Salgótarján – Csokonai út 23.",
+    "Sárbogárd – Ady E. utca 232-236.",
+    "Sárvár – Rákóczi utca 12.",
+    "Sátoraljaújhely – Esze Tamás u. 92.",
+    "Siklós – Szent István tér 2.",
+    "Siófok – Zamárdi utca 1-2.",
+    "Solt – Kossuth Lajos utca 2-8.",
+    "Soltvadkert – Kossuth Lajos u. 110.",
+    "Solymár – Terstyánszky Ödön utca 89.",
+    "Sopron – Bánfalvi út 12.",
+    "Sopron – Lófuttató utca 4.",
+    "Sümeg – Fehérkő utca 1/1.",
+    "Szada – Dózsa György út 1/B",
+    "Szarvas – Csabai út 1/4.",
+    "Szeged – Makkosházi krt. 21.",
+    "Szeged – Szabadkai út 1/c.",
+    "Szeged – Vásárhelyi Pál út 7.",
+    "Szeghalom – Széchenyi u. 45-49.",
+    "Székesfehérvár – Balatoni út 21.",
+    "Székesfehérvár – Farkasvermi köz 1.",
+    "Székesfehérvár – Mártírok útja 11.",
+    "Székesfehérvár – Pozsonyi út 4.",
+    "Szekszárd – Arany János utca 4.",
+    "Szekszárd – Béri Balogh Ádám utca 94/B",
+    "Szentendre – Dózsa Gy. út 20",
+    "Szentes – Ipartelepi út 2-6.",
+    "Szerencs – Csalogány út 58.",
+    "Szigethalom – Mű út 7.",
+    "Szigetszentmiklós – Csepeli út 16/a.",
+    "Szigetvár – Almás patak utca 5.",
+    "Szolnok – Délibáb u. 6.",
+    "Szolnok – Széchenyi krt. 4/b.",
+    "Szolnok – Tószegi út 5.",
+    "Szombathely – Kenyérvíz utca 2.",
+    "Szombathely – Verseny utca 30.",
+    "Szombathely – Zanati út 42",
+    "Tamási – Deák Ferenc utca 10/A",
+    "Tapolca – Veszprémi út 1.",
+    "Tata – Piac tér 8.",
+    "Tatabánya – Győri út 31.",
+    "Tatabánya – Szent Borbála út 31.",
+    "Tiszafüred – Húszöles út 25.",
+    "Tiszaújváros – Lévay u. 118.",
+    "Törökszentmiklós – Kossuth Lajos u. 102-108.",
+    "Újfehértó – Debreceni út 14-24.",
+    "Üröm – Dózsa György út 63.",
+    "Vác – Balassagyarmati út 9-15.",
+    "Vác – Bolgár u. 1.",
+    "Vác – Naszály utca 20.",
+    "Várpalota – Hét vezér utca 3.",
+    "Vecsés – Fő u. 244",
+    "Veresegyház – Budapesti út 1.",
+    "Veresegyház – Szadai út 7.",
+    "Veszprém – Cholnoky utca 29/1.",
+    "Veszprém – Észak-keleti útgyűrű 2.",
+    "Zalaegerszeg – Átkötő utca 3.",
+    "Zalaegerszeg – Platán sor 6/A"
+  ],
+  spar: ["Egyéb helyszín / Nem listázott Spar"],
+  tesco: ["Egyéb helyszín / Nem listázott Tesco"]
+};
+
 function getItemLabel(num, albumId = currentAlbumId) {
   const album = ALBUMS_REGISTRY[albumId];
   if (album && album.customItems && album.customItems[num - 1]) {
@@ -92,13 +321,12 @@ function getItemLabel(num, albumId = currentAlbumId) {
 }
 
 function getItemFullName(num, albumId = currentAlbumId) {
-  if (albumId === 'lidl-lutra-2026') {
-    return STICKER_NAMES[num] ? `#${num} ${STICKER_NAMES[num]}` : `#${num}`;
+  if (albumId === 'lidl-lutra-2026' && STICKER_NAMES[num]) {
+    return `#${num} ${STICKER_NAMES[num]}`;
   }
   return getItemLabel(num, albumId);
 }
 
-// Automatikus kód- és tartomány-kibontó (pl. MEX 1-19 -> MEX 1, MEX 2...)
 function expandCustomItemsText(rawText) {
   if (!rawText || !rawText.trim()) return [];
   const tokens = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
@@ -110,10 +338,7 @@ function expandCustomItemsText(rawText) {
       const prefix = rangeMatch[1].trim();
       const start = parseInt(rangeMatch[2], 10);
       const end = parseInt(rangeMatch[3], 10);
-      const min = Math.min(start, end);
-      const max = Math.max(start, end);
-
-      for (let i = min; i <= max; i++) {
+      for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
         result.push(`${prefix} ${i}`);
       }
     } else {
@@ -124,7 +349,6 @@ function expandCustomItemsText(rawText) {
   return result;
 }
 
-// Korlátlan oldalbeosztás feldolgozása
 function parseChaptersText(rawText, customItems = []) {
   if (!rawText || !rawText.trim()) return [];
   const lines = rawText.split('\n');
@@ -143,7 +367,6 @@ function parseChaptersText(rawText, customItems = []) {
     const rangeMatch = cleanRange.match(/(\d+)\s*-\s*(\d+)/);
 
     const elements = [];
-
     if (rangeMatch) {
       const start = parseInt(rangeMatch[1], 10);
       const end = parseInt(rangeMatch[2], 10);
@@ -182,7 +405,6 @@ function parseChaptersText(rawText, customItems = []) {
   return chapters;
 }
 
-// Golyóálló eseménykezelő
 function safeAddListener(id, eventOrHandler, handler) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -251,19 +473,26 @@ function normalizeText(text) {
 }
 
 function formatTimeAgo(timestamp) {
-  if (!timestamp) return 'Régen volt aktív';
-  const millis = timestamp.toMillis ? timestamp.toMillis() : (typeof timestamp === 'number' ? timestamp : 0);
-  if (!millis) return 'Nemrég';
-  const diffSec = Math.floor((Date.now() - millis) / 1000);
-  if (diffSec < 120) return 'Épp most aktív';
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} perce aktív`;
-  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} órája aktív`;
-  const days = Math.floor(diffSec / 86400);
-  if (days <= 30) return `${days} napja aktív`;
-  return 'Több mint 1 hónapja';
+  if (!timestamp) return 'Nemrég';
+  try {
+    let millis = 0;
+    if (typeof timestamp === 'number') millis = timestamp;
+    else if (typeof timestamp.toMillis === 'function') millis = timestamp.toMillis();
+    else if (timestamp instanceof Date) millis = timestamp.getTime();
+    else if (typeof timestamp.seconds === 'number') millis = timestamp.seconds * 1000;
+    if (!millis) return 'Nemrég';
+    const diffSec = Math.floor((Date.now() - millis) / 1000);
+    if (diffSec < 120) return 'Épp most aktív';
+    if (diffSec < 3600) return `${Math.floor(diffSec / 60)} perce aktív`;
+    if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} órája aktív`;
+    const days = Math.floor(diffSec / 86400);
+    if (days <= 30) return `${days} napja aktív`;
+    return 'Több mint 1 hónapja';
+  } catch (e) {
+    return 'Nemrég';
+  }
 }
 
-// 1. FÁZIS: ADATBÁZIS ELSZIGETELÉS (Kizárólag az aktív album adatait olvassa be!)
 function extractUserDataForActiveAlbum(data, docId, albumId = currentAlbumId) {
   if (!data) return null;
 
@@ -645,14 +874,9 @@ function renderHub() {
   }).join('');
 }
 
-safeAddListener('hub-albums-grid', (e) => {
-  const btn = e.target.closest('[data-action="select-album"]');
-  const card = e.target.closest('.album-hub-card');
-  const albumId = btn?.dataset.albumId || card?.dataset.albumId;
-  if (!albumId) return;
-
-  selectAlbum(albumId);
-});
+// =========================================================================
+// GYŰJTEMÉNYKIVÁLASZTÁS ÉS MENÜ MEGJELENÍTÉS (JAVÍTOTT VÁLTOZAT)
+// =========================================================================
 
 function selectAlbum(albumId) {
   if (!ALBUMS_REGISTRY[albumId]) return;
@@ -661,6 +885,7 @@ function selectAlbum(albumId) {
 
   const activeAlbum = getActiveAlbum();
 
+  // 1. Aktív Gyűjtemény Sáv megjelenítése a fejléc alatt
   const albumBar = document.getElementById('active-album-bar');
   const titleEl = document.getElementById('active-album-title');
   const thumbEl = document.getElementById('active-album-thumb');
@@ -668,13 +893,17 @@ function selectAlbum(albumId) {
   if (titleEl) titleEl.textContent = `${activeAlbum.title} (${activeAlbum.year})`;
   if (thumbEl) thumbEl.src = activeAlbum.coverUrl || 'og-image.png';
 
+  // 2. FŐNAVIGÁCIÓ ÉS MOBIL ALNAVIGÁCIÓ FELOLDÁSA
   const primaryNav = document.getElementById('main-primary-nav');
   const mobileSubnav = document.getElementById('mobile-subnav-bar');
-  if (primaryNav) primaryNav.style.display = 'grid';
-  if (mobileSubnav) mobileSubnav.style.display = 'block';
+  if (primaryNav) primaryNav.style.setProperty('display', 'grid', 'important');
+  if (mobileSubnav) mobileSubnav.style.setProperty('display', 'block', 'important');
 
+  // 3. Album-specifikus fülek és gombok kezelése
   const radarNav = document.getElementById('nav-item-radar');
+  const radarLabel = document.getElementById('nav-radar-label');
   if (radarNav) radarNav.style.display = activeAlbum.hasRadar ? 'block' : 'none';
+  if (radarLabel) radarLabel.textContent = (albumId === 'lidl-lutra-2026') ? 'Bolti Radar' : 'Készletradar';
 
   const albumModeToggle = document.getElementById('view-mode-toggle-box');
   if (albumModeToggle) {
@@ -699,9 +928,42 @@ function selectAlbum(albumId) {
   const collectionTitle = document.getElementById('view-collection-title');
   if (collectionTitle) collectionTitle.textContent = `${activeAlbum.title} (${activeAlbum.typeLabel})`;
 
-  loadAlbumState(albumId);
+  // 4. Állapot betöltése és átváltás a matricák nézetre
+  try {
+    loadAlbumState(albumId);
+  } catch (err) {
+    console.warn("loadAlbumState figyelmeztetés:", err);
+  }
+
   switchView('matricaim');
   showToast(`Aktív gyűjtemény: ${activeAlbum.title}`);
+}
+
+// Visszalépés a Főoldalra (Menük és sáv elrejtése)
+safeAddListener('btn-switch-album', () => {
+  const albumBar = document.getElementById('active-album-bar');
+  const primaryNav = document.getElementById('main-primary-nav');
+  const mobileSubnav = document.getElementById('mobile-subnav-bar');
+
+  if (albumBar) albumBar.style.display = 'none';
+  if (primaryNav) primaryNav.style.display = 'none';
+  if (mobileSubnav) mobileSubnav.style.display = 'none';
+
+  switchView('hub');
+});
+
+// Golyóálló kattintáskezelő a Hub kártyákhoz
+function attachHubClickDelegation() {
+  const grid = document.getElementById('hub-albums-grid');
+  if (!grid) return;
+  grid.onclick = (e) => {
+    const card = e.target.closest('.album-hub-card');
+    if (!card) return;
+    const albumId = card.dataset.albumId;
+    if (albumId) {
+      selectAlbum(albumId);
+    }
+  };
 }
 
 function loadAlbumState(albumId) {
@@ -725,18 +987,6 @@ function loadAlbumState(albumId) {
   renderHub();
   renderMatches();
 }
-
-safeAddListener('btn-switch-album', () => {
-  const albumBar = document.getElementById('active-album-bar');
-  const primaryNav = document.getElementById('main-primary-nav');
-  const mobileSubnav = document.getElementById('mobile-subnav-bar');
-
-  if (albumBar) albumBar.style.display = 'none';
-  if (primaryNav) primaryNav.style.display = 'none';
-  if (mobileSubnav) mobileSubnav.style.display = 'none';
-
-  switchView('hub');
-});
 
 safeAddListener('hub-search-input', 'input', (e) => {
   hubSearchQuery = e.target.value.trim();
@@ -1100,7 +1350,7 @@ function saveMyState() {
   }
 }
 
-// Gyűjteményi Jegyzet mentése
+// Privát Jegyzet mentése
 function savePrivateNote() {
   const albumId = currentAlbumId;
   const noteTextarea = document.getElementById('prof-private-note');
@@ -1152,6 +1402,7 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('#qty-popover') && !e.target.closest('[data-num]')) hideQtyPopover();
 });
 
+// Tömeges bevitel
 safeAddListener('btn-toggle-batch', () => {
   const box = document.getElementById('batch-input-box');
   const btn = document.getElementById('btn-toggle-batch');
@@ -1575,6 +1826,7 @@ function renderMatches() {
 
   if (matchFilter === 'city') matches = matches.filter(m => m.isSameCity);
   if (matchFilter === 'gift') matches = matches.filter(m => m.isGift);
+  if (matchFilter === 'followed') matches = matches.filter(m => m.isFollowed);
 
   matches.sort((a, b) => {
     if (b.isFollowed !== a.isFollowed) return (b.isFollowed ? 1 : 0) - (a.isFollowed ? 1 : 0);
@@ -1614,7 +1866,7 @@ function renderMatches() {
       <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;">
         ${m.allGive.length ? m.allGive.map(n => {
           const isEx = excluded.has(n);
-          return `<span class="badge-ratio" style="cursor:pointer; ${isEx ? 'text-decoration:line-through; opacity:0.4; background:rgba(232,90,79,0.2);' : ''}" data-action="toggle-exclude" data-uid="${m.id}" data-num="${n}">
+          return `<span class="sticker-chip ${isEx ? 'excluded' : 'give'}" data-action="toggle-exclude" data-uid="${m.id}" data-num="${n}">
             ${getItemLabel(n)} ${isEx ? '✕' : ''}
           </span>`;
         }).join('') : '<em>(Ajándékba kapod)</em>'}
@@ -1624,7 +1876,7 @@ function renderMatches() {
       <div style="display:flex; flex-wrap:wrap; gap:4px;">
         ${m.activeGet.map(n => {
           const qty = (m.vanCounts && m.vanCounts[n] > 1) ? ` (${m.vanCounts[n]} db)` : '';
-          return `<span class="badge-ratio" style="background:rgba(107,138,90,0.25); color:var(--moss-soft);">${getItemLabel(n)}${qty}</span>`;
+          return `<span class="sticker-chip get">${getItemLabel(n)}${qty}</span>`;
         }).join('')}
       </div>
       
@@ -1705,7 +1957,7 @@ safeAddListener('matches-list', 'click', (e) => {
   }
 });
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 — 2. RÉSZ)
+// Cserélj Okosan - app.js (v4.0 Javított — 2. RÉSZ)
 // =========================================================================
 
 // =========================================================================
@@ -2033,7 +2285,7 @@ safeAddListener('search-results', 'click', (e) => {
 });
 
 // =========================================================================
-// BOLTI KÉSZLETRADAR (Admin-szabadszöveg & 221 Lidl bolt)
+// BOLTI KÉSZLETRADAR (Admin vs. Felhasználó jogosultsággal)
 // =========================================================================
 function updateRadarStoreDatalist() {
   const activeAlbum = getActiveAlbum();
@@ -3353,7 +3605,7 @@ safeAddListener('messages-inbox-list', (e) => {
           [isIncoming ? "deletedByRecipient" : "deletedBySender"]: true
         });
         
-        showToast("Üzenet eltávolítva a listádbból.");
+        showToast("Üzenet eltávolítva a listádból.");
       } catch (err) {
         showToast("Hiba: " + err.message);
       }
@@ -3425,6 +3677,12 @@ function openUserProfileModal(uid) {
 
 safeAddListener('btn-close-user-profile', () => document.getElementById('modal-user-profile')?.classList.remove('open'));
 safeAddListener('btn-close-user-profile-2', () => document.getElementById('modal-user-profile')?.classList.remove('open'));
+
+document.getElementById('modal-user-profile')?.addEventListener('click', (e) => {
+  if (e.target.id === 'modal-user-profile') {
+    e.target.classList.remove('open');
+  }
+});
 
 function triggerTopNotification(iconOrText, textOrActionFn, actionFn) {
   const banner = document.getElementById('top-notification-banner');
@@ -4133,7 +4391,6 @@ function initFirebase() {
           document.getElementById('btn-logout')?.addEventListener('click', () => auth.signOut());
         }
 
-        document.getElementById('modal-auth')?.classList.remove('open');
         listenToMyProfile(user.uid);
         listenToMyMessages(user.uid);
         listenToAllUsers();
@@ -4415,6 +4672,7 @@ try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
   renderHub();
+  attachHubClickDelegation(); // Golyóálló kártyamegnyitás
   renderGrid();
   renderAlbumChapter();
   initFavoriteSelects();
