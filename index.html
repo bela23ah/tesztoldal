@@ -22,7 +22,13 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
-  <!-- Betűtípusok -->
+  <!-- Twitter Megosztás -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cserélj Okosan — Matricacsere & Gyűjtői Platform">
+  <meta name="twitter:description" content="Országos matricacsere, intelligens párosítás és bolti készletradar.">
+  <meta name="twitter:image" content="https://csereljokosan.hu/og-image.png">
+
+  <!-- Eredeti Betűtípusok -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -74,21 +80,21 @@
     Figyelem: A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>.
   </div>
 
-  <!-- 1. HIERARCHIA ELEM: AKTÍV GYŰJTEMÉNY SÁV (Csak album megnyitásakor látszik!) -->
+  <!-- AKTÍV GYŰJTEMÉNY SÁV -->
   <div id="active-album-bar" class="active-album-banner" style="display:none;">
     <div style="display:flex; align-items:center; gap:12px;">
-      <img id="active-album-thumb" src="og-image.png" class="active-album-thumb" alt="Borító">
+      <img id="active-album-thumb" src="og-image.png" style="width:48px; height:48px; border-radius:6px; object-fit:cover; border:1px solid var(--amber);" alt="Indexkép">
       <div>
-        <span class="active-album-subtitle-tag" id="active-album-type-tag">Aktív Gyűjtemény</span>
-        <strong id="active-album-title" style="color:#FFF; font-size:1.05rem;">Lutra Album 2026</strong>
+        <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Aktív Gyűjtemény</span>
+        <strong id="active-album-title" style="color:#FFF; font-size:1rem;">Lutra Album 2026</strong>
       </div>
     </div>
-    <button class="btn btn-secondary btn-sm" id="btn-switch-album" style="font-size:0.8rem; padding:6px 12px; font-weight:700;">
+    <button class="btn btn-secondary btn-sm" id="btn-switch-album" style="font-size:0.78rem; padding:5px 12px; font-weight:700;">
       Gyűjteményváltás ↺
     </button>
   </div>
 
-  <!-- 2. HIERARCHIA ELEM: FŐNAVIGÁCIÓ (Csak album megnyitásakor látszik!) -->
+  <!-- FŐNAVIGÁCIÓ -->
   <nav class="primary-nav" id="main-primary-nav" style="display:none;">
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
@@ -134,7 +140,7 @@
     </div>
   </nav>
 
-  <!-- MOBIL ALNAVIGÁCIÓS SÁV (Csak album megnyitásakor látszik!) -->
+  <!-- MOBIL ALNAVIGÁCIÓS SÁV -->
   <div class="mobile-subnav-wrapper" id="mobile-subnav-bar" style="display:none;">
     <div class="sub-nav" id="subnav-matricaim">
       <button class="sub-tab active" data-view="matricaim">Tételek / Rács</button>
@@ -160,17 +166,17 @@
     <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB) -->
     <section id="view-hub" class="view active">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
-        <h2>Gyűjtemények Katalógusa</h2>
-        <span id="hub-activity-ticker" style="font-size:0.78rem; color:var(--sand);"></span>
+        <h2>Gyűjtemények</h2>
+        <span id="hub-activity-ticker" style="font-size:0.75rem; color:var(--text-muted);"></span>
       </div>
-      <p class="view-intro">Válaszd ki a gyűjteményt, amelynek a matricáit vagy kártyáit kezelni szeretnéd:</p>
+      <p class="view-intro">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
       <div class="search-box" style="margin-bottom:12px;">
-        <input type="text" id="hub-search-input" class="input-field" placeholder="Keresés cím, kiadó vagy évszám szerint (pl. FIFA, Lutra, Spar, Harry Potter)...">
+        <input type="text" id="hub-search-input" class="input-field" placeholder="Keresés cím, kiadó vagy évszám szerint (pl. FIFA, Lutra, Spar)...">
       </div>
 
       <div class="filter-group" style="margin-bottom: 16px;">
-        <button class="filter-btn active" data-hub-filter="all">Összes gyűjtemény</button>
+        <button class="filter-btn active" data-hub-filter="all">Összes</button>
         <button class="filter-btn" data-hub-filter="sticker">Matricaalbumok</button>
         <button class="filter-btn" data-hub-filter="card">Kártyák</button>
         <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
@@ -324,7 +330,7 @@
     <!-- 4. BOLTI KÉSZLETRADAR NÉZET -->
     <section id="view-radar" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <h2 id="radar-view-title">Bolti Készletradar</h2>
+        <h2 id="radar-view-title">Közösségi Bolti Készletradar</h2>
         <button class="btn btn-secondary" id="btn-refresh-radar" style="padding:4px 10px; font-size:0.75rem;">Frissítés</button>
       </div>
       <p class="view-intro" id="radar-view-intro">Hol kapható még fizikai album vagy csomag? Segítsük egymást a készletinformációkkal.</p>
@@ -366,6 +372,10 @@
         <button class="btn btn-primary" id="btn-submit-radar" style="width:100%; padding:10px; font-weight:700;">
           Bejelentés beküldése
         </button>
+      </div>
+
+      <div class="notice-banner">
+        <span>Figyelem: A bejelentések gyűjtői tapasztalatokon alapulnak. Visszaélések ellen 10 percenként 1 bejelentés küldhető.</span>
       </div>
 
       <div style="margin-bottom:12px;">
@@ -422,7 +432,7 @@
         <h2>Üzeneteim</h2>
         <button class="btn btn-secondary" id="btn-refresh-inbox" style="padding:4px 10px; font-size:0.75rem;">Frissítés</button>
       </div>
-      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat. A beszélgetés zárt és privát.</p>
+      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat. A beszélgetés teljesen zárt és privát.</p>
 
       <div class="filter-group" style="margin-bottom: 14px;">
         <button class="filter-btn active" id="btn-msg-tab-inbox">Beérkező üzenetek</button>
@@ -545,8 +555,8 @@
 
       <!-- 6. TELÍTETTSÉG -->
       <div class="card stat-section-anchor" id="stat-sec-dist">
-        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">Hol tart az ország? (Közösségi telítettség)</h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">A regisztrált gyűjtők haladása:</p>
+        <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">Hol tart az ország? (Közösségi album-telítettség)</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">A regisztrált gyűjtők haladása a kollekció összegyűjtésében:</p>
         
         <div style="display:flex; height:12px; border-radius:999px; overflow:hidden; margin-bottom:12px; background:rgba(0,0,0,0.3);">
           <div id="dist-bar-complete" style="background:#FFD166; width:0%;" title="Betelt (100%)"></div>
@@ -588,7 +598,7 @@
     <!-- 8. PROFIL & JEGYZET NÉZET -->
     <section id="view-profil" class="view">
       <h2>Saját profil & Jegyzet</h2>
-      <p class="view-intro">A profilod adatai alapján érnek el a partnerek a belső rendszeren keresztül.</p>
+      <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
       <!-- 1. DOBOZ: GYŰJTEMÉNY-SPECIFIKUS PRIVÁT JEGYZET -->
       <div class="card" style="margin-bottom:16px; border-left: 4px solid var(--amber);">
@@ -681,7 +691,7 @@
         </div>
       </div>
 
-      <!-- OKLEVÉL (Csak Lutránál) -->
+      <!-- OKLEVÉL -->
       <div class="card" id="prof-cert-box" style="text-align:center; display:none;">
         <h3 style="margin:0 0 6px; font-size:1rem;">Bolygóvédő Szuperhős Oklevél</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">Ha betelt a Lutra albumod, itt letöltheted a névre szóló okleveledet:</p>
@@ -693,7 +703,6 @@
     <section id="view-admin" class="view">
       <h2>Adminisztrátori Vezérlőpult</h2>
 
-      <!-- ADMIN: ÚJ GYŰJTEMÉNY LÉTREHOZÁSA -->
       <div class="card" style="border-left: 4px solid var(--amber); margin-bottom: 16px;">
         <h3 style="margin-top:0;">Új gyűjtemény / album felvitele</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
@@ -749,7 +758,7 @@
         </div>
 
         <div class="form-group">
-          <label>Borítókép / Indexkép feltöltése:</label>
+          <label>Borítókép / Indexkép (Képfájl a gépről):</label>
           <input type="file" id="admin-album-cover-input" accept="image/*" class="input-field" style="padding:4px;">
           <div id="admin-album-cover-preview-box" style="display:none; margin-top:8px;">
             <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; border:1px solid var(--amber);" alt="Borító előnézet">
@@ -772,7 +781,7 @@
               <option value="spar">Spar és Interspar áruházlánc</option>
               <option value="tesco">Tesco áruházlánc</option>
               <option value="penny">Penny Market</option>
-              <option value="retail_general">Országos / Üzletfüggetlen (Újságos, Relay, Müller)</option>
+              <option value="retail_general">Országos / Üzletfüggetlen (Újságos, Relay, Müller, vegyes)</option>
             </select>
           </div>
         </div>
@@ -782,13 +791,11 @@
         </button>
       </div>
 
-      <!-- ADMIN: LÉTEZŐ GYŰJTEMÉNYEK -->
       <div class="card" style="margin-bottom: 16px;">
         <h3 style="margin-top:0;">Rendszerben lévő gyűjtemények</h3>
         <div id="admin-albums-list">Gyűjtemények betöltése...</div>
       </div>
 
-      <!-- ADMIN: RENDSZERÜZENET KÜLDŐ -->
       <div class="card">
         <h3 style="margin-top:0;">Új rendszerüzenet kiküldése</h3>
         <div class="form-group">
@@ -804,7 +811,7 @@
           <input type="url" id="admin-msg-link" class="input-field" placeholder="https://facebook.com/events/...">
         </div>
         <div class="form-group">
-          <label>Lejárati dátum:</label>
+          <label>Lejárati dátum és időpont:</label>
           <input type="datetime-local" id="admin-msg-expiry" class="input-field">
         </div>
         <div class="form-group">
@@ -844,7 +851,7 @@
   <footer class="support-footer">
     <p style="margin:0 0 6px; font-weight:700; font-size:1.05rem;">Tetszik az oldal és segített a cserében?</p>
     <p style="margin:0 0 14px; font-size:0.85rem; color:var(--sand);">
-      Ha szívesen támogatnád a platform működését egy kávé árával:
+      Ha szívesen támogatnád a platform működését és szerverét egy kávé árával:
     </p>
     <a href="https://www.donably.com/cserebere" target="_blank" rel="noopener" class="btn btn-donably">
       Támogatás a Donably-n

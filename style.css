@@ -1,5 +1,5 @@
-=========================================================================
-   Cserélj Okosan - style.css (v4.0 - 1. Fázis)
+ =========================================================================
+   Cserélj Okosan - style.css (Eredeti Változatlan Dizájn)
    ========================================================================= */
 
 :root {
@@ -79,94 +79,46 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* 1. FÁZIS: AKTÍV GYŰJTEMÉNY SÁV */
+/* AKTÍV GYŰJTEMÉNY SÁV */
 .active-album-banner {
-  background: rgba(8, 27, 26, 0.85);
-  border: 1.5px solid var(--amber);
-  border-radius: var(--radius-md);
+  background: rgba(20, 69, 63, 0.7);
+  border: 1px solid rgba(216, 155, 74, 0.4);
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-}
-.active-album-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 6px;
-  object-fit: cover;
-  border: 1px solid var(--amber);
-  background: var(--water-mid);
-}
-.active-album-subtitle-tag {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: block;
+  margin-bottom: 12px;
 }
 
-/* 1. FÁZIS: NAGY INDEXKÉPES HUB KÁRTYÁK */
+/* KEZDŐLAP (HUB) KÁRTYÁK */
 .hub-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .album-hub-card {
   background: var(--surface-card);
-  border: 1.5px solid rgba(243, 238, 223, 0.14);
+  border: 1px solid rgba(243, 238, 223, 0.12);
   border-radius: var(--radius-md);
   padding: 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
 }
 .album-hub-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: var(--amber);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-}
-.album-hub-card.card-featured {
-  border-color: var(--amber);
-  background: linear-gradient(180deg, rgba(216, 155, 74, 0.12) 0%, rgba(20, 69, 63, 0.75) 100%);
-}
-
-.album-hub-cover-wrap {
-  width: 100%;
-  height: 130px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-bottom: 10px;
-  background: var(--water-deep);
-  border: 1px solid rgba(243, 238, 223, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.album-hub-cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.album-hub-cover-placeholder {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  color: var(--sand);
-  text-align: center;
-  padding: 8px;
 }
 
 .album-hub-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .album-type-badge {
   font-size: 0.7rem;
@@ -179,7 +131,7 @@ header {
 }
 
 .album-hub-progress-track {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.3);
   height: 8px;
   border-radius: 999px;
   overflow: hidden;
