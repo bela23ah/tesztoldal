@@ -1,8 +1,69 @@
 // =========================================================================
-// Lutra Album Cserebere (Lidl 2026) - app.js (v4.1 Teljes Változat)
+// Lutra Album Cserebere (Lidl 2026) - app.js (v4.1 - 1. RÉSZ)
 // =========================================================================
 
-const ALBUM_SIZE = 108;
+const ALBUMS_REGISTRY = {
+  "lidl-lutra-2026": {
+    id: "lidl-lutra-2026",
+    title: "Lutra Album",
+    subtitle: "Védett állatok a Föld körül",
+    publisher: "Lidl / WWF",
+    year: 2026,
+    totalItems: 108,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    hasRadar: true,
+    hasChapters: true
+  },
+  "panini-fifa-365": {
+    id: "panini-fifa-365",
+    title: "FIFA 365 – Adrenalyn XL",
+    subtitle: "Hivatalos kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 378,
+    type: "card",
+    typeLabel: "Kártya",
+    hasRadar: false,
+    hasChapters: false
+  },
+  "toy-story-5": {
+    id: "toy-story-5",
+    title: "Toy Story 5",
+    subtitle: "Hivatalos matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 192,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    hasRadar: false,
+    hasChapters: false
+  },
+  "stranger-things-cards": {
+    id: "stranger-things-cards",
+    title: "Stranger Things",
+    subtitle: "This is our story kártyák",
+    publisher: "Panini / Netflix",
+    year: 2025,
+    totalItems: 190,
+    type: "card",
+    typeLabel: "Kártya",
+    hasRadar: false,
+    hasChapters: false
+  }
+};
+
+let currentAlbumId = localStorage.getItem('lutra_active_album') || "lidl-lutra-2026";
+let currentHubFilter = "all";
+
+function getActiveAlbum() {
+  return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"];
+}
+
+function getActiveAlbumSize() {
+  return getActiveAlbum().totalItems;
+}
+
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
@@ -29,18 +90,19 @@ function escapeHtml(str) {
 
 function ensureArray(val) {
   if (!val) return [];
+  const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 1000;
   if (Array.isArray(val)) {
-    return val.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= ALBUM_SIZE);
+    return val.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
   }
   if (typeof val === 'string') {
     return val.split(/[\s,;]+/)
       .map(Number)
-      .filter(n => !isNaN(n) && n >= 1 && n <= ALBUM_SIZE);
+      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
   }
   if (typeof val === 'object') {
     return Object.keys(val)
       .map(Number)
-      .filter(n => !isNaN(n) && n >= 1 && n <= ALBUM_SIZE);
+      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
   }
   return [];
 }
@@ -324,7 +386,7 @@ function initFavoriteSelects() {
     if (!sel || sel.options.length > 0) return;
     
     sel.innerHTML = '<option value="">-- Válassz állatot --</option>';
-    for (let i = 1; i <= ALBUM_SIZE; i++) {
+    for (let i = 1; i <= 108; i++) {
       const opt = document.createElement('option');
       opt.value = i;
       opt.textContent = `#${i} ${STICKER_NAMES[i] || ''}`;
@@ -343,16 +405,120 @@ function initFavoriteSelects() {
   });
 }
 
+function renderHub() {
+  const container = document.getElementById('hub-albums-grid');
+  if (!container) return;
+
+  const albumsList = Object.values(ALBUMS_REGISTRY).filter(album => {
+    if (currentHubFilter === 'sticker') return album.type === 'sticker';
+    if (currentHubFilter === 'card') return album.type === 'card';
+    if (currentHubFilter === 'my') {
+      const myCount = ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length;
+      return myCount > 0 || album.id === currentAlbumId;
+    }
+    return true;
+  });
+
+  container.innerHTML = albumsList.map(album => {
+    const isCurrent = album.id === currentAlbumId;
+    const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? myProfile.van : []));
+    const collectedCount = albumVan.length;
+    const pct = Math.min(100, Math.round((collectedCount / album.totalItems) * 100));
+
+    return `
+      <div class="album-hub-card ${isCurrent ? 'card-local' : ''}" data-album-id="${escapeHtml(album.id)}">
+        <div>
+          <div class="album-hub-header">
+            <div>
+              <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${album.year}</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--sand);">${album.totalItems} db</span>
+          </div>
+          <h3 style="margin:4px 0; font-size:1.1rem; color:#FFF;">${escapeHtml(album.title)}</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">${escapeHtml(album.publisher)} • ${escapeHtml(album.subtitle)}</p>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--sand);">
+            <span>Gyűjtve: <strong>${collectedCount} / ${album.totalItems} db</strong></span>
+            <strong>${pct}%</strong>
+          </div>
+          <div class="album-hub-progress-track">
+            <div class="album-hub-progress-bar" style="width:${pct}%;"></div>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn ${isCurrent ? 'btn-primary' : 'btn-secondary'} btn-sm" style="width:100%; font-size:0.8rem;" data-action="select-album" data-album-id="${escapeHtml(album.id)}">
+              ${isCurrent ? 'Megnyitás (Aktív)' : 'Átváltás erre a gyűjteményre'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+safeAddListener('hub-albums-grid', (e) => {
+  const btn = e.target.closest('[data-action="select-album"]');
+  const card = e.target.closest('.album-hub-card');
+  const albumId = btn?.dataset.albumId || card?.dataset.albumId;
+  if (!albumId) return;
+
+  selectAlbum(albumId);
+});
+
+function selectAlbum(albumId) {
+  if (!ALBUMS_REGISTRY[albumId]) return;
+  currentAlbumId = albumId;
+  localStorage.setItem('lutra_active_album', albumId);
+
+  const titleEl = document.getElementById('active-album-title');
+  const activeAlbum = getActiveAlbum();
+  if (titleEl) titleEl.textContent = `${activeAlbum.title} (${activeAlbum.year})`;
+
+  const radarNav = document.getElementById('nav-item-radar');
+  if (radarNav) radarNav.style.display = activeAlbum.hasRadar ? 'block' : 'none';
+
+  loadAlbumState(albumId);
+  switchView('matricaim');
+  showToast(`Aktív gyűjtemény: ${activeAlbum.title}`);
+}
+
+function loadAlbumState(albumId) {
+  myProfile.van = ensureArray(safeJsonParse(`lutra_van_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : [])).sort((a, b) => a - b);
+  myProfile.vanCounts = safeJsonParse(`lutra_van_counts_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_van_counts', {}) : {});
+  myProfile.kell = ensureArray(safeJsonParse(`lutra_kell_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_kell', []) : [])).sort((a, b) => a - b);
+  myProfile.foglalva = ensureArray(safeJsonParse(`lutra_foglalva_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_foglalva', []) : [])).sort((a, b) => a - b);
+  myProfile.foglalvaCounts = safeJsonParse(`lutra_foglalva_counts_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_foglalva_counts', {}) : {});
+
+  renderGrid();
+  renderHub();
+}
+
+safeAddListener('btn-switch-album', () => {
+  switchView('hub');
+});
+
+document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentHubFilter = btn.dataset.hubFilter;
+    renderHub();
+  });
+});
+
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
 
+  const totalSize = getActiveAlbumSize();
   let html = '';
   const vanSet = new Set(ensureArray(myProfile.van));
   const kellSet = new Set(ensureArray(myProfile.kell));
   const foglalvaSet = new Set(ensureArray(myProfile.foglalva));
 
-  for (let i = 1; i <= ALBUM_SIZE; i++) {
+  for (let i = 1; i <= totalSize; i++) {
     const isVan = vanSet.has(i);
     const isKell = kellSet.has(i);
     const isFoglalva = foglalvaSet.has(i);
@@ -371,7 +537,7 @@ function renderGrid() {
     }
 
     const qtyBadge = ((isVan || isFoglalva) && qty > 1) ? `<span class="${badgeCls}">×${qty}</span>` : '';
-    const animalName = STICKER_NAMES[i] || `Matrica #${i}`;
+    const animalName = (currentAlbumId === 'lidl-lutra-2026') ? (STICKER_NAMES[i] || `Matrica #${i}`) : `Tétel #${i}`;
 
     html += `<div class="matrica-cell ${cls}" data-num="${i}" title="${i}. ${escapeHtml(animalName)}">
       ${i}
@@ -623,35 +789,33 @@ function attachStickerInteraction(container) {
 }
 
 function saveMyState() {
+  const albumId = currentAlbumId;
   myProfile.van = ensureArray(myProfile.van).sort((a, b) => a - b);
   myProfile.kell = ensureArray(myProfile.kell).filter(n => !myProfile.van.includes(n)).sort((a, b) => a - b);
   myProfile.foglalva = ensureArray(myProfile.foglalva).filter(n => !myProfile.van.includes(n) && !myProfile.kell.includes(n)).sort((a, b) => a - b);
-  myProfile.favorites = ensureArray(myProfile.favorites || []);
 
-  localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
-  localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
-  localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
-  localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
-  localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
-  localStorage.setItem('lutra_favorites', JSON.stringify(myProfile.favorites));
+  localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
+  localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
+  localStorage.setItem(`lutra_kell_${albumId}`, JSON.stringify(myProfile.kell));
+  localStorage.setItem(`lutra_foglalva_${albumId}`, JSON.stringify(myProfile.foglalva));
+  localStorage.setItem(`lutra_foglalva_counts_${albumId}`, JSON.stringify(myProfile.foglalvaCounts || {}));
+
+  if (albumId === 'lidl-lutra-2026') {
+    localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
+    localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
+    localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
+    localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
+    localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
+  }
   
   renderGrid();
-  renderAlbumChapter();
+  renderHub();
   refreshMatchesIfVisible();
   renderCompletionOdds();
 
   if (currentUser && myProfile.gdprAccepted === true && db) {
-    db.collection("public_profiles").doc(currentUser.uid).set({
-      nev: myProfile.nev,
-      nickname: myProfile.nev,
-      telepules: myProfile.telepules,
-      city: myProfile.telepules,
-      isGiftOffering: !!myProfile.isGiftOffering,
-      showEmailToUsers: !!myProfile.showEmailToUsers,
-      emailNotifications: myProfile.emailNotifications !== false,
-      allowInspect: myProfile.allowInspect !== false,
-      gdprAccepted: true,
-      favorites: myProfile.favorites,
+    db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(albumId).set({
+      albumId: albumId,
       van: myProfile.van,
       vanCounts: myProfile.vanCounts || {},
       kell: myProfile.kell,
@@ -715,6 +879,7 @@ safeAddListener('btn-close-batch-box', () => {
 function parseBatchInput(raw) {
   const tokens = raw.split(/[\s,;]+/);
   const parsed = {};
+  const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 1000;
   tokens.forEach(t => {
     t = t.trim();
     if (!t) return;
@@ -722,10 +887,10 @@ function parseBatchInput(raw) {
     if (multMatch) {
       const num = parseInt(multMatch[1], 10);
       const qty = parseInt(multMatch[2], 10);
-      if (num >= 1 && num <= ALBUM_SIZE && qty > 0) parsed[num] = (parsed[num] || 0) + qty;
+      if (num >= 1 && num <= maxLimit && qty > 0) parsed[num] = (parsed[num] || 0) + qty;
     } else {
       const num = parseInt(t, 10);
-      if (num >= 1 && num <= ALBUM_SIZE) parsed[num] = (parsed[num] || 0) + 1;
+      if (num >= 1 && num <= maxLimit) parsed[num] = (parsed[num] || 0) + 1;
     }
   });
   return parsed;
@@ -749,7 +914,7 @@ safeAddListener('btn-apply-batch-van', () => {
   saveMyState();
   if (document.getElementById('batch-input-text')) document.getElementById('batch-input-text').value = '';
   if (document.getElementById('batch-input-box')) document.getElementById('batch-input-box').style.display = 'none';
-  showToast(`${count} db matrica mentve a Duplákhoz.`);
+  showToast(`${count} db tétel mentve a Duplákhoz.`);
 });
 
 safeAddListener('btn-apply-batch-kell', () => {
@@ -769,7 +934,7 @@ safeAddListener('btn-apply-batch-kell', () => {
   saveMyState();
   if (document.getElementById('batch-input-text')) document.getElementById('batch-input-text').value = '';
   if (document.getElementById('batch-input-box')) document.getElementById('batch-input-box').style.display = 'none';
-  showToast(`${count} db matrica mentve a Hiányzókhoz.`);
+  showToast(`${count} db tétel mentve a Hiányzókhoz.`);
 });
 
 safeAddListener('btn-apply-batch-foglalva', () => {
@@ -789,20 +954,21 @@ safeAddListener('btn-apply-batch-foglalva', () => {
   saveMyState();
   if (document.getElementById('batch-input-text')) document.getElementById('batch-input-text').value = '';
   if (document.getElementById('batch-input-box')) document.getElementById('batch-input-box').style.display = 'none';
-  showToast(`${count} db matrica mentve a Foglalthoz.`);
+  showToast(`${count} db tétel mentve a Foglalthoz.`);
 });
 
 safeAddListener('btn-copy-fb-post', () => {
+  const activeAlbum = getActiveAlbum();
   const vanSorted = [...myProfile.van].sort((a, b) => a - b);
   const kellSorted = [...myProfile.kell].sort((a, b) => a - b);
   const vanText = vanSorted.length ? vanSorted.map(n => {
     const q = myProfile.vanCounts[n] || 1;
     return q > 1 ? `#${n} (${q}db)` : `#${n}`;
   }).join(', ') : 'Nincs duplám';
-  const kellText = kellSorted.length ? kellSorted.map(n => `#${n}`).join(', ') : 'Minden matrica megvan!';
+  const kellText = kellSorted.length ? kellSorted.map(n => `#${n}`).join(', ') : 'Minden megvan!';
   const userCity = myProfile.telepules ? ` (${myProfile.telepules})` : '';
 
-  const fbPost = `Lidl Lutra 2026 matricacsere!\nGyűjtő: ${myProfile.nev}${userCity}\n\nDUPLÁK (${vanSorted.length} féle):\n${vanText}\n\nHIÁNYZIK (${kellSorted.length} db):\n${kellText}\n\nCseréljünk itt: ${window.location.href}`;
+  const fbPost = `${activeAlbum.title} cserebere!\nGyűjtő: ${myProfile.nev}${userCity}\n\nDUPLÁK (${vanSorted.length} féle):\n${vanText}\n\nHIÁNYZIK (${kellSorted.length} db):\n${kellText}\n\nCseréljünk itt: ${window.location.href}`;
   navigator.clipboard.writeText(fbPost);
   showToast("Csereposzt kimásolva a vágólapra!");
 });
@@ -839,7 +1005,6 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
     renderGrid();
   });
 });
-
 // =========================================================================
 // NAVIGÁCIÓS ROUTER
 // =========================================================================
@@ -854,7 +1019,9 @@ function switchCategory(catName) {
   if (subnavCserebere) subnavCserebere.style.display = catName === 'cserebere' ? 'flex' : 'none';
   if (subnavProfil) subnavProfil.style.display = catName === 'profil' ? 'flex' : 'none';
 
-  if (catName === 'radar') {
+  if (catName === 'hub') {
+    switchView('hub');
+  } else if (catName === 'radar') {
     switchView('radar');
   } else if (catName === 'matricaim') {
     switchView('matricaim');
@@ -874,7 +1041,8 @@ function switchView(viewName) {
   document.querySelectorAll('.dropdown-link').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
 
   let parentCat = 'matricaim';
-  if (viewName === 'radar') parentCat = 'radar';
+  if (viewName === 'hub') parentCat = 'hub';
+  else if (viewName === 'radar') parentCat = 'radar';
   else if (viewName === 'uzeneteim' || viewName === 'meetups') parentCat = 'cserebere';
   else if (viewName === 'profil' || viewName === 'statisztika' || viewName === 'admin') parentCat = 'profil';
 
@@ -887,6 +1055,7 @@ function switchView(viewName) {
   if (subnavCserebere) subnavCserebere.style.display = parentCat === 'cserebere' ? 'flex' : 'none';
   if (subnavProfil) subnavProfil.style.display = parentCat === 'profil' ? 'flex' : 'none';
 
+  if (viewName === 'hub') renderHub();
   if (viewName === 'cserek') renderMatches();
   if (viewName === 'statisztika') {
     renderStatistics();
@@ -1253,7 +1422,7 @@ function renderTradePlannerModal() {
   } else {
     conflictBox.innerHTML = `
       <div class="card" style="border:1.5px solid var(--danger); background:rgba(232,90,79,0.12);">
-        <h4 style="margin:0 0 6px; color:#FFC0BA; font-size:0.95rem;">Ütköző matricák (${conflicts.length} db)</h4>
+        <h4 style="margin:0 0 6px; color:#FFC0BA; font-size:0.95rem;">Ütköző tételek (${conflicts.length} db)</h4>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
           Ezeket a matricákat többen is kérik, mint amennyi duplád van. A rendszer a legtöbb matricát adó, illetve helyi partnert javasolja:
         </p>
@@ -1264,10 +1433,12 @@ function renderTradePlannerModal() {
             return 0;
           })[0].user.id;
 
+          const stickerTitle = (currentAlbumId === 'lidl-lutra-2026') ? (STICKER_NAMES[c.num] || '') : '';
+
           return `
             <div style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
               <div>
-                <strong>#${c.num} ${escapeHtml(STICKER_NAMES[c.num] || '')}</strong> (Készlet: ${c.myQty} db)
+                <strong>#${c.num} ${escapeHtml(stickerTitle)}</strong> (Készlet: ${c.myQty} db)
               </div>
               <div style="display:flex; gap:8px;">
                 ${c.demandList.map(d => `
@@ -1332,10 +1503,10 @@ function renderTradePlannerModal() {
       Szimulált Végeredmény (${selectedUsers.length} csere után):
     </div>
     <div style="font-size:1.15rem; font-weight:800; color:#FFF;">
-      +${totalNewStickersGained.size} új matrica az albumodba • -${totalStickersGivenCount} elcserélt dupla
+      +${totalNewStickersGained.size} új tétel az albumodba • -${totalStickersGivenCount} elcserélt dupla
     </div>
     <p style="font-size:0.78rem; color:var(--sand); margin:6px 0 0; line-height:1.6;">
-      Megszerzett matricák: ${formattedGainedList}
+      Megszerzett tételek: ${formattedGainedList}
     </p>
   `;
 }
@@ -1402,24 +1573,27 @@ safeAddListener('btn-search', () => {
   if (!raw) return showToast("Írj be egy keresőszót!");
   const queryNorm = normalizeText(raw);
   const matchedNums = [];
+  const totalSize = getActiveAlbumSize();
 
   const rangeMatch = raw.match(/^(\d+)\s*-\s*(\d+)$/);
   if (rangeMatch) {
     const s = parseInt(rangeMatch[1], 10), e = parseInt(rangeMatch[2], 10);
     for (let i = Math.min(s, e); i <= Math.max(s, e); i++) {
-      if (i >= 1 && i <= ALBUM_SIZE) matchedNums.push(i);
+      if (i >= 1 && i <= totalSize) matchedNums.push(i);
     }
   } else {
     const numTokens = raw.split(/[\s,;]+/).filter(t => /^\d+$/.test(t));
     if (numTokens.length > 0) {
       numTokens.forEach(n => {
         const num = parseInt(n, 10);
-        if (num >= 1 && num <= ALBUM_SIZE) matchedNums.push(num);
+        if (num >= 1 && num <= totalSize) matchedNums.push(num);
       });
     } else {
-      Object.entries(STICKER_NAMES).forEach(([numStr, name]) => {
-        if (normalizeText(name).includes(queryNorm)) matchedNums.push(parseInt(numStr, 10));
-      });
+      if (currentAlbumId === 'lidl-lutra-2026') {
+        Object.entries(STICKER_NAMES).forEach(([numStr, name]) => {
+          if (normalizeText(name).includes(queryNorm)) matchedNums.push(parseInt(numStr, 10));
+        });
+      }
     }
   }
 
@@ -1461,7 +1635,7 @@ function renderSearchResults(targetNums, titleText) {
           </h3>
           ${u.isGiftOffering ? '<span class="badge-gift">Ingyen adja</span>' : ''}
         </div>
-        <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n} (${escapeHtml(STICKER_NAMES[n] || '')})`).join(', ')}</p>
+        <p><strong>Nála megvan (${u.found.length} db):</strong> ${u.found.map(n => `#${n}`).join(', ')}</p>
         <button class="btn btn-contact-green" data-action="contact-search" data-uid="${escapeHtml(u.id)}" data-found="${u.found.map(n => `#${n}`).join(', ')}">
           Érdekelnek a matricák
         </button>
@@ -1480,6 +1654,7 @@ safeAddListener('search-results', 'click', (e) => {
     openUserProfileModal(btn.dataset.uid);
   }
 });
+
 // =========================================================================
 // ALBUMRADAR & FOTÓCSATOLÁS (10 PERCES KORLÁTTAL)
 // =========================================================================
@@ -1608,14 +1783,14 @@ function renderRadarReports() {
             <strong>${escapeHtml(storeLabel)}</strong>
           </div>
           <span class="${r.status ? 'badge-radar-van' : 'badge-radar-nincs'}">
-            ${r.status ? '🟢 Kapható' : '🔴 Elfogyott'}
+            ${r.status ? 'Kapható' : 'Elfogyott'}
           </span>
         </div>
         ${r.note ? `<p style="font-size:0.84rem; margin:4px 0; color:var(--sand);">„${escapeHtml(r.note)}”</p>` : ''}
         ${r.photoBase64 ? `<img src="${r.photoBase64}" class="radar-attached-img" alt="Bolti fotó" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-          <span>${escapeHtml(r.reporterName || 'Gyűjtő')} • 🕒 ${timeStr}</span>
-          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
+          <span>${escapeHtml(r.reporterName || 'Gyűjtő')} • ${timeStr}</span>
+          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-radar" data-id="${r.id}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>` : ''}
         </div>
       </div>
     `;
@@ -1657,7 +1832,7 @@ function listenToRadarReports() {
 
       if (!isInitial && newCount > previousRadarCount && radarReports.length > 0) {
         const latest = radarReports[0];
-        triggerTopNotification(`Új bolti készletjelentés: ${latest.city} (${latest.status ? '🟢 Kapható' : '🔴 Elfogyott'})`, () => switchView('radar'));
+        triggerTopNotification(`Új bolti készletjelentés: ${latest.city} (${latest.status ? 'Kapható' : 'Elfogyott'})`, () => switchView('radar'));
       }
       previousRadarCount = newCount;
 
@@ -1688,8 +1863,8 @@ safeAddListener('meetup-photo-input', 'change', (e) => {
       ctx.drawImage(img, 0, 0, w, h);
 
       meetupAttachedBase64 = canvas.toDataURL('image/jpeg', 0.65);
-      const preview = document.getElementById('meetup-photo-preview');
-      const previewBox = document.getElementById('meetup-photo-preview-box');
+      const preview = document.getElementById('radar-photo-preview');
+      const previewBox = document.getElementById('radar-photo-preview-box');
       if (preview && previewBox) {
         preview.src = meetupAttachedBase64;
         previewBox.style.display = 'block';
@@ -1738,7 +1913,7 @@ safeAddListener('btn-submit-meetup', async () => {
     if (document.getElementById('meetup-photo-input')) document.getElementById('meetup-photo-input').value = '';
     if (document.getElementById('meetup-photo-preview-box')) document.getElementById('meetup-photo-preview-box').style.display = 'none';
 
-    showToast("🎉 Találkozó sikeresen közzétéve!");
+    showToast("Találkozó sikeresen közzétéve.");
   } catch (err) {
     showToast("Hiba: " + err.message);
   }
@@ -1765,15 +1940,15 @@ function renderMeetups() {
       <div class="meetup-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
           <div>
-            <h3 style="margin:0; font-size:1.05rem;">📍 ${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
+            <h3 style="margin:0; font-size:1.05rem;">${escapeHtml(m.city)} — ${escapeHtml(m.place)}</h3>
           </div>
-          <span class="meetup-time-badge">🕒 ${escapeHtml(m.time)}</span>
+          <span class="meetup-time-badge">${escapeHtml(m.time)}</span>
         </div>
         ${m.description ? `<p style="font-size:0.86rem; margin:6px 0; color:var(--text-primary); white-space:pre-wrap;">${escapeHtml(m.description)}</p>` : ''}
         ${m.photoBase64 ? `<img src="${m.photoBase64}" class="radar-attached-img" alt="Plakát" data-action="open-lightbox">` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
           <span>Szervező: <strong>${escapeHtml(m.organizerName || 'Gyűjtő')}</strong></span>
-          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-meetup" data-id="${m.id}" style="color:var(--danger); border-color:var(--danger);">🗑️ Törlés</button>` : ''}
+          ${isOwnerOrAdmin ? `<button class="btn btn-secondary btn-sm" data-action="delete-meetup" data-id="${m.id}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>` : ''}
         </div>
       </div>
     `;
@@ -1823,7 +1998,7 @@ function listenToMeetups() {
 // =========================================================================
 function renderFavoritesRanking() {
   const favScores = {};
-  for (let i = 1; i <= ALBUM_SIZE; i++) favScores[i] = 0;
+  for (let i = 1; i <= 108; i++) favScores[i] = 0;
 
   allUsersData.forEach(u => {
     const favs = ensureArray(u.favorites || []);
@@ -1857,13 +2032,14 @@ function renderFavoritesRanking() {
 function renderCompletionDistribution() {
   let complete = 0, near = 0, half = 0, starter = 0;
   const totalUsers = allUsersData.length;
+  const totalSize = getActiveAlbumSize();
 
   if (totalUsers === 0) return;
 
   allUsersData.forEach(u => {
     const missingCount = ensureArray(u.kell).length;
-    const haveCount = ALBUM_SIZE - missingCount;
-    const pct = Math.round((haveCount / ALBUM_SIZE) * 100);
+    const haveCount = totalSize - missingCount;
+    const pct = Math.round((haveCount / totalSize) * 100);
 
     if (pct === 100) complete++;
     else if (pct >= 80) near++;
@@ -2007,10 +2183,11 @@ function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
   let totalMissingCount = 0;
+  const totalSize = getActiveAlbumSize();
 
   const stickerHolderCount = {};
   const stickerTotalQty = {};
-  for (let i = 1; i <= ALBUM_SIZE; i++) {
+  for (let i = 1; i <= totalSize; i++) {
     stickerHolderCount[i] = 0;
     stickerTotalQty[i] = 0;
   }
@@ -2049,13 +2226,13 @@ function renderHeatmap() {
   }
   if (avgProgressEl && allUsersData.length > 0) {
     const avgMissing = totalMissingCount / allUsersData.length;
-    const avgProg = Math.max(0, Math.min(100, Math.round(((ALBUM_SIZE - avgMissing) / ALBUM_SIZE) * 100)));
+    const avgProg = Math.max(0, Math.min(100, Math.round(((totalSize - avgMissing) / totalSize) * 100)));
     avgProgressEl.textContent = `${avgProg}%`;
   }
 
   let maxHoardAvg = 0;
   let maxHoardNum = null;
-  for (let i = 1; i <= ALBUM_SIZE; i++) {
+  for (let i = 1; i <= totalSize; i++) {
     if (stickerHolderCount[i] >= 2) {
       const avg = stickerTotalQty[i] / stickerHolderCount[i];
       if (avg > maxHoardAvg) {
@@ -2067,8 +2244,9 @@ function renderHeatmap() {
 
   if (hoardingEl) {
     if (maxHoardNum) {
+      const stickerLabel = (currentAlbumId === 'lidl-lutra-2026') ? (STICKER_NAMES[maxHoardNum] || '') : '';
       hoardingEl.textContent = `#${maxHoardNum} (${maxHoardAvg.toFixed(1)} db/fő)`;
-      hoardingEl.title = `#${maxHoardNum} ${STICKER_NAMES[maxHoardNum] || ''}: Összesen ${stickerTotalQty[maxHoardNum]} db ${stickerHolderCount[maxHoardNum]} gyűjtőnél`;
+      hoardingEl.title = `#${maxHoardNum} ${stickerLabel}: Összesen ${stickerTotalQty[maxHoardNum]} db ${stickerHolderCount[maxHoardNum]} gyűjtőnél`;
     } else {
       hoardingEl.textContent = 'Még nincs adat';
     }
@@ -2258,7 +2436,8 @@ function filterMatchesByCityName(cityName) {
 function renderStatistics() {
   const demandCount = {};
   const supplyCount = {};
-  for (let i = 1; i <= ALBUM_SIZE; i++) { demandCount[i] = 0; supplyCount[i] = 0; }
+  const totalSize = getActiveAlbumSize();
+  for (let i = 1; i <= totalSize; i++) { demandCount[i] = 0; supplyCount[i] = 0; }
 
   allUsersData.forEach(u => {
     ensureArray(u.kell).forEach(n => { if (demandCount[n] !== undefined) demandCount[n]++; });
@@ -2269,8 +2448,9 @@ function renderStatistics() {
   });
 
   const rarest = [];
-  for (let i = 1; i <= ALBUM_SIZE; i++) {
-    rarest.push({ num: i, name: STICKER_NAMES[i], demand: demandCount[i], supply: supplyCount[i], score: demandCount[i] - supplyCount[i] });
+  for (let i = 1; i <= totalSize; i++) {
+    const itemName = (currentAlbumId === 'lidl-lutra-2026') ? (STICKER_NAMES[i] || `Matrica #${i}`) : `Tétel #${i}`;
+    rarest.push({ num: i, name: itemName, demand: demandCount[i], supply: supplyCount[i], score: demandCount[i] - supplyCount[i] });
   }
   rarest.sort((a, b) => b.score - a.score || b.demand - a.demand);
   const common = [...rarest].sort((a, b) => b.supply - a.supply || a.demand - b.demand);
@@ -2292,9 +2472,13 @@ function renderStatistics() {
   const uCount = document.getElementById('stats-users-count');
   if (uCount) uCount.textContent = allUsersData.length;
 
-  renderFavoritesRanking();
+  if (currentAlbumId === 'lidl-lutra-2026') {
+    renderFavoritesRanking();
+  }
   renderCompletionDistribution();
-  renderChapterDifficulty();
+  if (currentAlbumId === 'lidl-lutra-2026') {
+    renderChapterDifficulty();
+  }
   renderCompletionOdds();
   renderHeatmap();
 }
@@ -2407,13 +2591,14 @@ safeAddListener('scanner-tags-box', 'click', (e) => {
 safeAddListener('btn-scanner-add-manual', () => {
   const input = document.getElementById('scanner-manual-num');
   const num = parseInt(input?.value || '0', 10);
-  if (num >= 1 && num <= ALBUM_SIZE) {
+  const totalSize = getActiveAlbumSize();
+  if (num >= 1 && num <= totalSize) {
     scannerRecognizedNums.push(num);
     scannerRecognizedNums.sort((a, b) => a - b);
     renderScannerTags();
     if (input) input.value = '';
   } else {
-    showToast("Adj meg egy számot 1 és 108 között!");
+    showToast(`Adj meg egy számot 1 és ${totalSize} között!`);
   }
 });
 
@@ -2429,7 +2614,7 @@ safeAddListener('btn-scanner-save-van', () => {
   });
   saveMyState();
   closeScannerModal();
-  showToast(`${scannerRecognizedNums.length} db matrica mentve a Duplákhoz.`);
+  showToast(`${scannerRecognizedNums.length} db tétel mentve a Duplákhoz.`);
 });
 
 safeAddListener('btn-scanner-save-kell', () => {
@@ -2443,7 +2628,7 @@ safeAddListener('btn-scanner-save-kell', () => {
   });
   saveMyState();
   closeScannerModal();
-  showToast(`${scannerRecognizedNums.length} db matrica mentve a Hiányzókhoz.`);
+  showToast(`${scannerRecognizedNums.length} db tétel mentve a Hiányzókhoz.`);
 });
 
 safeAddListener('btn-scanner-save-foglalva', () => {
@@ -2457,7 +2642,7 @@ safeAddListener('btn-scanner-save-foglalva', () => {
   });
   saveMyState();
   closeScannerModal();
-  showToast(`${scannerRecognizedNums.length} db matrica mentve a Foglalthoz.`);
+  showToast(`${scannerRecognizedNums.length} db tétel mentve a Foglalthoz.`);
 });
 
 safeAddListener('btn-scanner-copy-list', () => {
@@ -2522,30 +2707,33 @@ function setupContactModal(targetUser, msg, subject) {
 
 function openContactModal(targetUser, give, get, isGift) {
   if (!checkSenderProfileReady()) return;
-  const subject = "Lutra 2026 matricacsere megkeresés";
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} csere megkeresés`;
   const msg = isGift && !give ?
-    `Szia ${targetUser.nev}!\n\nA Lutra 2026 csereoldalon láttam a felajánlásodat, hogy a dupláidat szívesen odaadod ajándékba.\nSzeretném elkérni az alábbi matricá(ka)t:\n${get}\n\nHogyan tudnánk lebonyolítani az átadást/postázást?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})` :
-    `Szia ${targetUser.nev}!\n\nA Lutra 2026 platformon találtam meg a gyűjteményedet:\n\nÉn tudom adni neked: ${give}\nTe tudod adni nekem: ${get}\n\nMegfelelne a csere postán vagy személyesen?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})`;
+    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan oldalon láttam a felajánlásodat, hogy a dupláidat szívesen odaadod ajándékba a(z) ${activeAlbum.title} gyűjteményből.\nSzeretném elkérni az alábbi tételt/tételeket:\n${get}\n\nHogyan tudnánk lebonyolítani az átadást/postázást?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})` :
+    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan platformon találtam meg a gyűjteményedet a(z) ${activeAlbum.title} albumban:\n\nÉn tudom adni neked: ${give}\nTe tudod adni nekem: ${get}\n\nMegfelelne a csere postán vagy személyesen?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})`;
 
   setupContactModal(targetUser, msg, subject);
 }
 
 function openLoopContactModal(targetUser, thirdPersonName, stickersText, role) {
   if (!checkSenderProfileReady()) return;
-  const subject = "Lutra 2026 3 fős körcsere egyeztetés";
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} 3 fős körcsere egyeztetés`;
   const msg = role === 'B' ?
-    `Szia ${targetUser.nev}!\n\nA Lutra 2026 oldalon egy 3 fős körcsere lehetőséget találtam:\n1. Én adom neked: ${stickersText}\n2. Te adsz ${thirdPersonName}-nek matricát\n3. ${thirdPersonName} pedig ad nekem.\n\nMit szólsz, összehozzuk a körcserét?\n\nÜdvözlettel,\n${myProfile.nev}` :
-    `Szia ${targetUser.nev}!\n\nA Lutra 2026 oldalon egy 3 fős körcsere lehetőséget találtam, amiben te tudnád nekem adni: ${stickersText}, cserébe ${thirdPersonName} adna neked matricát.\n\nÉrdekelne a körcsere?\n\nÜdvözlettel,\n${myProfile.nev}`;
+    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan oldalon egy 3 fős körcsere lehetőséget találtam:\n1. Én adom neked: ${stickersText}\n2. Te adsz ${thirdPersonName}-nek tételt\n3. ${thirdPersonName} pedig ad nekem.\n\nMit szólsz, összehozzuk a körcserét?\n\nÜdvözlettel,\n${myProfile.nev}` :
+    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan oldalon egy 3 fős körcsere lehetőséget találtam, amiben te tudnád nekem adni: ${stickersText}, cserébe ${thirdPersonName} adna neked tételt.\n\nÉrdekelne a körcsere?\n\nÜdvözlettel,\n${myProfile.nev}`;
 
   setupContactModal(targetUser, msg, subject);
 }
 
 function openDirectContactModal(targetUser, numsStr, isGift) {
   if (!checkSenderProfileReady()) return;
-  const subject = "Lutra 2026 matrica érdeklődés";
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} tétel érdeklődés`;
   const msg = isGift ?
-    `Szia ${targetUser.nev}!\n\nA Lutra 2026 platformon láttam, hogy ajándékba felajánlod a dupláidat. Szeretném elkérni az alábbi matricá(ka)t: ${numsStr}.\n\nHogyan tudnánk lebonyolítani?\n\nÜdvözlettel,\n${myProfile.nev}` :
-    `Szia ${targetUser.nev}!\n\nA Lutra platformon láttam, hogy nálad megvannak az alábbi matricák: ${numsStr}.\n\nSzeretnék érdeklődni, hogy tudnánk-e cserélni rájuk.\n\nÜdvözlettel,\n${myProfile.nev}`;
+    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan platformon láttam, hogy ajándékba felajánlod a dupláidat (${activeAlbum.title}). Szeretném elkérni az alábbiakat: ${numsStr}.\n\nHogyan tudnánk lebonyolítani?\n\nÜdvözlettel,\n${myProfile.nev}` :
+    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan platformon láttam, hogy nálad megvannak az alábbi tételek (${activeAlbum.title}): ${numsStr}.\n\nSzeretnék érdeklődni, hogy tudnánk-e cserélni rájuk.\n\nÜdvözlettel,\n${myProfile.nev}`;
 
   setupContactModal(targetUser, msg, subject);
 }
@@ -2568,6 +2756,7 @@ safeAddListener('btn-send-message', () => {
           fromCity: myProfile.telepules || '',
           toUid: activeContactTarget.uid,
           toName: activeContactTarget.nev,
+          albumId: currentAlbumId,
           subject: activeContactTarget.subject,
           message: messageText,
           text: messageText,
@@ -2708,7 +2897,7 @@ safeAddListener('messages-inbox-list', (e) => {
 
   if (btn.dataset.action === 'reply-message') {
     const targetUser = { id: btn.dataset.senderUid, nev: btn.dataset.senderName };
-    setupContactModal(targetUser, `Szia ${targetUser.nev}!\n\nKöszönöm a megkeresést. `, `Válasz: Lutra csere`);
+    setupContactModal(targetUser, `Szia ${targetUser.nev}!\n\nKöszönöm a megkeresést. `, `Válasz: Csere`);
   } else if (btn.dataset.action === 'delete-message') {
     if (!confirm("Biztosan törölni szeretnéd ezt az üzenetet a saját listádból?")) return;
     (async () => {
@@ -2748,7 +2937,7 @@ function openUserProfileModal(uid) {
   const favs = ensureArray(targetUser.favorites || []);
 
   if (favBox && favText) {
-    if (favs.length > 0) {
+    if (favs.length > 0 && currentAlbumId === 'lidl-lutra-2026') {
       const medals = ['1.', '2.', '3.'];
       favText.innerHTML = favs.map((n, i) => `${medals[i]} #${n} ${escapeHtml(STICKER_NAMES[n] || '')}`).join(' • ');
       favBox.style.display = 'block';
@@ -2764,11 +2953,14 @@ function openUserProfileModal(uid) {
     if (targetUser.allowInspect === false) {
       mBox.innerHTML = '<em style="color:var(--text-muted);">A gyűjtő elrejtette a hiányzóinak listáját.</em>';
     } else if (!targetUser.kell || targetUser.kell.length === 0) {
-      mBox.innerHTML = '<span style="color:var(--amber);">Minden matrica megvan neki!</span>';
+      mBox.innerHTML = '<span style="color:var(--amber);">Minden tétele megvan!</span>';
     } else {
       mBox.innerHTML = targetUser.kell
         .sort((a, b) => a - b)
-        .map(n => `<span style="display:inline-block; margin:2px 4px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:999px; border:1px solid rgba(243,238,223,0.2);">#${n} ${escapeHtml(STICKER_NAMES[n] || '')}</span>`)
+        .map(n => {
+          const sName = (currentAlbumId === 'lidl-lutra-2026') ? ` ${escapeHtml(STICKER_NAMES[n] || '')}` : '';
+          return `<span style="display:inline-block; margin:2px 4px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:999px; border:1px solid rgba(243,238,223,0.2);">#${n}${sName}</span>`;
+        })
         .join('');
     }
   }
@@ -2781,7 +2973,8 @@ function openUserProfileModal(uid) {
         .sort((a, b) => a - b)
         .map(n => {
           const q = (targetUser.vanCounts && targetUser.vanCounts[n] > 1) ? ` (${targetUser.vanCounts[n]}db)` : '';
-          return `<span style="display:inline-block; margin:2px 4px; background:rgba(216,155,74,0.2); color:var(--sand); padding:2px 8px; border-radius:999px; border:1px solid var(--amber);">#${n}${q} ${escapeHtml(STICKER_NAMES[n] || '')}</span>`;
+          const sName = (currentAlbumId === 'lidl-lutra-2026') ? ` ${escapeHtml(STICKER_NAMES[n] || '')}` : '';
+          return `<span style="display:inline-block; margin:2px 4px; background:rgba(216,155,74,0.2); color:var(--sand); padding:2px 8px; border-radius:999px; border:1px solid var(--amber);">#${n}${q}${sName}</span>`;
         })
         .join('');
     }
@@ -3571,6 +3764,7 @@ document.getElementById('modal-image-lightbox')?.addEventListener('click', () =>
 try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
+  renderHub();
   renderGrid();
   renderAlbumChapter();
   initFavoriteSelects();
