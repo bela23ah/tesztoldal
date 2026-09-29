@@ -1,5 +1,5 @@
 /* =========================================================================
-   Lutra Album Cserebere (Lidl 2026) - style.css (v3.7 Javított)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Állapotvezérelt)
    ========================================================================= */
 
 :root {
@@ -88,7 +88,20 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* 3.0-S FŐNAVIGÁCIÓ */
+/* AKTÍV ALBUM SÁV (FEJLÉC ALATT) */
+.active-album-banner {
+  background: rgba(20, 69, 63, 0.85);
+  border: 1.5px solid var(--amber);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* FŐNAVIGÁCIÓ */
 .primary-nav {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -104,125 +117,50 @@ header {
   }
 }
 
-.nav-dropdown-item {
-  position: relative;
-}
+.nav-dropdown-item { position: relative; }
 .primary-tab {
-  width: 100%;
-  background: var(--water-mid);
-  border: 1px solid rgba(243,238,223,0.15);
-  color: var(--text-muted);
-  font-family: var(--font-body);
-  font-size: 0.84rem;
-  font-weight: 600;
-  padding: 10px 4px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  text-align: center;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+  width: 100%; background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
+  color: var(--text-muted); font-family: var(--font-body); font-size: 0.84rem; font-weight: 600;
+  padding: 10px 4px; border-radius: var(--radius-sm); cursor: pointer; text-align: center;
+  white-space: nowrap; transition: all 0.2s ease; display: flex; align-items: center;
+  justify-content: center; gap: 4px;
 }
-.primary-tab.active {
-  background: var(--amber);
-  color: var(--water-deep);
-  border-color: var(--amber);
-  font-weight: 700;
-}
-.primary-tab.tab-highlight-radar {
-  border-color: rgba(216, 155, 74, 0.4);
-}
+.primary-tab.active { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
+.primary-tab.tab-highlight-radar { border-color: rgba(216, 155, 74, 0.4); }
 .dropdown-arrow { font-size: 0.65rem; opacity: 0.7; }
 
-/* ASZTALI LEBEGŐ DROPDOWN MENÜ (LÁTHATATLAN HOVER-HÍDDAL) */
+/* ASZTALI LEBEGŐ DROPDOWN MENÜ */
 .dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  min-width: 185px;
-  background: #081B1A;
-  border: 1.5px solid var(--amber);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  padding: 6px;
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-  z-index: 1000;
-  margin-top: 2px;
+  position: absolute; top: 100%; left: 0; min-width: 185px; background: #081B1A;
+  border: 1.5px solid var(--amber); border-radius: var(--radius-sm);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); padding: 6px; display: none;
+  flex-direction: column; gap: 4px; z-index: 1000; margin-top: 2px;
 }
-
 .dropdown-menu::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 0;
-  right: 0;
-  height: 10px;
-  background: transparent;
+  content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 10px; background: transparent;
 }
-
 .dropdown-link {
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 8px 10px;
-  border-radius: 6px;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+  background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body);
+  font-size: 0.82rem; font-weight: 500; padding: 8px 10px; border-radius: 6px; text-align: left;
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;
 }
-.dropdown-link:hover, .dropdown-link.active {
-  background: var(--water-mid);
-  color: var(--amber);
-  font-weight: 700;
-}
+.dropdown-link:hover, .dropdown-link.active { background: var(--water-mid); color: var(--amber); font-weight: 700; }
 
 @media (min-width: 768px) {
-  .nav-dropdown-item:hover .dropdown-menu {
-    display: flex;
-  }
+  .nav-dropdown-item:hover .dropdown-menu { display: flex; }
 }
 
 /* MOBIL ALNAVIGÁCIÓS SÁV */
 .mobile-subnav-wrapper {
-  margin-bottom: 18px;
-  border-bottom: 1px solid rgba(243,238,223,0.1);
-  padding-bottom: 8px;
+  margin-bottom: 18px; border-bottom: 1px solid rgba(243,238,223,0.1); padding-bottom: 8px;
 }
-.sub-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+.sub-nav { display: flex; flex-wrap: wrap; gap: 6px; }
 .sub-tab {
-  background: transparent;
-  border: 1px solid rgba(243,238,223,0.18);
-  color: var(--text-muted);
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
+  background: transparent; border: 1px solid rgba(243,238,223,0.18); color: var(--text-muted);
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 5px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s ease;
 }
-.sub-tab.active {
-  background: var(--water-light);
-  color: var(--text-primary);
-  border-color: var(--amber);
-  font-weight: 700;
-}
+.sub-tab.active { background: var(--water-light); color: var(--text-primary); border-color: var(--amber); font-weight: 700; }
 
 /* JELVÉNYEK */
 .nav-badge {
@@ -230,16 +168,8 @@ header {
   padding: 1px 6px; border-radius: 999px; margin-left: 3px; vertical-align: middle;
 }
 .nav-badge.read { background: rgba(216, 155, 74, 0.4); color: var(--sand); }
-.badge-radar-count { background: var(--amber); color: var(--water-deep); }
-.badge-meetup-count { background: var(--amber); color: var(--water-deep); }
-.alert-badge {
-  background: var(--danger);
-  color: #FFFFFF;
-  font-size: 0.7rem;
-  font-weight: 900;
-  padding: 0 5px;
-  line-height: 1.2;
-}
+.badge-radar-count, .badge-meetup-count { background: var(--amber); color: var(--water-deep); }
+.alert-badge { background: var(--danger); color: #FFFFFF; font-size: 0.7rem; font-weight: 900; padding: 0 5px; line-height: 1.2; }
 
 .view { display: none; }
 .view.active { display: block; }
@@ -279,31 +209,17 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .stat-kell strong { color: var(--fur-brown-soft); }
 .stat-foglalva strong { color: var(--reserved-blue-soft); }
 
-/* 1. RÁCSOS NÉZET */
+/* RÁCSOS NÉZET */
 #matrica-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-  gap: 6px;
-  width: 100%;
-  min-height: 200px;
+  gap: 6px; width: 100%; min-height: 200px;
 }
 .matrica-cell {
-  min-height: 44px;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--water-mid);
-  border: 1px solid rgba(243,238,223,0.14);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
+  min-height: 44px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.14); border-radius: var(--radius-sm);
+  color: var(--text-muted); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+  user-select: none; -webkit-user-select: none; position: relative; -webkit-tap-highlight-color: transparent;
 }
 .matrica-cell:active { transform: scale(0.94); }
 .matrica-cell.van { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
@@ -317,7 +233,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
 
-/* 2. ALBUM NÉZET */
+/* ALBUM LAPOZÓ NÉZET */
 .book-nav {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
   margin-bottom: 14px; background: var(--water-mid); padding: 8px 14px; border-radius: var(--radius-md);
@@ -326,7 +242,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: var(--water-deep); color: var(--text-primary); border: 1px solid rgba(243,238,223,0.25);
   padding: 6px 12px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer;
 }
-
 .album-page-box {
   background: var(--page-bg); border-radius: var(--radius-lg); padding: 18px 12px;
   border: 1px solid rgba(243,238,223,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 250px;
@@ -337,60 +252,36 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .page-title { font-family: var(--font-display); font-size: 1.3rem; margin: 0; color: var(--sand); }
 .page-progress { font-size: 0.8rem; color: var(--amber); font-weight: 600; }
-
 .slots-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
 
 .slot {
   border: 2px dashed var(--slot-border); border-radius: 8px; background: rgba(13, 46, 44, 0.45);
   padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-  cursor: pointer; user-select: none; -webkit-user-select: none;
-  text-align: center; position: relative; flex: 0 1 auto; -webkit-tap-highlight-color: transparent;
+  cursor: pointer; user-select: none; -webkit-user-select: none; text-align: center; position: relative; flex: 0 1 auto;
 }
-.slot:hover { border-color: var(--amber); }
 .slot.orient-allo { width: 98px; height: 132px; }
 .slot.orient-fekvo { width: 132px; height: 98px; }
-
 .slot .sticker-num { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-muted); }
 .slot .sticker-name { font-size: 0.72rem; font-weight: 500; margin: 2px 0; line-height: 1.15; max-height: 2.4em; overflow: hidden; }
 .slot .sticker-tag { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: rgba(0,0,0,0.25); }
 
 .combo-wrapper {
-  width: 200px; height: 132px; display: flex; flex-direction: column;
-  border: 2px dashed var(--slot-border); border-radius: 8px; background: rgba(13, 46, 44, 0.45);
-  overflow: hidden; position: relative; flex: 0 1 auto;
+  width: 200px; height: 132px; display: flex; flex-direction: column; border: 2px dashed var(--slot-border);
+  border-radius: 8px; background: rgba(13, 46, 44, 0.45); overflow: hidden; position: relative; flex: 0 1 auto;
 }
-.combo-title {
-  background: rgba(0,0,0,0.4); font-size: 0.68rem; text-align: center; padding: 2px 8px;
-  font-weight: 600; color: var(--sand);
-}
+.combo-title { background: rgba(0,0,0,0.4); font-size: 0.68rem; text-align: center; padding: 2px 8px; font-weight: 600; color: var(--sand); }
 .combo-halves { display: flex; flex: 1; }
-.combo-half {
-  flex: 1; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-  cursor: pointer; text-align: center; position: relative; user-select: none; -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+.combo-half { flex: 1; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; text-align: center; position: relative; }
 .combo-half:first-child { border-right: 1px dashed rgba(227, 213, 184, 0.35); }
 .combo-half .sticker-num { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-muted); }
 .combo-half .sticker-tag { font-size: 0.6rem; font-weight: 700; }
 
-.slot.van, .combo-half.van {
-  background: var(--moss) !important; color: var(--water-deep) !important; border-style: solid; border-color: var(--moss-soft);
-}
-.slot.van .sticker-num, .combo-half.van .sticker-num,
-.slot.van .sticker-name, .combo-half.van .sticker-name { color: var(--water-deep); font-weight: 700; }
-.slot.van .sticker-tag, .combo-half.van .sticker-tag { background: rgba(13, 46, 44, 0.3); color: var(--water-deep); }
-
-.slot.kell, .combo-half.kell {
-  background: var(--fur-brown) !important; color: var(--text-primary) !important; border-style: solid; border-color: var(--fur-brown-soft);
-}
+.slot.van, .combo-half.van { background: var(--moss) !important; color: var(--water-deep) !important; border-style: solid; border-color: var(--moss-soft); }
+.slot.van .sticker-num, .combo-half.van .sticker-num, .slot.van .sticker-name, .combo-half.van .sticker-name { color: var(--water-deep); font-weight: 700; }
+.slot.kell, .combo-half.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; border-style: solid; border-color: var(--fur-brown-soft); }
 .slot.kell .sticker-num, .combo-half.kell .sticker-num { color: var(--text-primary); }
-.slot.kell .sticker-tag, .combo-half.kell .sticker-tag { background: rgba(0,0,0,0.3); color: var(--sand); }
-
-.slot.foglalva, .combo-half.foglalva {
-  background: var(--reserved-blue) !important; color: #FFF !important; border-style: solid; border-color: var(--reserved-blue-soft);
-}
+.slot.foglalva, .combo-half.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; border-style: solid; border-color: var(--reserved-blue-soft); }
 .slot.foglalva .sticker-num, .combo-half.foglalva .sticker-num { color: #FFF; }
-.slot.foglalva .sticker-tag, .combo-half.foglalva .sticker-tag { background: rgba(0,0,0,0.35); color: #FFF; }
 
 /* KÁRTYÁK & ÜZENETEK */
 .card {
@@ -403,231 +294,90 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-gift { background: var(--gift-gold); color: var(--water-deep); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .badge-ratio { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
 
-/* Belső üzenet kártya */
-.message-card {
-  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
-  border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;
-}
+.message-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .message-card.incoming { border-left: 4px solid var(--amber); }
 .message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.9; }
 .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; }
-.message-body {
-  background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm);
-  font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; color: var(--text-primary);
-}
+.message-body { background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; }
 
-/* BOLT-RADAR & TALÁLKOZÓ KÁRTYÁK */
-.radar-card {
-  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
-  border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;
-}
+.radar-card, .meetup-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .badge-radar-van { background: var(--amber); color: var(--water-deep); font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
 .badge-radar-nincs { background: var(--danger); color: #FFF; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
-.radar-attached-img {
-  max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2);
-  margin-top: 8px; display: block; object-fit: cover; cursor: pointer;
-}
+.radar-attached-img { max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2); margin-top: 8px; display: block; object-fit: cover; cursor: pointer; }
+.meetup-time-badge { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 
-.meetup-card {
-  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
-  border-left: 4px solid var(--amber); border-radius: var(--radius-md);
-  padding: 14px; margin-bottom: 12px;
+/* HUB KÁRTYÁK & FŐOLDAL */
+.hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.album-hub-card {
+  background: var(--surface-card); border: 1px solid rgba(243, 238, 223, 0.12);
+  border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column;
+  justify-content: space-between; transition: transform 0.2s ease, border-color 0.2s ease; cursor: pointer;
 }
-.meetup-time-badge {
-  background: rgba(216, 155, 74, 0.2); color: var(--amber);
-  font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+.album-hub-card:hover { transform: translateY(-2px); border-color: var(--amber); }
+.album-hub-card.featured-card {
+  border: 2px solid var(--amber);
+  background: linear-gradient(180deg, rgba(216, 155, 74, 0.15) 0%, rgba(20, 69, 63, 0.8) 100%);
 }
+.hub-card-thumb { width: 100%; height: 140px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid rgba(243, 238, 223, 0.15); }
+.album-hub-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.album-type-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: rgba(216, 155, 74, 0.2); color: var(--amber); }
+.album-hub-progress-track { background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
+.album-hub-progress-bar { background: var(--amber); height: 100%; border-radius: 999px; transition: width 0.4s ease; }
 
-/* 📊 LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
+/* LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
 .trade-planner-bar {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 720px;
-  width: calc(100% - 24px);
-  background: rgba(8, 27, 26, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1.5px solid var(--amber);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-  z-index: 2500;
-  animation: slideUp 0.3s ease;
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  max-width: 720px; width: calc(100% - 24px); background: rgba(8, 27, 26, 0.95);
+  backdrop-filter: blur(10px); border: 1.5px solid var(--amber); border-radius: var(--radius-md);
+  padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 2500; animation: slideUp 0.3s ease;
 }
-@keyframes slideUp {
-  from { transform: translate(-50%, 100%); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
-}
+@keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 .planner-info { font-size: 0.85rem; color: var(--sand); font-weight: 600; }
 
-/* ⚡ STATISZTIKAI GYORSUGRÓ SÁV + NYILAK */
-.stats-quicknav-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 14px;
-}
-.stats-quicknav {
-  display: flex;
-  overflow-x: auto;
-  gap: 6px;
-  padding: 4px 30px 6px 30px;
-  width: 100%;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  scroll-behavior: smooth;
-}
+/* STATISZTIKA GYORSUGRÓ */
+.stats-quicknav-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 14px; }
+.stats-quicknav { display: flex; overflow-x: auto; gap: 6px; padding: 4px 30px 6px 30px; width: 100%; scrollbar-width: none; scroll-behavior: smooth; }
 .stats-quicknav::-webkit-scrollbar { display: none; }
-
 .btn-stat-jump {
-  background: var(--water-mid);
-  border: 1px solid rgba(216, 155, 74, 0.35);
-  color: var(--sand);
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
+  background: var(--water-mid); border: 1px solid rgba(216, 155, 74, 0.35); color: var(--sand);
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 6px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s ease;
 }
-.btn-stat-jump:hover {
-  background: var(--amber);
-  color: var(--water-deep);
-  border-color: var(--amber);
-  font-weight: 700;
-}
+.btn-stat-jump:hover { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
+.quicknav-arrow-left, .quicknav-arrow { position: absolute; top: 50%; transform: translateY(-50%); color: var(--amber); font-size: 0.75rem; font-weight: 800; cursor: pointer; z-index: 10; }
+.quicknav-arrow-left { left: 0; padding: 6px 14px 6px 4px; }
+.quicknav-arrow { right: 0; padding: 6px 4px 6px 14px; }
+.stat-section-anchor { scroll-margin-top: 100px; }
 
-.quicknav-arrow-left {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(270deg, transparent 0%, var(--water-deep) 65%);
-  color: var(--amber);
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 6px 14px 6px 4px;
-  cursor: pointer;
-  z-index: 10;
-  transition: opacity 0.25s ease;
-  animation: bounceLeft 1.5s infinite;
-}
-@keyframes bounceLeft {
-  0%, 100% { transform: translateY(-50%) translateX(0); }
-  50% { transform: translateY(-50%) translateX(-3px); }
-}
-
-.quicknav-arrow {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(90deg, transparent 0%, var(--water-deep) 65%);
-  color: var(--amber);
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 6px 4px 6px 14px;
-  cursor: pointer;
-  z-index: 10;
-  transition: opacity 0.25s ease;
-  animation: bounceRight 1.5s infinite;
-}
-@keyframes bounceRight {
-  0%, 100% { transform: translateY(-50%) translateX(0); }
-  50% { transform: translateY(-50%) translateX(3px); }
-}
-
-.stat-section-anchor {
-  scroll-margin-top: 100px;
-}
-
-/* VÁROSI HŐTÉRKÉP & TÉRKÉP STÍLUSOK */
+/* HŐTÉRKÉP */
 .map-heatmap-container {
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(216, 155, 74, 0.3);
-  overflow: hidden;
-  padding: 8px;
-  margin-bottom: 12px;
+  position: relative; width: 100%; background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
+  border-radius: var(--radius-md); border: 1px solid rgba(216, 155, 74, 0.3); overflow: hidden; padding: 8px; margin-bottom: 12px;
 }
-.hungary-svg-map {
-  width: 100%;
-  height: auto;
-  max-height: 420px;
-  display: block;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
-}
-.map-outline {
-  fill: rgba(20, 69, 63, 0.75); stroke: var(--amber); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round;
-}
+.hungary-svg-map { width: 100%; height: auto; max-height: 420px; display: block; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+.map-outline { fill: rgba(20, 69, 63, 0.75); stroke: var(--amber); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 .map-river { fill: none; stroke: rgba(99, 179, 237, 0.4); stroke-width: 2; stroke-dasharray: 4, 3; }
 .map-lake { fill: #3182CE; stroke: #63B3ED; stroke-width: 1.5; }
-
 #heatmap-overlay-pins { position: absolute; inset: 0; pointer-events: none; }
-
 .heat-pin {
-  position: absolute; transform: translate(-50%, -50%);
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; cursor: pointer; pointer-events: auto;
-  transition: transform 0.25s ease; user-select: none;
+  position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer; pointer-events: auto; transition: transform 0.25s ease; user-select: none;
 }
 .heat-pin:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 20; }
-.heat-pin.fire {
-  background: radial-gradient(circle, #FF453A 0%, #E85A4F 100%);
-  box-shadow: 0 0 14px rgba(232, 90, 79, 1); border: 2px solid #FFFFFF; color: #FFF; font-size: 0.72rem; font-weight: 800;
-  animation: pulseHeat 1.8s infinite;
-}
-.heat-pin.warm {
-  background: radial-gradient(circle, #FFD166 0%, #D89B4A 100%);
-  box-shadow: 0 0 10px rgba(216, 155, 74, 0.85); border: 1.5px solid #FFFFFF; color: #081B1A; font-size: 0.68rem; font-weight: 800;
-}
-.heat-pin.cool {
-  background: var(--water-light); box-shadow: 0 0 6px rgba(243, 238, 223, 0.4);
-  border: 1.2px solid rgba(243, 238, 223, 0.6); color: var(--sand); font-size: 0.62rem; font-weight: 700;
-}
-
+.heat-pin.fire { background: radial-gradient(circle, #FF453A 0%, #E85A4F 100%); box-shadow: 0 0 14px rgba(232, 90, 79, 1); border: 2px solid #FFFFFF; color: #FFF; font-size: 0.72rem; font-weight: 800; animation: pulseHeat 1.8s infinite; }
+.heat-pin.warm { background: radial-gradient(circle, #FFD166 0%, #D89B4A 100%); box-shadow: 0 0 10px rgba(216, 155, 74, 0.85); border: 1.5px solid #FFFFFF; color: #081B1A; font-size: 0.68rem; font-weight: 800; }
+.heat-pin.cool { background: var(--water-light); box-shadow: 0 0 6px rgba(243, 238, 223, 0.4); border: 1.2px solid rgba(243, 238, 223, 0.6); color: var(--sand); font-size: 0.62rem; font-weight: 700; }
 .heat-chip-fire { background: var(--danger); color: #FFF; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
 .heat-chip-warm { background: var(--amber); color: var(--water-deep); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
 .heat-chip-cool { background: var(--water-light); color: var(--sand); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+@keyframes pulseHeat { 0% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); } 50% { box-shadow: 0 0 16px rgba(232, 90, 79, 1); } 100% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); } }
 
-@keyframes pulseHeat {
-  0% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); }
-  50% { box-shadow: 0 0 16px rgba(232, 90, 79, 1); }
-  100% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); }
-}
-
-/* TELÍTETTSÉGI KÁRTYÁK */
-.segment-card {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 10px 8px;
-  border-radius: var(--radius-sm);
-  text-align: center;
-}
-
-/* FEJEZETI NEHÉZSÉGI SÁVOK */
-.difficulty-bar-row {
-  display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem;
-}
-.difficulty-bar-header {
-  display: flex; justify-content: space-between; color: var(--sand);
-}
-.difficulty-bar-track {
-  background: rgba(0,0,0,0.3); height: 8px; border-radius: 999px; overflow: hidden;
-}
-.difficulty-bar-fill {
-  height: 100%; border-radius: 999px; transition: width 0.6s ease;
-}
+.segment-card { background: rgba(0, 0, 0, 0.25); padding: 10px 8px; border-radius: var(--radius-sm); text-align: center; }
+.difficulty-bar-row { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; }
+.difficulty-bar-header { display: flex; justify-content: space-between; color: var(--sand); }
+.difficulty-bar-track { background: rgba(0,0,0,0.3); height: 8px; border-radius: 999px; overflow: hidden; }
+.difficulty-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
 
 /* GOMBOK ÉS MEZŐK */
 .btn {
@@ -638,16 +388,8 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .btn:hover { background: var(--amber-hover); }
 .btn-sm { padding: 5px 12px; font-size: 0.78rem; border-radius: var(--radius-sm); }
-
-.btn-contact-green {
-  background: var(--moss) !important;
-  color: var(--water-deep) !important;
-  font-weight: 700;
-}
-.btn-contact-green:hover {
-  background: var(--moss-soft) !important;
-}
-
+.btn-contact-green { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
+.btn-contact-green:hover { background: var(--moss-soft) !important; }
 .btn-primary { background: var(--amber); color: var(--water-deep); }
 .btn-google { background: #FFFFFF; color: #333333; }
 .btn-secondary { background: transparent; border: 1px solid rgba(243,238,223,0.3); color: var(--text-primary); }
@@ -662,26 +404,20 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.25); color: var(--text-primary);
   padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; width: 100%; font-family: var(--font-body);
 }
-
 .form-group { margin-bottom: 14px; }
 .form-group label { display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted); }
 .checkbox-label, .radio-label { display: flex; gap: 8px; font-size: 0.82rem; color: var(--text-muted); align-items: flex-start; cursor: pointer; margin-bottom: 10px; }
 .checkbox-label input, .radio-label input { margin-top: 3px; }
 
-.batch-box {
-  background: rgba(13, 46, 44, 0.6); border: 1px dashed var(--amber); border-radius: var(--radius-md);
-  padding: 14px; margin-bottom: 16px; display: none;
-}
-
+.batch-box { background: rgba(13, 46, 44, 0.6); border: 1px dashed var(--amber); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; display: none; }
 .stats-ranking-list { list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
 .stats-ranking-item {
-  display: flex; justify-content: space-between; align-items: center;
-  background: rgba(13, 46, 44, 0.4); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem;
-  cursor: pointer; transition: background 0.2s ease;
+  display: flex; justify-content: space-between; align-items: center; background: rgba(13, 46, 44, 0.4);
+  padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; cursor: pointer; transition: background 0.2s ease;
 }
 .stats-ranking-item:hover { background: rgba(216, 155, 74, 0.15); }
 
-/* Darabszám Popover */
+/* POPOVER ÉS MODALOK */
 .qty-popover {
   position: fixed; background: var(--water-deep); border: 1.5px solid var(--amber); border-radius: var(--radius-md);
   padding: 6px 8px; display: none; flex-direction: column; gap: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 2500;
@@ -691,12 +427,10 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .qty-row { display: flex; gap: 4px; }
 .qty-pop-btn {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.2); color: var(--sand);
-  padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
-  min-width: 32px; text-align: center;
+  padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; min-width: 32px; text-align: center;
 }
 .qty-pop-btn.active, .qty-pop-btn:hover { background: var(--amber); color: var(--water-deep); }
 
-/* Modális ablakok */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none;
   align-items: center; justify-content: center; z-index: 2500; padding: 16px;
@@ -709,107 +443,21 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
 
-/* Oklevél */
-.certificate-card {
-  background: #081B1A; border: 2px solid var(--amber); border-radius: var(--radius-md);
-  padding: 24px 16px; text-align: center; color: var(--sand); margin-bottom: 14px;
-}
+.certificate-card { background: #081B1A; border: 2px solid var(--amber); border-radius: var(--radius-md); padding: 24px 16px; text-align: center; color: var(--sand); margin-bottom: 14px; }
 .cert-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--amber); margin: 0 0 6px; }
 .cert-name { font-size: 1.3rem; font-weight: 700; color: #FFF; margin: 8px 0; border-bottom: 1px dashed var(--amber); padding-bottom: 6px; }
 
-/* DONABLY SZEKCIÓ */
 .support-footer {
-  margin-top: 40px; padding: 22px 16px; border-radius: var(--radius-md);
-  background: rgba(20, 69, 63, 0.7); border: 1.5px solid rgba(216, 155, 74, 0.35);
-  text-align: center; color: var(--text-primary);
+  margin-top: 40px; padding: 22px 16px; border-radius: var(--radius-md); background: rgba(20, 69, 63, 0.7);
+  border: 1.5px solid rgba(216, 155, 74, 0.35); text-align: center; color: var(--text-primary);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 .btn-donably {
   background: #E85A4F !important; color: #FFFFFF !important; font-weight: 800; font-size: 0.92rem;
-  padding: 10px 22px; text-decoration: none; border-radius: var(--radius-sm);
-  box-shadow: 0 4px 14px rgba(232, 90, 79, 0.45); display: inline-flex;
+  padding: 10px 22px; text-decoration: none; border-radius: var(--radius-sm); box-shadow: 0 4px 14px rgba(232, 90, 79, 0.45); display: inline-flex;
 }
-.btn-donably:hover { filter: brightness(1.12); }
-
 .toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: var(--amber); color: var(--water-deep); padding: 10px 20px;
-  border-radius: 999px; font-weight: 700; font-size: 0.85rem; display: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
-}
-
-#btn-toggle-batch.active {
-  background: var(--amber) !important;
-  color: var(--water-deep) !important;
-  border-color: var(--amber) !important;
-  font-weight: 700;
-}
-
-/* =========================================================================
-   4.0 TÖBB-ALBUMOS KEZDŐLAP & HUB STÍLUSOK
-   ========================================================================= */
-
-.active-album-banner {
-  background: rgba(20, 69, 63, 0.6);
-  border: 1px solid rgba(216, 155, 74, 0.3);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-}
-
-.hub-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-
-.album-hub-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(243, 238, 223, 0.12);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-  cursor: pointer;
-}
-.album-hub-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--amber);
-}
-
-.album-hub-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-.album-type-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(216, 155, 74, 0.2);
-  color: var(--amber);
-}
-
-.album-hub-progress-track {
-  background: rgba(0, 0, 0, 0.3);
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 8px 0 4px;
-}
-.album-hub-progress-bar {
-  background: var(--amber);
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-@media (max-width: 600px) {
-  .primary-nav {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--amber);
+  color: var(--water-deep); padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
+  display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
 }
