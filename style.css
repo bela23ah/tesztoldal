@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan - style.css (v4.0 Teljes & Fejlesztett Eredeti Stíluslap)
+   Lutra Album Cserebere (Lidl 2026) - style.css (v3.7 Javított)
    ========================================================================= */
 
 :root {
@@ -88,118 +88,7 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* AKTÍV GYŰJTEMÉNY SÁV */
-.active-album-banner {
-  background: rgba(20, 69, 63, 0.8);
-  border: 1.5px solid var(--amber);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-.active-album-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 6px;
-  object-fit: cover;
-  border: 1px solid var(--amber);
-  background: var(--water-mid);
-}
-.active-album-subtitle-tag {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: block;
-}
-
-/* FŐOLDALI GYŰJTEMÉNYEK (HUB) KÁRTYÁK */
-.hub-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-
-.album-hub-card {
-  background: var(--surface-card);
-  border: 1px solid rgba(243, 238, 223, 0.12);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-.album-hub-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--amber);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-.album-hub-card.card-featured {
-  border-color: var(--amber);
-  background: linear-gradient(180deg, rgba(216, 155, 74, 0.12) 0%, rgba(20, 69, 63, 0.75) 100%);
-}
-
-.album-hub-cover-wrap {
-  width: 100%;
-  height: 130px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-bottom: 10px;
-  background: var(--water-deep);
-  border: 1px solid rgba(243, 238, 223, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.album-hub-cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.album-hub-cover-placeholder {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  color: var(--sand);
-  text-align: center;
-  padding: 8px;
-}
-
-.album-hub-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-.album-type-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(216, 155, 74, 0.2);
-  color: var(--amber);
-}
-
-.album-hub-progress-track {
-  background: rgba(0, 0, 0, 0.3);
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 8px 0 4px;
-}
-.album-hub-progress-bar {
-  background: var(--amber);
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-/* FŐNAVIGÁCIÓ */
+/* 3.0-S FŐNAVIGÁCIÓ */
 .primary-nav {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -215,7 +104,9 @@ header {
   }
 }
 
-.nav-dropdown-item { position: relative; }
+.nav-dropdown-item {
+  position: relative;
+}
 .primary-tab {
   width: 100%;
   background: var(--water-mid);
@@ -241,10 +132,12 @@ header {
   border-color: var(--amber);
   font-weight: 700;
 }
-.primary-tab.tab-highlight-radar { border-color: rgba(216, 155, 74, 0.4); }
+.primary-tab.tab-highlight-radar {
+  border-color: rgba(216, 155, 74, 0.4);
+}
 .dropdown-arrow { font-size: 0.65rem; opacity: 0.7; }
 
-/* ASZTALI LEBEGŐ DROPDOWN MENÜ */
+/* ASZTALI LEBEGŐ DROPDOWN MENÜ (LÁTHATATLAN HOVER-HÍDDAL) */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -295,7 +188,9 @@ header {
 }
 
 @media (min-width: 768px) {
-  .nav-dropdown-item:hover .dropdown-menu { display: flex; }
+  .nav-dropdown-item:hover .dropdown-menu {
+    display: flex;
+  }
 }
 
 /* MOBIL ALNAVIGÁCIÓS SÁV */
@@ -304,7 +199,11 @@ header {
   border-bottom: 1px solid rgba(243,238,223,0.1);
   padding-bottom: 8px;
 }
-.sub-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.sub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 .sub-tab {
   background: transparent;
   border: 1px solid rgba(243,238,223,0.18);
@@ -334,8 +233,12 @@ header {
 .badge-radar-count { background: var(--amber); color: var(--water-deep); }
 .badge-meetup-count { background: var(--amber); color: var(--water-deep); }
 .alert-badge {
-  background: var(--danger); color: #FFFFFF; font-size: 0.7rem; font-weight: 900;
-  padding: 0 5px; line-height: 1.2;
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0 5px;
+  line-height: 1.2;
 }
 
 .view { display: none; }
@@ -413,13 +316,8 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1px solid var(--water-deep); z-index: 5; pointer-events: none;
 }
 .qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
-.qty-badge.split {
-  background: var(--water-deep);
-  border: 1.2px solid var(--amber);
-  color: var(--amber);
-}
 
-/* 2. ALBUM KÖNYV NÉZET */
+/* 2. ALBUM NÉZET */
 .book-nav {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
   margin-bottom: 14px; background: var(--water-mid); padding: 8px 14px; border-radius: var(--radius-md);
@@ -505,30 +403,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-gift { background: var(--gift-gold); color: var(--water-deep); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .badge-ratio { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
 
-/* KIXELHETŐ MATRICA CHIPEK A PÁROSÍTÁSNÁL */
-.sticker-chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;
-  cursor: pointer; user-select: none; transition: all 0.15s ease;
-}
-.sticker-chip.give {
-  background: rgba(216, 155, 74, 0.2); color: var(--sand); border: 1px solid rgba(216, 155, 74, 0.4);
-}
-.sticker-chip.give:hover {
-  background: rgba(216, 155, 74, 0.35); border-color: var(--amber);
-}
-.sticker-chip.get {
-  background: rgba(107, 138, 90, 0.25); color: var(--moss-soft); border: 1px solid rgba(107, 138, 90, 0.4);
-  cursor: default;
-}
-.sticker-chip.excluded {
-  background: rgba(232, 90, 79, 0.15) !important;
-  color: #FFC0BA !important;
-  border-color: var(--danger) !important;
-  text-decoration: line-through;
-  opacity: 0.45;
-}
-
 /* Belső üzenet kártya */
 .message-card {
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
@@ -564,7 +438,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
 }
 
-/* LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
+/* 📊 LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
 .trade-planner-bar {
   position: fixed;
   bottom: 20px;
@@ -591,7 +465,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .planner-info { font-size: 0.85rem; color: var(--sand); font-weight: 600; }
 
-/* STATISZTIKAI GYORSUGRÓ SÁV + NYILAK */
+/* ⚡ STATISZTIKAI GYORSUGRÓ SÁV + NYILAK */
 .stats-quicknav-wrapper {
   position: relative;
   display: flex;
@@ -778,11 +652,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .btn-google { background: #FFFFFF; color: #333333; }
 .btn-secondary { background: transparent; border: 1px solid rgba(243,238,223,0.3); color: var(--text-primary); }
 .btn-secondary:hover { border-color: var(--amber); color: var(--amber); background: transparent; }
-.btn-secondary.liked {
-  background: rgba(232, 90, 79, 0.2) !important;
-  border-color: var(--danger) !important;
-  color: #FFC0BA !important;
-}
 .btn-blue { background: var(--reserved-blue); color: #FFFFFF; }
 .btn-danger { background: var(--danger); color: #FFFFFF; }
 .btn-fb { background: #1877F2; color: #FFFFFF; }
@@ -858,4 +727,20 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .btn-donably {
   background: #E85A4F !important; color: #FFFFFF !important; font-weight: 800; font-size: 0.92rem;
   padding: 10px 22px; text-decoration: none; border-radius: var(--radius-sm);
-  box-shadow: 0 4px 14px rgba(232, 9
+  box-shadow: 0 4px 14px rgba(232, 90, 79, 0.45); display: inline-flex;
+}
+.btn-donably:hover { filter: brightness(1.12); }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--amber); color: var(--water-deep); padding: 10px 20px;
+  border-radius: 999px; font-weight: 700; font-size: 0.85rem; display: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
+}
+
+#btn-toggle-batch.active {
+  background: var(--amber) !important;
+  color: var(--water-deep) !important;
+  border-color: var(--amber) !important;
+  font-weight: 700;
+}
