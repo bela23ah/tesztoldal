@@ -1,5 +1,5 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0 - 1. RÉSZ: ALAPOK & MOTOR)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0 - 1. RÉSZ: ALAPOK & HUB)
 // =========================================================================
 
 let ALBUMS_REGISTRY = {
@@ -28,7 +28,7 @@ let ALBUMS_REGISTRY = {
     type: "sticker",
     typeLabel: "Matricaalbum",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F130c309d-cda4-435f-8112-51b236ec8880.jpg&w=3840&q=75",
-    featured: false,
+    featured: true,
     hasRadar: true,
     radarType: "spar",
     hasChapters: false
@@ -43,7 +43,7 @@ let ALBUMS_REGISTRY = {
     type: "sticker",
     typeLabel: "Matricaalbum",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F10110c3c-f734-4083-a1a1-14762ecda0c5.jpg&w=3840&q=75",
-    featured: false,
+    featured: true,
     hasRadar: false,
     radarType: "none",
     hasChapters: false
@@ -58,9 +58,39 @@ let ALBUMS_REGISTRY = {
     type: "sticker",
     typeLabel: "Matricaalbum",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F3a6ea592-5bb6-411f-88ef-d4bcd2f31823.jpg&w=3840&q=75",
-    featured: false,
+    featured: true,
     hasRadar: false,
     radarType: "none",
+    hasChapters: false
+  },
+  "fifa-club-world-cup-2025": {
+    id: "fifa-club-world-cup-2025",
+    title: "FIFA Club World Cup 2025 – Adrenalyn XL",
+    subtitle: "Hivatalos FIFA kártyák",
+    publisher: "Panini",
+    year: 2025,
+    totalItems: 387,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F91b669c0-41bc-4c83-a24d-36c3504e5b16.png&w=3840&q=75",
+    featured: true,
+    hasRadar: true,
+    radarType: "retail_general",
+    hasChapters: false
+  },
+  "panini-fifa-world-cup-2026": {
+    id: "panini-fifa-world-cup-2026",
+    title: "FIFA World Cup 2026",
+    subtitle: "Hivatalos VB matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 1345,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F6e6fdbf7-9a10-4a50-8337-f54e867ba053.jpg&w=3840&q=75",
+    featured: true,
+    hasRadar: true,
+    radarType: "retail_general",
     hasChapters: false
   },
   "stranger-things-adventure-2026": {
@@ -91,36 +121,6 @@ let ALBUMS_REGISTRY = {
     featured: false,
     hasRadar: false,
     radarType: "none",
-    hasChapters: false
-  },
-  "fifa-club-world-cup-2025": {
-    id: "fifa-club-world-cup-2025",
-    title: "FIFA Club World Cup 2025 – Adrenalyn XL",
-    subtitle: "Hivatalos FIFA kártyák",
-    publisher: "Panini",
-    year: 2025,
-    totalItems: 387,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F91b669c0-41bc-4c83-a24d-36c3504e5b16.png&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "retail_general",
-    hasChapters: false
-  },
-  "panini-fifa-world-cup-2026": {
-    id: "panini-fifa-world-cup-2026",
-    title: "FIFA World Cup 2026",
-    subtitle: "Hivatalos VB matricagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 1345,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F6e6fdbf7-9a10-4a50-8337-f54e867ba053.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "retail_general",
     hasChapters: false
   },
   "uefa-euro-2024-match-attax": {
@@ -201,12 +201,12 @@ let ALBUMS_REGISTRY = {
   "minecraft-kinder-joy": {
     id: "minecraft-kinder-joy",
     title: "Minecraft Kinder Joy",
-    subtitle: "Figura & gyűjtemény",
+    subtitle: "Figura gyűjtemény",
     publisher: "Kinder",
     year: 2026,
     totalItems: 28,
     type: "figure",
-    typeLabel: "Figura",
+    typeLabel: "Figura / Kinder",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fe6ed94a7-8dd0-4a50-90de-8b92a592c06d.webp&w=3840&q=75",
     featured: false,
     hasRadar: false,
@@ -221,7 +221,7 @@ let ALBUMS_REGISTRY = {
     year: 2026,
     totalItems: 24,
     type: "figure",
-    typeLabel: "Figura",
+    typeLabel: "Figura / Kinder",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdc648487-9950-4179-a2f8-4a96cf8a7283.webp&w=3840&q=75",
     featured: false,
     hasRadar: false,
@@ -292,6 +292,8 @@ let ALBUMS_REGISTRY = {
 
 let currentAlbumId = localStorage.getItem('lutra_active_album') || "lidl-lutra-2026";
 let currentHubFilter = "all";
+let showAllHubAlbums = false;
+let editingAlbumId = null;
 
 function getActiveAlbum() {
   return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"];
@@ -304,7 +306,7 @@ function getActiveAlbumSize() {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// ÁRUHÁZLÁNC ADATBÁZISOK (BOLTI RADARHOZ)
+// ÁRUHÁZLÁNC ADATBÁZISOK
 const STORE_DATABASES = {
   lidl: [
     "Agárd – Akácfa utca 2.", "Ajka – Hársfa utca 1/A", "Aszód – Pesti út 14-16.",
@@ -336,7 +338,6 @@ const STORE_DATABASES = {
   ]
 };
 
-// 2. FÁZIS: EGYEDI KÓDOK & NEVEK LEKÉRDEZÉSE (pl. #MEX 1 vagy #ENG 11)
 function getItemLabel(num, albumId = currentAlbumId) {
   const album = ALBUMS_REGISTRY[albumId];
   if (album && album.customItems && album.customItems[num - 1]) {
@@ -352,7 +353,6 @@ function getItemFullName(num, albumId = currentAlbumId) {
   return getItemLabel(num, albumId);
 }
 
-// 2. FÁZIS: AUTOMATIKUS TARTOMÁNY-KIBONTÓ (pl. "MEX 1-19, HUN 1-20, LE 1-5")
 function expandCustomItemsText(rawText) {
   if (!rawText || !rawText.trim()) return [];
   const tokens = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
@@ -378,7 +378,6 @@ function expandCustomItemsText(rawText) {
   return result;
 }
 
-// 2. FÁZIS: DINAMIKUS OLDALBEOSZTÁS / FEJEZETGENERÁTOR
 function parseChaptersText(rawText, customItems = []) {
   if (!rawText || !rawText.trim()) return [];
   const lines = rawText.split('\n');
@@ -443,7 +442,6 @@ function getActiveChapters() {
   return [];
 }
 
-// Golyóálló eseménykezelő
 function safeAddListener(id, eventOrHandler, handler) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -500,7 +498,6 @@ function getFirstValidString(...values) {
   return '';
 }
 
-// Multi-Album adatszeparáció és beolvasás
 function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   if (!data) return null;
 
@@ -583,6 +580,7 @@ let myOutgoingMessages = [];
 let radarReports = [];
 let meetupEvents = [];
 let activeAnnouncements = [];
+let albumSuggestions = [];
 let selectedTradePlanUids = new Set();
 let tradePlanManualOverrides = {};
 let previousIncomingCount = null;
@@ -605,6 +603,7 @@ let radarUnsubscribe = null;
 let meetupsUnsubscribe = null;
 let announcementsUnsubscribe = null;
 let albumsUnsubscribe = null;
+let suggestionsUnsubscribe = null;
 let db = null;
 let auth = null;
 
@@ -778,13 +777,17 @@ function initFavoriteSelects() {
   });
 }
 
+// 6 KÁRTYÁS HUB MEGJELENÍTÉS + RETRO JELVÉNYEK + LENYITÓ GOMB
 function renderHub() {
   const container = document.getElementById('hub-albums-grid');
+  const toggleBtn = document.getElementById('btn-toggle-all-hub-albums');
+  const countSpan = document.getElementById('hub-total-albums-count');
   if (!container) return;
 
-  const albumsList = Object.values(ALBUMS_REGISTRY).filter(album => {
+  const allFilteredList = Object.values(ALBUMS_REGISTRY).filter(album => {
     if (currentHubFilter === 'sticker') return album.type === 'sticker';
     if (currentHubFilter === 'card') return album.type === 'card';
+    if (currentHubFilter === 'figure') return album.type === 'figure';
     if (currentHubFilter === 'retro') return album.year < 2010 || album.isRetro === true;
     if (currentHubFilter === 'my') {
       const myCount = ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length;
@@ -793,7 +796,25 @@ function renderHub() {
     return true;
   });
 
-  container.innerHTML = albumsList.map(album => {
+  if (countSpan) countSpan.textContent = allFilteredList.length;
+
+  let displayList = allFilteredList;
+  if (currentHubFilter === 'all' && !showAllHubAlbums) {
+    displayList = allFilteredList.slice(0, 6);
+  }
+
+  if (toggleBtn) {
+    if (currentHubFilter !== 'all' || allFilteredList.length <= 6) {
+      toggleBtn.style.display = 'none';
+    } else {
+      toggleBtn.style.display = 'inline-block';
+      toggleBtn.innerHTML = showAllHubAlbums 
+        ? '▲ Csak a kiemeltek mutatása (6 db)' 
+        : `Összes gyűjtemény listázása (${allFilteredList.length} db) ▼`;
+    }
+  }
+
+  container.innerHTML = displayList.map(album => {
     const isFeatured = album.featured === true || album.id === 'lidl-lutra-2026';
     const isRetro = album.year < 2010 || album.isRetro === true;
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
@@ -804,7 +825,7 @@ function renderHub() {
     return `
       <div class="album-hub-card ${isFeatured ? 'featured-card' : ''}" data-album-id="${escapeHtml(album.id)}">
         <div>
-          <img src="${cover}" class="hub-card-thumb" alt="${escapeHtml(album.title)}">
+          <img src="${cover}" class="hub-card-thumb" alt="${escapeHtml(album.title)}" loading="lazy">
           <div class="album-hub-header">
             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
               <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
@@ -835,6 +856,11 @@ function renderHub() {
   }).join('');
 }
 
+safeAddListener('btn-toggle-all-hub-albums', () => {
+  showAllHubAlbums = !showAllHubAlbums;
+  renderHub();
+});
+
 safeAddListener('hub-albums-grid', (e) => {
   const btn = e.target.closest('[data-action="select-album"]');
   const card = e.target.closest('.album-hub-card');
@@ -844,7 +870,41 @@ safeAddListener('hub-albums-grid', (e) => {
   selectAlbum(albumId);
 });
 
-// 2. FÁZIS: BOLTI RADAR DATALIST FRISSÍTÉSE AZ AKTÍV ÁRUHÁZLÁNC SZERINT
+// KÖZÖSSÉGI ÚJ GYŰJTEMÉNY JAVASLAT BEKÜLDÉSE (MODAL)
+safeAddListener('btn-open-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.add('open'));
+safeAddListener('btn-close-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
+safeAddListener('btn-close-suggest-album-2', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
+
+safeAddListener('btn-submit-suggest-album', async () => {
+  const title = document.getElementById('suggest-album-title')?.value.trim();
+  const publisher = document.getElementById('suggest-album-publisher')?.value.trim() || 'Egyéb';
+  const year = parseInt(document.getElementById('suggest-album-year')?.value || '2026', 10);
+  const type = document.getElementById('suggest-album-type')?.value || 'sticker';
+  const totalItems = parseInt(document.getElementById('suggest-album-total')?.value || '100', 10);
+  const note = document.getElementById('suggest-album-note')?.value.trim() || '';
+
+  if (!title) return showToast("Kérlek add meg a gyűjtemény nevét!");
+
+  try {
+    if (db) {
+      await db.collection("album_suggestions").add({
+        title, publisher, year, type, totalItems, note,
+        submittedByUid: currentUser ? currentUser.uid : 'vendeg',
+        submittedByName: myProfile.nev || 'Gyűjtő',
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: "pending"
+      });
+    }
+
+    if (document.getElementById('suggest-album-title')) document.getElementById('suggest-album-title').value = '';
+    if (document.getElementById('suggest-album-note')) document.getElementById('suggest-album-note').value = '';
+    document.getElementById('modal-suggest-album')?.classList.remove('open');
+    showToast("Köszönjük! A javaslatodat elküldtük az adminisztrátornak.");
+  } catch (err) {
+    showToast("Hiba: " + err.message);
+  }
+});
+
 function updateRadarStoreDatalist() {
   const activeAlbum = getActiveAlbum();
   const datalist = document.getElementById('lidl-all-stores');
@@ -920,6 +980,12 @@ function selectAlbum(albumId) {
   if (diffSec) diffSec.style.display = activeAlbum.hasChapters ? 'block' : 'none';
   if (diffJump) diffJump.style.display = activeAlbum.hasChapters ? 'inline-block' : 'none';
 
+  // Figurák / Kinder tojások esetén tojás alakú rács bekapcsolása
+  const gridEl = document.getElementById('matrica-grid');
+  if (gridEl) {
+    gridEl.classList.toggle('matrica-grid-figures', activeAlbum.type === 'figure');
+  }
+
   loadAlbumState(albumId);
   initFavoriteSelects();
   switchView('matricaim');
@@ -967,11 +1033,14 @@ document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   });
 });
 
+// RÁCS RAJZOLÁSA (KINDERTOJÁS / FIGURA FORMÁZÁSSAL)
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
 
+  const activeAlbum = getActiveAlbum();
   const totalSize = getActiveAlbumSize();
+  const isFigure = activeAlbum.type === 'figure';
   let html = '';
   const vanSet = new Set(ensureArray(myProfile.van));
   const kellSet = new Set(ensureArray(myProfile.kell));
@@ -987,6 +1056,8 @@ function renderGrid() {
     if (currentFilter === 'foglalva' && !isFoglalva) continue;
 
     let cls = isVan ? 'van' : isKell ? 'kell' : isFoglalva ? 'foglalva' : '';
+    if (isFigure) cls += ' cell-figure';
+
     let qty = 1;
     let badgeCls = 'qty-badge';
     if (isVan && myProfile.vanCounts && myProfile.vanCounts[i]) qty = myProfile.vanCounts[i];
@@ -1490,7 +1561,7 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
   });
 });
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 - 2. RÉSZ: PÁROSÍTÁSOK, TERVEZŐ & RADAR)
+// Cserélj Okosan - app.js (v4.0 - 2. RÉSZ: ROUTER, PÁROSÍTÁSOK & RADAR)
 // =========================================================================
 
 function switchCategory(catName) {
@@ -1569,6 +1640,7 @@ function switchView(viewName) {
   if (viewName === 'admin') {
     renderAdminAnnouncements();
     renderAdminAlbumsList();
+    renderAdminSuggestionsList();
   }
   if (viewName === 'profil') initFavoriteSelects();
 }
@@ -3442,7 +3514,7 @@ function listenToMyMessages(uid) {
   messagesUnsubscribe = () => { unsubIn(); unsubOut(); };
 }
 
-// 2. FÁZIS: ADMINISZTRÁCIÓS GYŰJTEMÉNY-KEZELŐ ÉS FELHŐBE MENTÉS
+// ADMIN GYŰJTEMÉNY-KEZELŐ, SZERKESZTŐ ÉS VÁRÓLISTA
 let adminAlbumCoverBase64 = '';
 
 safeAddListener('admin-album-cover-input', 'change', (e) => {
@@ -3475,10 +3547,46 @@ safeAddListener('admin-album-cover-input', 'change', (e) => {
   reader.readAsDataURL(file);
 });
 
+// Admin Módosítás megszakítása
+safeAddListener('btn-admin-cancel-edit', () => {
+  editingAlbumId = null;
+  resetAdminAlbumForm();
+});
+
+function resetAdminAlbumForm() {
+  document.getElementById('admin-album-id').value = '';
+  document.getElementById('admin-album-id').disabled = false;
+  document.getElementById('admin-album-title').value = '';
+  document.getElementById('admin-album-publisher').value = '';
+  document.getElementById('admin-album-year').value = '2026';
+  document.getElementById('admin-album-total').value = '';
+  document.getElementById('admin-album-subtitle').value = '';
+  document.getElementById('admin-album-custom-items').value = '';
+  document.getElementById('admin-album-custom-chapters').value = '';
+  document.getElementById('admin-album-featured').checked = false;
+  document.getElementById('admin-album-is-retro').checked = false;
+  document.getElementById('admin-album-has-chapters').checked = false;
+  document.getElementById('admin-album-radar-type').value = 'none';
+  document.getElementById('admin-album-cover-input').value = '';
+  if (document.getElementById('admin-album-cover-preview-box')) {
+    document.getElementById('admin-album-cover-preview-box').style.display = 'none';
+  }
+  adminAlbumCoverBase64 = '';
+
+  const formTitle = document.getElementById('admin-album-form-title');
+  const cancelBtn = document.getElementById('btn-admin-cancel-edit');
+  const saveBtn = document.getElementById('btn-admin-save-album');
+  if (formTitle) formTitle.textContent = "Új gyűjtemény / album felvitele";
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  if (saveBtn) saveBtn.textContent = "Gyűjtemény mentése és azonnali élesítése";
+}
+
+// Új album mentése vagy meglévő szerkesztése
 safeAddListener('btn-admin-save-album', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
 
-  const id = document.getElementById('admin-album-id')?.value.trim().toLowerCase().replace(/[\s_]+/g, '-');
+  const idInput = document.getElementById('admin-album-id');
+  const id = (editingAlbumId || idInput?.value.trim().toLowerCase().replace(/[\s_]+/g, '-'));
   const title = document.getElementById('admin-album-title')?.value.trim();
   const publisher = document.getElementById('admin-album-publisher')?.value.trim();
   const year = parseInt(document.getElementById('admin-album-year')?.value || '2026', 10);
@@ -3486,6 +3594,7 @@ safeAddListener('btn-admin-save-album', async () => {
   const type = document.getElementById('admin-album-type')?.value || 'sticker';
   const subtitle = document.getElementById('admin-album-subtitle')?.value.trim() || '';
   const isFeatured = document.getElementById('admin-album-featured')?.checked || false;
+  const isRetro = document.getElementById('admin-album-is-retro')?.checked || (year < 2010);
   const radarType = document.getElementById('admin-album-radar-type')?.value || 'none';
   const hasChapters = document.getElementById('admin-album-has-chapters')?.checked || false;
 
@@ -3496,18 +3605,18 @@ safeAddListener('btn-admin-save-album', async () => {
     return showToast("Kérlek töltsd ki az azonosítót, a címet és a kiadót!");
   }
 
-  // Automatikus kód- és tartomány-kibontás
   const customItems = expandCustomItemsText(customItemsRaw);
   let finalTotal = totalItems;
   if (customItems.length > 0 && (!finalTotal || finalTotal < customItems.length)) {
     finalTotal = customItems.length;
   }
   if (finalTotal < 1) {
-    return showToast("Kérlek add meg a teljes darabszámot vagy a tartományokat!");
+    return showToast("Kérlek add meg a darabszámot vagy a tartományokat!");
   }
 
   const customChaptersList = parseChaptersText(customChaptersRaw, customItems);
-  const typeLabel = type === 'sticker' ? 'Matricaalbum' : type === 'card' ? 'Kártya' : 'Figura / egyéb';
+  const typeLabel = type === 'sticker' ? 'Matricaalbum' : type === 'card' ? 'Kártya' : 'Figura / Kinder';
+  const existingCover = ALBUMS_REGISTRY[id]?.coverUrl || 'og-image.png';
 
   try {
     await db.collection("albums").doc(id).set({
@@ -3519,8 +3628,9 @@ safeAddListener('btn-admin-save-album', async () => {
       totalItems: finalTotal,
       type,
       typeLabel,
-      coverUrl: adminAlbumCoverBase64 || 'og-image.png',
+      coverUrl: adminAlbumCoverBase64 || existingCover,
       featured: isFeatured,
+      isRetro: isRetro,
       hasRadar: radarType !== 'none',
       radarType: radarType,
       hasChapters: hasChapters || customChaptersList.length > 0,
@@ -3532,21 +3642,9 @@ safeAddListener('btn-admin-save-album', async () => {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // Űrlap ürítése
-    document.getElementById('admin-album-id').value = '';
-    document.getElementById('admin-album-title').value = '';
-    document.getElementById('admin-album-publisher').value = '';
-    document.getElementById('admin-album-total').value = '';
-    document.getElementById('admin-album-subtitle').value = '';
-    document.getElementById('admin-album-custom-items').value = '';
-    document.getElementById('admin-album-custom-chapters').value = '';
-    document.getElementById('admin-album-cover-input').value = '';
-    if (document.getElementById('admin-album-cover-preview-box')) {
-      document.getElementById('admin-album-cover-preview-box').style.display = 'none';
-    }
-    adminAlbumCoverBase64 = '';
-
-    showToast("Gyűjtői album sikeresen közzétéve és mentve.");
+    showToast(editingAlbumId ? "Gyűjtemény sikeresen módosítva!" : "Új gyűjtemény közzétéve!");
+    resetAdminAlbumForm();
+    editingAlbumId = null;
   } catch (err) {
     showToast("Mentési hiba: " + err.message);
   }
@@ -3567,6 +3665,9 @@ function renderAdminAlbumsList() {
         </div>
       </div>
       <div style="display:flex; gap:6px;">
+        <button class="btn btn-primary btn-sm" data-action="edit-album" data-id="${escapeHtml(a.id)}">
+          Szerkesztés
+        </button>
         <button class="btn btn-secondary btn-sm" data-action="toggle-feature-album" data-id="${escapeHtml(a.id)}">
           ${a.featured ? 'Kiemelés levétele' : 'Kiemelés'}
         </button>
@@ -3584,7 +3685,44 @@ safeAddListener('admin-albums-list', async (e) => {
   const albumId = btn.dataset.id;
   if (!albumId) return;
 
-  if (btn.dataset.action === 'toggle-feature-album') {
+  if (btn.dataset.action === 'edit-album') {
+    const album = ALBUMS_REGISTRY[albumId];
+    if (!album) return;
+
+    editingAlbumId = albumId;
+    document.getElementById('admin-album-id').value = album.id;
+    document.getElementById('admin-album-id').disabled = true;
+    document.getElementById('admin-album-title').value = album.title;
+    document.getElementById('admin-album-publisher').value = album.publisher;
+    document.getElementById('admin-album-year').value = album.year;
+    document.getElementById('admin-album-total').value = album.totalItems;
+    document.getElementById('admin-album-type').value = album.type;
+    document.getElementById('admin-album-subtitle').value = album.subtitle || '';
+    document.getElementById('admin-album-custom-items').value = album.customItemsRaw || (album.customItems ? album.customItems.join(', ') : '');
+    document.getElementById('admin-album-custom-chapters').value = album.customChaptersRaw || '';
+    document.getElementById('admin-album-featured').checked = album.featured === true;
+    document.getElementById('admin-album-is-retro').checked = album.isRetro === true || album.year < 2010;
+    document.getElementById('admin-album-radar-type').value = album.radarType || (album.hasRadar ? 'lidl' : 'none');
+    document.getElementById('admin-album-has-chapters').checked = album.hasChapters === true;
+
+    if (album.coverUrl) {
+      const preview = document.getElementById('admin-album-cover-preview');
+      const previewBox = document.getElementById('admin-album-cover-preview-box');
+      if (preview && previewBox) {
+        preview.src = album.coverUrl;
+        previewBox.style.display = 'block';
+      }
+    }
+
+    const formTitle = document.getElementById('admin-album-form-title');
+    const cancelBtn = document.getElementById('btn-admin-cancel-edit');
+    const saveBtn = document.getElementById('btn-admin-save-album');
+    if (formTitle) formTitle.textContent = `Gyűjtemény szerkesztése: ${album.title}`;
+    if (cancelBtn) cancelBtn.style.display = 'inline-block';
+    if (saveBtn) saveBtn.textContent = "Módosítások mentése";
+
+    document.getElementById('admin-album-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (btn.dataset.action === 'toggle-feature-album') {
     const current = ALBUMS_REGISTRY[albumId]?.featured || false;
     await db.collection("albums").doc(albumId).update({ featured: !current });
     showToast("Kiemelési státusz frissítve.");
@@ -3599,7 +3737,77 @@ safeAddListener('admin-albums-list', async (e) => {
   }
 });
 
-// 2. FÁZIS: VALÓS IDEJŰ ALBUM FIGYELŐ (Firestore albums gyűjtemény)
+// KÖZÖSSÉGI VÁRÓLISTA KEZELŐ AZ ADMINBAN
+function listenToSuggestions() {
+  if (!db) return;
+  if (suggestionsUnsubscribe) suggestionsUnsubscribe();
+
+  suggestionsUnsubscribe = db.collection("album_suggestions")
+    .where("status", "==", "pending")
+    .onSnapshot(snap => {
+      albumSuggestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAdminSuggestionsList();
+    }, err => console.warn("Suggestions listener hiba:", err));
+}
+
+function renderAdminSuggestionsList() {
+  const container = document.getElementById('admin-suggested-albums-list');
+  if (!container) return;
+
+  if (albumSuggestions.length === 0) {
+    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">Nincs függőben lévő gyűjteményjavaslat.</span>';
+    return;
+  }
+
+  container.innerHTML = albumSuggestions.map(s => `
+    <div class="suggestion-item">
+      <div>
+        <strong style="color:var(--sand); font-size:0.95rem;">${escapeHtml(s.title)}</strong> (${s.year || 2026})
+        <div style="font-size:0.75rem; color:var(--text-muted);">
+          Kiadó: <strong>${escapeHtml(s.publisher)}</strong> • ${s.totalItems || '?'} tétel • Típus: ${escapeHtml(s.type)}
+          <br>Beküldte: <em>${escapeHtml(s.submittedByName || 'Gyűjtő')}</em> ${s.note ? `• Megjegyzés: „${escapeHtml(s.note)}”` : ''}
+        </div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-primary btn-sm" data-action="approve-suggestion" data-id="${s.id}">
+          Betöltés & Jóváhagyás
+        </button>
+        <button class="btn btn-secondary btn-sm" data-action="reject-suggestion" data-id="${s.id}" style="color:var(--danger); border-color:var(--danger);">
+          Elutasítás
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+safeAddListener('admin-suggested-albums-list', async (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const sugId = btn.dataset.id;
+  const sug = albumSuggestions.find(s => s.id === sugId);
+  if (!sug) return;
+
+  if (btn.dataset.action === 'approve-suggestion') {
+    // Betöltés az űrlapba
+    document.getElementById('admin-album-id').value = sug.title.toLowerCase().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '');
+    document.getElementById('admin-album-title').value = sug.title;
+    document.getElementById('admin-album-publisher').value = sug.publisher || '';
+    document.getElementById('admin-album-year').value = sug.year || 2026;
+    document.getElementById('admin-album-total').value = sug.totalItems || 100;
+    document.getElementById('admin-album-type').value = sug.type || 'sticker';
+    document.getElementById('admin-album-subtitle').value = sug.note || '';
+
+    await db.collection("album_suggestions").doc(sugId).update({ status: "approved" });
+    showToast("Javaslat betöltve a szerkesztőbe!");
+    document.getElementById('admin-album-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (btn.dataset.action === 'reject-suggestion') {
+    if (!confirm("Biztosan elutasítod ezt a javaslatot?")) return;
+    await db.collection("album_suggestions").doc(sugId).update({ status: "rejected" });
+    showToast("Javaslat elutasítva.");
+  }
+});
+
+// VALÓS IDEJŰ ALBUM FIGYELŐ
 function listenToAlbums() {
   if (!db) return;
   if (albumsUnsubscribe) albumsUnsubscribe();
@@ -3615,9 +3823,10 @@ function listenToAlbums() {
         year: data.year || 2026,
         totalItems: data.totalItems || 100,
         type: data.type || 'sticker',
-        typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : 'Matricaalbum'),
+        typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
         coverUrl: data.coverUrl || 'og-image.png',
         featured: data.featured === true,
+        isRetro: data.isRetro === true || data.year < 2010,
         hasRadar: data.hasRadar === true,
         radarType: data.radarType || 'none',
         hasChapters: data.hasChapters === true,
@@ -3966,9 +4175,11 @@ function initFirebase() {
         listenToMeetups();
         listenToAnnouncements();
         listenToAlbums();
+        if (user.email === ADMIN_EMAIL) listenToSuggestions();
       } else {
         if (myDocUnsubscribe) myDocUnsubscribe();
         if (messagesUnsubscribe) messagesUnsubscribe();
+        if (suggestionsUnsubscribe) suggestionsUnsubscribe();
         if (adminTab) adminTab.style.display = 'none';
         if (adminTabM) adminTabM.style.display = 'none';
         myIncomingMessages = [];

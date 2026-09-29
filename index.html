@@ -140,7 +140,7 @@
     </div>
   </nav>
 
-  <!-- MOBIL ALNAVIGÁCIÓS SÁV (Csak aktív albumnál látható) -->
+  <!-- MOBIL ALNAVIGÁCIÓS SÁV -->
   <div class="mobile-subnav-wrapper" id="mobile-subnav-bar" style="display:none;">
     <div class="sub-nav" id="subnav-matricaim">
       <button class="sub-tab active" data-view="matricaim">Tételek / Rács</button>
@@ -163,24 +163,45 @@
   </div>
 
   <main>
-    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB) -->
+    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB: 6 KÁRTYA + LENYITÓ + BEKÜLDÉS) -->
     <section id="view-hub" class="view active">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
-        <h2>Elérhető Gyűjtemények</h2>
+        <h2>Gyűjtemények</h2>
       </div>
-      <p class="view-intro">Válaszd ki, melyik albumot vagy kártyasorozatot szeretnéd gyűjteni és cserélni:</p>
+      <p class="view-intro">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
       <div class="filter-group" style="margin-bottom: 16px;">
-        <button class="filter-btn active" data-hub-filter="all">Összes</button>
+        <button class="filter-btn active" data-hub-filter="all">Kiemeltek</button>
         <button class="filter-btn" data-hub-filter="sticker">Matricaalbumok</button>
         <button class="filter-btn" data-hub-filter="card">Kártyák</button>
+        <button class="filter-btn" data-hub-filter="figure">Figurák</button>
+        <button class="filter-btn" data-hub-filter="retro">🕹️ Retro</button>
         <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
       </div>
 
+      <!-- Gyűjteménykártyák Rácsa (Alapból 6 legfontosabb) -->
       <div id="hub-albums-grid" class="hub-grid"></div>
+
+      <!-- Lenyitó gomb az összes gyűjteményhez -->
+      <div style="text-align:center; margin:16px 0 20px;">
+        <button class="btn btn-secondary" id="btn-toggle-all-hub-albums" style="font-size:0.85rem; padding:8px 18px;">
+          Összes gyűjtemény listázása (<span id="hub-total-albums-count">19</span> db) ▼
+        </button>
+      </div>
+
+      <!-- Közösségi Új Gyűjtemény Beküldése Doboz -->
+      <div class="card" style="border: 1.5px dashed var(--amber); background: rgba(13,46,44,0.45); text-align: center; padding: 18px 14px;">
+        <h3 style="margin:0 0 6px; font-size:1.1rem; color:var(--sand);">Nem találod a saját albumodat a listában?</h3>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
+          Küldd be az album vagy kártyasorozat nevét, és felvesszük a rendszerbe, hogy elkezdhesd a cserét!
+        </p>
+        <button class="btn btn-primary btn-sm" id="btn-open-suggest-album" style="font-size:0.85rem; padding:8px 16px;">
+          + Új gyűjtemény javaslata / beküldése
+        </button>
+      </div>
     </section>
 
-    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET -->
+    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET (FIGURÁKNÁL KINDERTOJÁS ALAKKAL) -->
     <section id="view-matricaim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2>Gyűjteményem</h2>
@@ -336,21 +357,7 @@
         <div class="form-group">
           <label>Válaszd ki vagy írd be az üzletet:</label>
           <input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot...">
-          
-          <datalist id="lidl-all-stores">
-            <option value="Agárd – Akácfa utca 2.">
-            <option value="Ajka – Hársfa utca 1/A">
-            <option value="Baja – Bajcsy-Zsilinszky utca 9.">
-            <option value="Budapest – Fehérvári út 211.">
-            <option value="Budapest – Király u. 112.">
-            <option value="Debrecen – Faraktár utca 58.">
-            <option value="Győr – Tihanyi Árpád út 9.">
-            <option value="Kecskemét – Izsáki út 2.">
-            <option value="Miskolc – Szentpéteri kapu 80.">
-            <option value="Pécs – Siklósi út 52/A">
-            <option value="Szeged – Makkosházi krt. 21.">
-            <option value="Székesfehérvár – Balatoni út 21.">
-          </datalist>
+          <datalist id="lidl-all-stores"></datalist>
         </div>
 
         <div class="form-group">
@@ -577,7 +584,7 @@
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px;" id="dist-segments-grid"></div>
       </div>
 
-      <!-- 7. FEJEZETI NEHÉZSÉG (Csak lapozós albumoknál) -->
+      <!-- 7. FEJEZETI NEHÉZSÉG -->
       <div class="card stat-section-anchor" id="stat-sec-diff">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">Fejezeti Nehézségi Index</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
@@ -609,7 +616,7 @@
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <!-- FELSŐ DOBOZ: Gyűjteményi Privát Jegyzet (Albumhoz kötött) -->
+      <!-- FELSŐ DOBOZ: Gyűjteményi Privát Jegyzet -->
       <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
           <span>Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
@@ -705,16 +712,30 @@
       </div>
     </section>
 
-    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET (2. FÁZIS BŐVÍTETT GYŰJTEMÉNYKEZELŐVEL) -->
+    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET (SZERKESZTÉS + BEKÜLDÉSI VÁRÓLISTA) -->
     <section id="view-admin" class="view">
       <h2>Adminisztrátori Vezérlőpult</h2>
-      <p class="view-intro">Gyűjtemények létrehozása, szerkesztése és rendszerüzenetek élesítése kódmódosítás nélkül.</p>
+      <p class="view-intro">Gyűjtemények létrehozása, szerkesztése, közösségi javaslatok jóváhagyása és rendszerüzenetek kezelése.</p>
 
-      <!-- 2. FÁZIS: ÚJ GYŰJTEMÉNY LÉTREHOZÁSA -->
-      <div class="card" style="border-left: 4px solid var(--amber); margin-bottom: 16px;">
-        <h3 style="margin-top:0; font-size:1.15rem; color:var(--amber);">Új gyűjtemény / album felvitele</h3>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
-          Itt adhatsz hozzá új gyűjteményeket a rendszerhez. A mentés után azonnal megjelenik a főoldali katalógusban minden látogatónál.
+      <!-- KÖZÖSSÉGI GYŰJTEMÉNY JAVASLATOK VÁRÓLISTÁJA -->
+      <div class="card" id="admin-suggestions-card" style="border-left: 4px solid var(--gift-gold); margin-bottom: 16px;">
+        <h3 style="margin-top:0; font-size:1.1rem; color:var(--gift-gold);">📥 Beküldött gyűjtemény-javaslatok (Várólista)</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
+          A felhasználók által beküldött új gyűjtemények. Kattints a „Jóváhagyás & Betöltés”-re az adatok azonnali beemeléséhez!
+        </p>
+        <div id="admin-suggested-albums-list">Nincs függőben lévő javaslat.</div>
+      </div>
+
+      <!-- ÚJ GYŰJTEMÉNY LÉTREHOZÁSA / MEGLÉVŐ SZERKESZTÉSE ŰRLAP -->
+      <div class="card" id="admin-album-form-card" style="border-left: 4px solid var(--amber); margin-bottom: 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <h3 style="margin:0; font-size:1.15rem; color:var(--amber);" id="admin-album-form-title">Új gyűjtemény / album felvitele</h3>
+          <button class="btn btn-secondary btn-sm" id="btn-admin-cancel-edit" style="display:none; color:var(--danger); border-color:var(--danger); font-size:0.75rem;">
+            ✕ Mégse / Új készítése
+          </button>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;" id="admin-album-form-desc">
+          Itt adhatsz hozzá új gyűjteményeket vagy módosíthatod a meglévőket. A mentés után azonnal megjelenik az összes látogatónál.
         </p>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
@@ -743,7 +764,7 @@
             <select id="admin-album-type" class="input-field">
               <option value="sticker">Matricaalbum</option>
               <option value="card">Kártyagyűjtemény</option>
-              <option value="figure">Figura / egyéb</option>
+              <option value="figure">Figura / Kinder tojás</option>
             </select>
           </div>
         </div>
@@ -761,13 +782,11 @@
           </div>
         </div>
 
-        <!-- EGYEDI AZONOSÍTÓK / KÁRTYANEVEK TARTOMÁNYA (2. FÁZIS) -->
         <div class="form-group">
           <label>Egyedi tételkódok / tartományok (pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
-          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="pl. MEX 1-19, HUN 1-20, ENG 1-18, HAI 1-11, LE 1-5&#10;(Ha üresen hagyod, sima 1-től N-ig számozást kap)"></textarea>
+          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="pl. MEX 1-19, HUN 1-20, ENG 1-18, LE 1-5&#10;(Ha üresen hagyod, sima 1-től N-ig számozást kap)"></textarea>
         </div>
 
-        <!-- DINAMIKUS FEJEZETEK / LAPOZÓ OLDALBEOSZTÁS (2. FÁZIS) -->
         <div class="form-group">
           <label>Könyvlapozó oldalbeosztás (opcionális, ha be van kapcsolva a könyv nézet):</label>
           <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;1. oldal — Mexikó: 1-19&#10;2. oldal — Magyarország: 20-39&#10;3. oldal — Döntősök (Panoráma): 40-41 [combo]"></textarea>
@@ -779,6 +798,11 @@
           <label class="checkbox-label">
             <input type="checkbox" id="admin-album-featured">
             Kiemelt hely az 1. főkártyaként a főoldalon (kiemelt kampány)
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="admin-album-is-retro">
+            🕹️ Retro gyűjtemény (Kiemelt Retro jelvény a kártyán)
           </label>
 
           <div style="margin: 8px 0;">
@@ -804,13 +828,13 @@
         </button>
       </div>
 
-      <!-- 2. FÁZIS: LÉTEZŐ GYŰJTEMÉNYEK LISTÁJA -->
+      <!-- LÉTEZŐ GYŰJTEMÉNYEK KEZELÉSE & SZERKESZTÉSE LISTA -->
       <div class="card" style="margin-bottom: 16px;">
-        <h3 style="margin-top:0; font-size:1.1rem;">Rendszerben lévő gyűjtemények kezelése</h3>
+        <h3 style="margin-top:0; font-size:1.1rem;">Rendszerben lévő gyűjtemények kezelése & Szerkesztése</h3>
         <div id="admin-albums-list">Gyűjtemények betöltése...</div>
       </div>
 
-      <!-- MEGLÉVŐ RENDSZERÜZENET KÜLDŐ -->
+      <!-- RENDSZERÜZENET KÜLDŐ -->
       <div class="card">
         <h3 style="margin-top:0;">Új rendszerüzenet kiküldése</h3>
         <div class="form-group">
@@ -872,6 +896,59 @@
       ☕ Támogatás a Donably-n
     </a>
   </footer>
+</div>
+
+<!-- ÚJ GYŰJTEMÉNY JAVASLATA (FELHASZNÁLÓI BEKÜLDŐ MODAL) -->
+<div id="modal-suggest-album" class="modal-overlay">
+  <div class="modal-card" style="max-width:480px;">
+    <button class="modal-close" id="btn-close-suggest-album">✕</button>
+    <h3 style="margin-top:0; color:var(--amber);">Új gyűjtemény javaslata</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
+      Add meg a hiányzó album vagy kártyasorozat adatait, és az adminisztrátor hamarosan aktiválja a rendszerben:
+    </p>
+
+    <div class="form-group">
+      <label>Gyűjtemény pontos neve <strong style="color:var(--amber);">*</strong>:</label>
+      <input type="text" id="suggest-album-title" class="input-field" placeholder="Pl. Harry Potter Varázsvilág vagy Panini Premier League" required>
+    </div>
+
+    <div class="form-group">
+      <label>Kiadó / Áruházlánc:</label>
+      <input type="text" id="suggest-album-publisher" class="input-field" placeholder="Pl. Panini, Spar, Lidl, Topps...">
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="form-group">
+        <label>Kiadás éve:</label>
+        <input type="number" id="suggest-album-year" class="input-field" value="2026">
+      </div>
+      <div class="form-group">
+        <label>Típus:</label>
+        <select id="suggest-album-type" class="input-field">
+          <option value="sticker">Matricaalbum</option>
+          <option value="card">Kártyagyűjtemény</option>
+          <option value="figure">Figura / Kinder</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Összes tétel száma (kb. vagy pontosan):</label>
+      <input type="number" id="suggest-album-total" class="input-field" placeholder="Pl. 180">
+    </div>
+
+    <div class="form-group">
+      <label>Megjegyzés / Link a borítóképhez (opcionális):</label>
+      <textarea id="suggest-album-note" class="input-field" rows="2" placeholder="Pl. Most indult a Sparban, 200 matricás..."></textarea>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary" id="btn-submit-suggest-album" style="flex:1; padding:10px; font-weight:700;">
+        Javaslat beküldése
+      </button>
+      <button class="btn btn-secondary" id="btn-close-suggest-album-2">Mégse</button>
+    </div>
+  </div>
 </div>
 
 <!-- DARABSZÁM POPOVER -->
