@@ -744,3 +744,72 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   border-color: var(--amber) !important;
   font-weight: 700;
 }
+
+/* =========================================================================
+   4.0 TÖBB-ALBUMOS KEZDŐLAP & HUB STÍLUSOK
+   ========================================================================= */
+
+.active-album-banner {
+  background: rgba(20, 69, 63, 0.6);
+  border: 1px solid rgba(216, 155, 74, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.album-hub-card {
+  background: var(--surface-card);
+  border: 1px solid rgba(243, 238, 223, 0.12);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+.album-hub-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--amber);
+}
+
+.album-hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.album-type-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(216, 155, 74, 0.2);
+  color: var(--amber);
+}
+
+.album-hub-progress-track {
+  background: rgba(0, 0, 0, 0.3);
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+.album-hub-progress-bar {
+  background: var(--amber);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+@media (max-width: 600px) {
+  .primary-nav {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
