@@ -335,7 +335,7 @@
         
         <div class="form-group">
           <label>Válaszd ki vagy írd be az üzletet:</label>
-          <input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy utcát...">
+          <input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot...">
           
           <datalist id="lidl-all-stores">
             <option value="Agárd – Akácfa utca 2.">
@@ -705,11 +705,112 @@
       </div>
     </section>
 
-    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET -->
+    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET (2. FÁZIS BŐVÍTETT GYŰJTEMÉNYKEZELŐVEL) -->
     <section id="view-admin" class="view">
       <h2>Adminisztrátori Vezérlőpult</h2>
-      <p class="view-intro">Rendszerüzenetek, találkozók és közlemények élesítése az összes felhasználónak.</p>
+      <p class="view-intro">Gyűjtemények létrehozása, szerkesztése és rendszerüzenetek élesítése kódmódosítás nélkül.</p>
 
+      <!-- 2. FÁZIS: ÚJ GYŰJTEMÉNY LÉTREHOZÁSA -->
+      <div class="card" style="border-left: 4px solid var(--amber); margin-bottom: 16px;">
+        <h3 style="margin-top:0; font-size:1.15rem; color:var(--amber);">Új gyűjtemény / album felvitele</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
+          Itt adhatsz hozzá új gyűjteményeket a rendszerhez. A mentés után azonnal megjelenik a főoldali katalógusban minden látogatónál.
+        </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+          <div class="form-group">
+            <label>Gyűjtemény egyedi azonosítója (ID):</label>
+            <input type="text" id="admin-album-id" class="input-field" placeholder="pl. panini-fifa-365-2026">
+          </div>
+          <div class="form-group">
+            <label>Gyűjtemény címe:</label>
+            <input type="text" id="admin-album-title" class="input-field" placeholder="pl. FIFA 365 – Adrenalyn XL">
+          </div>
+          <div class="form-group">
+            <label>Kiadó:</label>
+            <input type="text" id="admin-album-publisher" class="input-field" placeholder="pl. Panini vagy Spar">
+          </div>
+          <div class="form-group">
+            <label>Kiadás éve:</label>
+            <input type="number" id="admin-album-year" class="input-field" value="2026">
+          </div>
+          <div class="form-group">
+            <label>Összes tétel darabszáma:</label>
+            <input type="number" id="admin-album-total" class="input-field" placeholder="pl. 378" min="1">
+          </div>
+          <div class="form-group">
+            <label>Gyűjtemény típusa:</label>
+            <select id="admin-album-type" class="input-field">
+              <option value="sticker">Matricaalbum</option>
+              <option value="card">Kártyagyűjtemény</option>
+              <option value="figure">Figura / egyéb</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Alcím / Rövid leírás:</label>
+          <input type="text" id="admin-album-subtitle" class="input-field" placeholder="pl. Hivatalos UEFA kártyakollekció">
+        </div>
+
+        <div class="form-group">
+          <label>Borítókép / Indexkép feltöltése (Képfájl a gépről):</label>
+          <input type="file" id="admin-album-cover-input" accept="image/*" class="input-field" style="padding:4px;">
+          <div id="admin-album-cover-preview-box" style="display:none; margin-top:8px;">
+            <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; border:1px solid var(--amber);" alt="Borító előnézet">
+          </div>
+        </div>
+
+        <!-- EGYEDI AZONOSÍTÓK / KÁRTYANEVEK TARTOMÁNYA (2. FÁZIS) -->
+        <div class="form-group">
+          <label>Egyedi tételkódok / tartományok (pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
+          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="pl. MEX 1-19, HUN 1-20, ENG 1-18, HAI 1-11, LE 1-5&#10;(Ha üresen hagyod, sima 1-től N-ig számozást kap)"></textarea>
+        </div>
+
+        <!-- DINAMIKUS FEJEZETEK / LAPOZÓ OLDALBEOSZTÁS (2. FÁZIS) -->
+        <div class="form-group">
+          <label>Könyvlapozó oldalbeosztás (opcionális, ha be van kapcsolva a könyv nézet):</label>
+          <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;1. oldal — Mexikó: 1-19&#10;2. oldal — Magyarország: 20-39&#10;3. oldal — Döntősök (Panoráma): 40-41 [combo]"></textarea>
+        </div>
+
+        <div class="form-group" style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
+          <label style="font-weight:700; color:var(--sand); margin-bottom:6px; display:block;">Funkciók és megjelenés:</label>
+          
+          <label class="checkbox-label">
+            <input type="checkbox" id="admin-album-featured">
+            Kiemelt hely az 1. főkártyaként a főoldalon (kiemelt kampány)
+          </label>
+
+          <div style="margin: 8px 0;">
+            <label style="font-size:0.8rem; color:var(--sand); margin-bottom:4px; display:block;">Bolti Készletradar típusa / Terjesztés:</label>
+            <select id="admin-album-radar-type" class="input-field" style="padding:6px; font-size:0.85rem;">
+              <option value="none">Nincs bolti radar (Kikapcsolva)</option>
+              <option value="lidl">Lidl áruházlánc (221 boltos lista)</option>
+              <option value="spar">Spar és Interspar áruházlánc</option>
+              <option value="tesco">Tesco áruházlánc</option>
+              <option value="penny">Penny Market</option>
+              <option value="retail_general">Országos / Üzletfüggetlen (Újságos, Relay, Müller, vegyes)</option>
+            </select>
+          </div>
+
+          <label class="checkbox-label" style="margin-top:6px;">
+            <input type="checkbox" id="admin-album-has-chapters">
+            Könyv lapozó nézet engedélyezése (fejezetekkel)
+          </label>
+        </div>
+
+        <button class="btn btn-primary" id="btn-admin-save-album" style="width:100%; padding:10px; font-weight:700;">
+          Gyűjtemény mentése és azonnali élesítése
+        </button>
+      </div>
+
+      <!-- 2. FÁZIS: LÉTEZŐ GYŰJTEMÉNYEK LISTÁJA -->
+      <div class="card" style="margin-bottom: 16px;">
+        <h3 style="margin-top:0; font-size:1.1rem;">Rendszerben lévő gyűjtemények kezelése</h3>
+        <div id="admin-albums-list">Gyűjtemények betöltése...</div>
+      </div>
+
+      <!-- MEGLÉVŐ RENDSZERÜZENET KÜLDŐ -->
       <div class="card">
         <h3 style="margin-top:0;">Új rendszerüzenet kiküldése</h3>
         <div class="form-group">

@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Állapotvezérelt)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 - 2. Fázis)
    ========================================================================= */
 
 :root {
@@ -212,14 +212,15 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 /* RÁCSOS NÉZET */
 #matrica-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
   gap: 6px; width: 100%; min-height: 200px;
 }
 .matrica-cell {
-  min-height: 44px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  min-height: 52px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
   background: var(--water-mid); border: 1px solid rgba(243,238,223,0.14); border-radius: var(--radius-sm);
-  color: var(--text-muted); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+  color: var(--text-muted); font-weight: 600; font-size: 0.8rem; cursor: pointer;
   user-select: none; -webkit-user-select: none; position: relative; -webkit-tap-highlight-color: transparent;
+  text-align: center; padding: 2px; line-height: 1.1; word-break: break-word;
 }
 .matrica-cell:active { transform: scale(0.94); }
 .matrica-cell.van { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
@@ -261,7 +262,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .slot.orient-allo { width: 98px; height: 132px; }
 .slot.orient-fekvo { width: 132px; height: 98px; }
-.slot .sticker-num { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-muted); }
+.slot .sticker-num { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-muted); }
 .slot .sticker-name { font-size: 0.72rem; font-weight: 500; margin: 2px 0; line-height: 1.15; max-height: 2.4em; overflow: hidden; }
 .slot .sticker-tag { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: rgba(0,0,0,0.25); }
 
