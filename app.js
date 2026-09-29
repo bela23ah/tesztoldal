@@ -2153,7 +2153,6 @@ function renderChapterDifficulty() {
 		});
       });
     });
-  });
 
   const rankedChapters = FEJEZETEK.slice(1).map(f => {
     const miss = chapterMissing[f.id] || 0;
