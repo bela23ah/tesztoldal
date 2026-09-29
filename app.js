@@ -12,25 +12,25 @@ let ALBUMS_REGISTRY = {
     totalItems: 108,
     type: "sticker",
     typeLabel: "Matricaalbum",
-    coverUrl: "og-image.png",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F08cfa8f7-c4f1-4d02-bf25-2719f2d5dfca.png&w=3840&q=75",
     featured: true,
     hasRadar: true,
     radarType: "lidl",
     hasChapters: true
   },
-  "panini-fifa-365": {
-    id: "panini-fifa-365",
-    title: "FIFA 365 – Adrenalyn XL",
-    subtitle: "Hivatalos kártyagyűjtemény",
-    publisher: "Panini",
+  "garfield-mentsuk-meg-a-bolygot-2026": {
+    id: "garfield-mentsuk-meg-a-bolygot-2026",
+    title: "Garfield - Mentsük meg a bolygót!",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
     year: 2026,
-    totalItems: 378,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "og-image.png",
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F130c309d-cda4-435f-8112-51b236ec8880.jpg&w=3840&q=75",
     featured: false,
     hasRadar: true,
-    radarType: "retail_general",
+    radarType: "spar",
     hasChapters: false
   },
   "toy-story-5": {
@@ -42,22 +42,247 @@ let ALBUMS_REGISTRY = {
     totalItems: 192,
     type: "sticker",
     typeLabel: "Matricaalbum",
-    coverUrl: "og-image.png",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F10110c3c-f734-4083-a1a1-14762ecda0c5.jpg&w=3840&q=75",
     featured: false,
     hasRadar: false,
     radarType: "none",
     hasChapters: false
   },
-  "stranger-things-cards": {
-    id: "stranger-things-cards",
-    title: "Stranger Things",
-    subtitle: "This is our story kártyák",
+  "mancs-orjarat-2026": {
+    id: "mancs-orjarat-2026",
+    title: "Mancs őrjárat - Legizgalmasabb kalandok!",
+    subtitle: "Panini matricakollekció",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 184,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F3a6ea592-5bb6-411f-88ef-d4bcd2f31823.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "stranger-things-adventure-2026": {
+    id: "stranger-things-adventure-2026",
+    title: "Stranger Things - One last strange adventure",
+    subtitle: "Matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 211,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F1251cfb7-1e8c-4ec1-b908-ec680b16b9ec.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "stranger-things-this-is-our-story": {
+    id: "stranger-things-this-is-our-story",
+    title: "Stranger Things - This is our story",
+    subtitle: "Kártyakollekció",
     publisher: "Panini / Netflix",
     year: 2025,
-    totalItems: 190,
+    totalItems: 195,
     type: "card",
     typeLabel: "Kártya",
-    coverUrl: "og-image.png",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F95876896-c91c-4a6d-9f5f-1c931898f912.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "fifa-club-world-cup-2025": {
+    id: "fifa-club-world-cup-2025",
+    title: "FIFA Club World Cup 2025 – Adrenalyn XL",
+    subtitle: "Hivatalos FIFA kártyák",
+    publisher: "Panini",
+    year: 2025,
+    totalItems: 387,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F91b669c0-41bc-4c83-a24d-36c3504e5b16.png&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "retail_general",
+    hasChapters: false
+  },
+  "panini-fifa-world-cup-2026": {
+    id: "panini-fifa-world-cup-2026",
+    title: "FIFA World Cup 2026",
+    subtitle: "Hivatalos VB matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 1345,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F6e6fdbf7-9a10-4a50-8337-f54e867ba053.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "retail_general",
+    hasChapters: false
+  },
+  "uefa-euro-2024-match-attax": {
+    id: "uefa-euro-2024-match-attax",
+    title: "UEFA Euro 2024 Match Attax",
+    subtitle: "Hivatalos EB kártyák",
+    publisher: "Topps",
+    year: 2024,
+    totalItems: 709,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdd5774d7-8d13-4123-be3e-4f7b4629f3fa.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "dragon-ball-daima-2026": {
+    id: "dragon-ball-daima-2026",
+    title: "Dragon Ball Daima 2026",
+    subtitle: "Anime kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 416,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdd454000-806d-43ab-a634-c17128e460e0.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "stitch-good-vibes": {
+    id: "stitch-good-vibes",
+    title: "Stitch Good Vibes!",
+    subtitle: "Disney kártyakollekció",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 227,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F9ddecc2a-e3e6-45cd-a6d0-505c212cd250.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "moomin-2026": {
+    id: "moomin-2026",
+    title: "Moomin",
+    subtitle: "Múmin kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 221,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ffb512de7-c3df-41ac-9949-87dbc2f80727.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "k-pop-demon-hunters": {
+    id: "k-pop-demon-hunters",
+    title: "K-POP Demon Hunters",
+    subtitle: "Matricakollekció",
+    publisher: "Egyéb",
+    year: 2026,
+    totalItems: 196,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F447764ee-e177-4578-89e9-a9ca8c12eef6.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "minecraft-kinder-joy": {
+    id: "minecraft-kinder-joy",
+    title: "Minecraft Kinder Joy",
+    subtitle: "Figura & gyűjtemény",
+    publisher: "Kinder",
+    year: 2026,
+    totalItems: 28,
+    type: "figure",
+    typeLabel: "Figura",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fe6ed94a7-8dd0-4a50-90de-8b92a592c06d.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "one-piece-kinder": {
+    id: "one-piece-kinder",
+    title: "One Piece Kinder Joy",
+    subtitle: "Anime figuragyűjtemény",
+    publisher: "Kinder",
+    year: 2026,
+    totalItems: 24,
+    type: "figure",
+    typeLabel: "Figura",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdc648487-9950-4179-a2f8-4a96cf8a7283.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "disney-100-ev-varazslat": {
+    id: "disney-100-ev-varazslat",
+    title: "Disney 100 év varázslat",
+    subtitle: "Jubileumi matricaalbum",
+    publisher: "Spar",
+    year: 2023,
+    totalItems: 144,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F499e8d3d-b153-4712-8ff8-9f16ac8877a3.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "harry-potter-varazslatos-baratsagok": {
+    id: "harry-potter-varazslatos-baratsagok",
+    title: "Harry Potter Varázslatos Barátságok",
+    subtitle: "Matricagyűjtemény",
+    publisher: "Spar",
+    year: 2022,
+    totalItems: 120,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F67e264a6-2a98-46b8-9219-7baa7294a952.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "fifa-365-2021-2022": {
+    id: "fifa-365-2021-2022",
+    title: "FIFA 365 2021–2022 – Adrenalyn XL",
+    subtitle: "Kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2022,
+    totalItems: 956,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F92806979-dbbc-4fa1-b909-d05093f7f088.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false
+  },
+  "fifa-365-2020-2021": {
+    id: "fifa-365-2020-2021",
+    title: "FIFA 365 2020–2021 – Adrenalyn XL",
+    subtitle: "Kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2020,
+    totalItems: 735,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F9fb4e3ce-478b-4753-a194-251aedb5e676.webp&w=3840&q=75",
     featured: false,
     hasRadar: false,
     radarType: "none",
@@ -560,6 +785,7 @@ function renderHub() {
   const albumsList = Object.values(ALBUMS_REGISTRY).filter(album => {
     if (currentHubFilter === 'sticker') return album.type === 'sticker';
     if (currentHubFilter === 'card') return album.type === 'card';
+    if (currentHubFilter === 'retro') return album.year < 2010 || album.isRetro === true;
     if (currentHubFilter === 'my') {
       const myCount = ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length;
       return myCount > 0;
@@ -569,6 +795,7 @@ function renderHub() {
 
   container.innerHTML = albumsList.map(album => {
     const isFeatured = album.featured === true || album.id === 'lidl-lutra-2026';
+    const isRetro = album.year < 2010 || album.isRetro === true;
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
     const collectedCount = albumVan.length;
     const pct = Math.min(100, Math.round((collectedCount / album.totalItems) * 100));
@@ -579,9 +806,9 @@ function renderHub() {
         <div>
           <img src="${cover}" class="hub-card-thumb" alt="${escapeHtml(album.title)}">
           <div class="album-hub-header">
-            <div>
+            <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
               <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
-              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${album.year}</span>
+              ${isRetro ? `<span class="album-type-badge badge-retro">🕹️ Retro (${album.year})</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">${album.year}</span>`}
             </div>
             <span style="font-size:0.75rem; color:var(--sand); font-weight:700;">${album.totalItems} db</span>
           </div>
