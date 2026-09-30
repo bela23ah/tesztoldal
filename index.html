@@ -72,7 +72,7 @@
     </div>
   </header>
 
-  <!-- 1. HIERARCHIA ELEM: AKTÍV GYŰJTEMÉNY SÁV (Kezdőlapon rejtve, album megnyitásakor jelenik meg) -->
+  <!-- 1. HIERARCHIA ELEM: AKTÍV GYŰJTEMÉNY SÁV -->
   <div id="active-album-bar" class="active-album-banner" style="display:none;">
     <div style="display:flex; align-items:center; gap:12px;">
       <img id="active-album-thumb" src="og-image.png" style="width:46px; height:46px; border-radius:6px; object-fit:cover; border:1px solid var(--amber);" alt="Borító">
@@ -94,7 +94,7 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- 2. HIERARCHIA ELEM: GYŰJTEMÉNY MENÜ (Csak album megnyitásakor látszik) -->
+  <!-- 2. HIERARCHIA ELEM: GYŰJTEMÉNY MENÜ -->
   <nav class="primary-nav" id="main-primary-nav" style="display:none;">
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
@@ -201,7 +201,7 @@
       </div>
     </section>
 
-    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET (FIGURÁKNÁL KINDERTOJÁS ALAKKAL) -->
+    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET -->
     <section id="view-matricaim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2>Gyűjteményem</h2>
@@ -343,7 +343,7 @@
       <div id="search-results"></div>
     </section>
 
-    <!-- 4. BOLTI KÉSZLETRADAR NÉZET -->
+    <!-- 4. BOLTI KÉSZLETRADAR NÉZET (TELJES 221 LIDL ÁRUHÁZZAL) -->
     <section id="view-radar" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2 id="radar-view-header-title">Közösségi Készletradar</h2>
@@ -357,7 +357,230 @@
         <div class="form-group">
           <label>Válaszd ki vagy írd be az üzletet:</label>
           <input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot...">
-          <datalist id="lidl-all-stores"></datalist>
+          
+          <datalist id="lidl-all-stores">
+            <option value="Agárd – Akácfa utca 2.">
+            <option value="Ajka – Hársfa utca 1/A">
+            <option value="Aszód – Pesti út 14-16.">
+            <option value="Baja – Bajcsy-Zsilinszky utca 9.">
+            <option value="Balassagyarmat – Kóvári út 8">
+            <option value="Balatonfűzfő – Vízmű utca 1.">
+            <option value="Balatonlelle – Rákóczi F. út 307.">
+            <option value="Balmazújváros – Böszörményi u. 1.">
+            <option value="Barcs – Erkel F. utca 2.">
+            <option value="Bátonyterenye – Berekgát köz 2.">
+            <option value="Békés – Kossuth L. u. 31.">
+            <option value="Békéscsaba – Corvin u. 29-33.">
+            <option value="Békéscsaba – Szarvasi út 15-17.">
+            <option value="Berettyóújfalu – Kossuth u. 98.">
+            <option value="Biatorbágy – Budaörsi út 4., 7720/2 hrsz">
+            <option value="Bicske – Szent László utca 55.">
+            <option value="Bonyhád – Deák Ferenc utca 10/A">
+            <option value="Budakeszi – Kert utca 27-29.">
+            <option value="Budaörs – Károly király út 145.">
+            <option value="Budapest – Ady Endre út 54-60.">
+            <option value="Budapest – Alsómalom u. 8-10.">
+            <option value="Budapest – Arany János utca 27-29.">
+            <option value="Budapest – Bajcsy-Zsilinszky út 61.">
+            <option value="Budapest – Bartók Béla út 47.">
+            <option value="Budapest – Báthory u. 6.">
+            <option value="Budapest – Bécsi út 325-337.">
+            <option value="Budapest – Béke utca 2-4.">
+            <option value="Budapest – Budaörsi út 121.">
+            <option value="Budapest – Ciklámen u. 3.">
+            <option value="Budapest – Csalogány u. 43">
+            <option value="Budapest – Cziffra Gy. u. 115.">
+            <option value="Budapest – Erdőkerülő utca 36.">
+            <option value="Budapest – Fehérvári út 211.">
+            <option value="Budapest – Ferenciek tere 2.">
+            <option value="Budapest – Görgey Artúr u. 14-20">
+            <option value="Budapest – Gubacsi út 34.">
+            <option value="Budapest – Haraszti út 34.">
+            <option value="Budapest – Huszti út 20">
+            <option value="Budapest – János u. 196">
+            <option value="Budapest – Leonardo da Vinci u. 23.">
+            <option value="Budapest – Lobogó u. 12">
+            <option value="Budapest – Madách utca 72.">
+            <option value="Budapest – Maglódi út 17">
+            <option value="Budapest – Margó Tivadar u. 83.">
+            <option value="Budapest – Máriaremetei út 1.">
+            <option value="Budapest – Megyeri út 53">
+            <option value="Budapest – Mogyoródi út 23-29">
+            <option value="Budapest – Nagy Lajos Király útja 121-123">
+            <option value="Budapest – Nagykőrösi út 35-38.">
+            <option value="Budapest – Nagytétényi út 216-218.">
+            <option value="Budapest – Pesti út 237/H">
+            <option value="Budapest – Rákóczi út 48-50.">
+            <option value="Budapest – Régi Fóti u. 1">
+            <option value="Budapest – Sibrik Miklós út 30/b.">
+            <option value="Budapest – Szalay utca 14.">
+            <option value="Budapest – Szentendrei út 251-253">
+            <option value="Budapest – Teleki tér 1.">
+            <option value="Budapest – Újszász u. 47/B">
+            <option value="Budapest – Üllői út 112.">
+            <option value="Budapest – Üllői út 379-381.">
+            <option value="Budapest – VI. Király u. 112.">
+            <option value="Budapest – Victor Hugo u. 11-15.">
+            <option value="Budapest – VIII. Hungária körút 26.">
+            <option value="Budapest – XIII. Váci út 201">
+            <option value="Budapest – XVII. Pesti út 2.">
+            <option value="Cegléd – Törteli út 2.">
+            <option value="Csongrád – Fő u. 59.">
+            <option value="Csorna – Soproni út 66/C.">
+            <option value="Csurgó – Széchenyi tér 12-14.">
+            <option value="Dabas – Bartók Béla út 63.">
+            <option value="Debrecen – Balmazújvárosi út 7.">
+            <option value="Debrecen – Derék u. 31.">
+            <option value="Debrecen – Faraktár utca 58.">
+            <option value="Debrecen – Mikepércsi út 168.">
+            <option value="Debrecen – Széchenyi u. 59">
+            <option value="Dombóvár – Kórház utca 55.">
+            <option value="Dorog – Bányász körönd Hrsz. 1732/98">
+            <option value="Dunaharaszti – Némedi út 102/A">
+            <option value="Dunakeszi – Berek u. 2.">
+            <option value="Dunaújváros – Magyar út 11.">
+            <option value="Dunaújváros – Velinszky utca 1.">
+            <option value="Eger – II. Rákóczi Ferenc u. 141.">
+            <option value="Eger – Mátyás király út 144.">
+            <option value="Enying – Rákóczi Ferenc utca 5.">
+            <option value="Érd – Balatoni út 73-75.">
+            <option value="Érd – Diósdi u. 2-4">
+            <option value="Esztergom – Bánomi út 10.">
+            <option value="Esztergom – Dobogókői út 39.">
+            <option value="Fonyód – Ady Endre utca 57-59.">
+            <option value="Fót – Keleti Márton u. 7.">
+            <option value="Gödöllő – Ottó Ferenc utca 2-4.">
+            <option value="Gyomaendrőd – Fő út 81/2.">
+            <option value="Gyöngyös – Budai Nagy Antal tér 10.">
+            <option value="Győr – Jereváni utca 42.">
+            <option value="Győr – Kossuth Lajos utca 123.">
+            <option value="Győr – Mécs László utca 1/A">
+            <option value="Győr – Szeszgyár utca 6.">
+            <option value="Győr – Tihanyi Árpád út 9.">
+            <option value="Gyula – Szent István u. 69/1.">
+            <option value="Hajdúböszörmény – Bánság tér 10.">
+            <option value="Hajdúhadház – Dr. Földi János utca 55.">
+            <option value="Hajdúnánás – Dorogi u. 108.">
+            <option value="Hajdúsámson – Kiscsere utca 3.">
+            <option value="Hajdúszoboszló – Dózsa György út 62.">
+            <option value="Hatvan – Radnóti tér 19.">
+            <option value="Heves – Kolozsvári út 2/A">
+            <option value="Hódmezővásárhely – Hódtó u. 2.">
+            <option value="Jászberény – Nagykátai út 7/a.">
+            <option value="Kalocsa – Pataji út 31.">
+            <option value="Kaposvár – Bereczk S. utca 2.">
+            <option value="Kaposvár – Előd Vezér utca 3.">
+            <option value="Kaposvár – Füredi út 97.">
+            <option value="Kapuvár – Győri u. 60.">
+            <option value="Kazincbarcika – Mátyás király út 34/A">
+            <option value="Kecskemét – Izsáki út 2.">
+            <option value="Kecskemét – Nyíri út 38/E">
+            <option value="Kecskemét – Szolnoki út 18.">
+            <option value="Keszthely – Sopron utca 43.">
+            <option value="Keszthely – Tapolcai út 45/a">
+            <option value="Kiskőrös – Kossuth utca 13.">
+            <option value="Kiskunfélegyháza – Majsai út 5.">
+            <option value="Kiskunhalas – Széchenyi út 1-3.">
+            <option value="Kistarcsa – Szabadság útja 60">
+            <option value="Kisújszállás – Deák Ferenc u. 10.">
+            <option value="Kisvárda – Attila út 2/A">
+            <option value="Komárom – Mártírok útja 80.">
+            <option value="Komló – Tröszt utca 1.">
+            <option value="Körmend – Dr. Remetei Filep utca 2.">
+            <option value="Kőszeg – Cáki út 2.">
+            <option value="Kunszentmárton – Kossuth Lajos u. 23">
+            <option value="Makó – Szegedi u. 63.">
+            <option value="Marcali – Rákóczi Ferenc utca 50.">
+            <option value="Martfű – Földvári út 1.">
+            <option value="Mezőkovácsháza – Árpád u. 135.">
+            <option value="Mezőkövesd – Dohány út 2/A">
+            <option value="Mezőtúr – Földvári út 21.">
+            <option value="Miskolc – Csermőkei út 207.">
+            <option value="Miskolc – József Attila u. 74.">
+            <option value="Miskolc – Kiss Ernő u. 13/b.">
+            <option value="Miskolc – Pesti út 5.">
+            <option value="Mohács – Pécsi út 41.">
+            <option value="Monor – Gém utca 1.">
+            <option value="Mór – Akai utca 8.">
+            <option value="Mosonmagyaróvár – Királyhidai utca 49.">
+            <option value="Nagyatád – Árpád utca 49.">
+            <option value="Nagykáta – Dózsa György út 16.">
+            <option value="Nagykanizsa – Balatoni utca 41.">
+            <option value="Nagykőrös – Kecskeméti út 73.">
+            <option value="Nyíregyháza – Debreceni u. 106/c.">
+            <option value="Nyíregyháza – Pazonyi út 37/a.">
+            <option value="Orosháza – Hóvirág u. 1-5.">
+            <option value="Oroszlány – Környei u. 2.">
+            <option value="Ózd – Sárli út 2.">
+            <option value="Paks – Tolnai út 70.">
+            <option value="Pápa – Jókai Mór utca 57.">
+            <option value="Pécs – Lahti utca 45.">
+            <option value="Pécs – Lázár Vilmos utca 10.">
+            <option value="Pécs – Málomi út 3.">
+            <option value="Pécs – Puskin tér 22.">
+            <option value="Pécs – Siklósi út 52/A">
+            <option value="Pilisvörösvár – Budai út 18.">
+            <option value="Pomáz – József Attila u. 32.">
+            <option value="Püspökladány – Rákóczi utca 16-20.">
+            <option value="Ráckeve – Lacházi út 26">
+            <option value="Salgótarján – Csokonai út 23.">
+            <option value="Sárbogárd – Ady E. utca 232-236.">
+            <option value="Sárvár – Rákóczi utca 12.">
+            <option value="Sátoraljaújhely – Esze Tamás u. 92.">
+            <option value="Siklós – Szent István tér 2.">
+            <option value="Siófok – Zamárdi utca 1-2.">
+            <option value="Solt – Kossuth Lajos utca 2-8.">
+            <option value="Soltvadkert – Kossuth Lajos u. 110.">
+            <option value="Solymár – Terstyánszky Ödön utca 89.">
+            <option value="Sopron – Bánfalvi út 12.">
+            <option value="Sopron – Lófuttató utca 4.">
+            <option value="Sümeg – Fehérkő utca 1/1.">
+            <option value="Szada – Dózsa György út 1/B">
+            <option value="Szarvas – Csabai út 1/4.">
+            <option value="Szeged – Makkosházi krt. 21.">
+            <option value="Szeged – Szabadkai út 1/c.">
+            <option value="Szeged – Vásárhelyi Pál út 7.">
+            <option value="Szeghalom – Széchenyi u. 45-49.">
+            <option value="Székesfehérvár – Balatoni út 21.">
+            <option value="Székesfehérvár – Farkasvermi köz 1.">
+            <option value="Székesfehérvár – Mártírok útja 11.">
+            <option value="Székesfehérvár – Pozsonyi út 4.">
+            <option value="Szekszárd – Arany János utca 4.">
+            <option value="Szekszárd – Béri Balogh Ádám utca 94/B">
+            <option value="Szentendre – Dózsa Gy. út 20">
+            <option value="Szentes – Ipartelepi út 2-6.">
+            <option value="Szerencs – Csalogány út 58.">
+            <option value="Szigethalom – Mű út 7.">
+            <option value="Szigetszentmiklós – Csepeli út 16/a.">
+            <option value="Szigetvár – Almás patak utca 5.">
+            <option value="Szolnok – Délibáb u. 6.">
+            <option value="Szolnok – Széchenyi krt. 4/b.">
+            <option value="Szolnok – Tószegi út 5.">
+            <option value="Szombathely – Kenyérvíz utca 2.">
+            <option value="Szombathely – Verseny utca 30.">
+            <option value="Szombathely – Zanati út 42">
+            <option value="Tamási – Deák Ferenc utca 10/A">
+            <option value="Tapolca – Veszprémi út 1.">
+            <option value="Tata – Piac tér 8.">
+            <option value="Tatabánya – Győri út 31.">
+            <option value="Tatabánya – Szent Borbála út 31.">
+            <option value="Tiszafüred – Húszöles út 25.">
+            <option value="Tiszaújváros – Lévay u. 118.">
+            <option value="Törökszentmiklós – Kossuth Lajos u. 102-108.">
+            <option value="Újfehértó – Debreceni út 14-24.">
+            <option value="Üröm – Dózsa György út 63.">
+            <option value="Vác – Balassagyarmati út 9-15.">
+            <option value="Vác – Bolgár u. 1.">
+            <option value="Vác – Naszály utca 20.">
+            <option value="Várpalota – Hét vezér utca 3.">
+            <option value="Vecsés – Fő u. 244">
+            <option value="Veresegyház – Budapesti út 1.">
+            <option value="Veresegyház – Szadai út 7.">
+            <option value="Veszprém – Cholnoky utca 29/1.">
+            <option value="Veszprém – Észak-keleti útgyűrű 2.">
+            <option value="Zalaegerszeg – Átkötő utca 3.">
+            <option value="Zalaegerszeg – Platán sor 6/A">
+          </datalist>
         </div>
 
         <div class="form-group">
@@ -611,7 +834,7 @@
       </div>
     </section>
 
-    <!-- 8. PROFIL & ADATOK: PROFIL & JEGYZET NÉZET -->
+    <!-- 8. PROFIL & ADATOK: PROFIL & JEGYZET NÉZET (250 KARAKTERES JEGYZETTEL) -->
     <section id="view-profil" class="view">
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
@@ -620,12 +843,12 @@
       <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
           <span>Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="note-char-count">0/200</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="note-char-count">0/250</span>
         </h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 8px;">
           Ezt a jegyzetet <strong>kizárólag te látod</strong> ehhez a gyűjteményhez.
         </p>
-        <textarea id="prof-private-note" class="input-field" rows="3" maxlength="200" placeholder="Pl. #12 félretéve Marcinak; Postázás szerdán..."></textarea>
+        <textarea id="prof-private-note" class="input-field" rows="3" maxlength="250" placeholder="Pl. #12 félretéve Marcinak; Postázás szerdán..."></textarea>
         <div style="margin-top:8px; display:flex; justify-content:flex-end;">
           <button class="btn btn-secondary btn-sm" id="btn-save-note">Jegyzet mentése</button>
         </div>
@@ -646,8 +869,8 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- TOP 3 KEDVENC TÉTEL -->
-        <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
+        <!-- TOP 3 KEDVENC TÉTEL (Opcionálisan rejtve ha az albumnál nincs bekapcsolva) -->
+        <div id="prof-favorites-container" style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
           <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);" id="prof-favorites-title">Top 3 Kedvenc Tételed <strong style="color:var(--amber);">* (Kötelező)</strong></h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
             Jelöld meg a 3 legkedvesebb tételedet! Ezzel szavazol a Közönségkedvencre:
@@ -712,7 +935,7 @@
       </div>
     </section>
 
-    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET (SZERKESZTÉS + BEKÜLDÉSI VÁRÓLISTA) -->
+    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET -->
     <section id="view-admin" class="view">
       <h2>Adminisztrátori Vezérlőpult</h2>
       <p class="view-intro">Gyűjtemények létrehozása, szerkesztése, közösségi javaslatok jóváhagyása és rendszerüzenetek kezelése.</p>
@@ -782,14 +1005,16 @@
           </div>
         </div>
 
+        <!-- EGYEDI AZONOSÍTÓK / SORSZÁMOZOTT NEVEK MEZŐ -->
         <div class="form-group">
-          <label>Egyedi tételkódok / tartományok (pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
-          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="pl. MEX 1-19, HUN 1-20, ENG 1-18, LE 1-5&#10;(Ha üresen hagyod, sima 1-től N-ig számozást kap)"></textarea>
+          <label>Egyedi tételkódok vagy sorszámozott nevek (Tartomány: <code>MEX 1-19, HUN 1-20</code> VAGY Nevek: <code>1: Garfield kép 1, 2: Garfield kép 2</code>):</label>
+          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="Példák:&#10;1. Tartomány: MEX 1-19, HUN 1-20, LE 1-5&#10;2. Sorszámozott nevek: 1: Garfield csoportkép1, 2: Garfield csoportkép2, 3: Garfield és Ubul"></textarea>
         </div>
 
+        <!-- DINAMIKUS OLDALBEOSZTÁS / FEJEZETEK -->
         <div class="form-group">
-          <label>Könyvlapozó oldalbeosztás (opcionális, ha be van kapcsolva a könyv nézet):</label>
-          <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;1. oldal — Mexikó: 1-19&#10;2. oldal — Magyarország: 20-39&#10;3. oldal — Döntősök (Panoráma): 40-41 [combo]"></textarea>
+          <label>Könyvlapozó oldalbeosztás (Matricaalbumokhoz, pl. <code>Bevezető: 1 – 4</code> vagy <code>Az Óceán: 5 – 28</code>):</label>
+          <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;Bevezető: 1 – 4&#10;Az Óceán: 5 – 28&#10;Döntősök: 29 – 30 [combo]"></textarea>
         </div>
 
         <div class="form-group" style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
@@ -803,6 +1028,11 @@
           <label class="checkbox-label">
             <input type="checkbox" id="admin-album-is-retro">
             🕹️ Retro gyűjtemény (Kiemelt Retro jelvény a kártyán)
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="admin-album-has-favorites" checked>
+            Top 3 Kedvenc tétel szavazás engedélyezése ennél az albumnál (Profilban & Statisztikában)
           </label>
 
           <div style="margin: 8px 0;">
@@ -819,7 +1049,7 @@
 
           <label class="checkbox-label" style="margin-top:6px;">
             <input type="checkbox" id="admin-album-has-chapters">
-            Könyv lapozó nézet engedélyezése (fejezetekkel)
+            Könyv lapozó nézet engedélyezése (Csak matricaalbumokhoz)
           </label>
         </div>
 
@@ -1023,7 +1253,7 @@
       <div id="scanner-tags-box" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; max-height:130px; overflow-y:auto; padding:8px; background:rgba(0,0,0,0.25); border-radius:var(--radius-sm);"></div>
 
       <div style="display:flex; gap:8px; margin-bottom:16px;">
-        <input type="number" id="scanner-manual-num" class="input-field" placeholder="Kimaradt tétel száma" min="1" max="1000">
+        <input type="number" id="scanner-manual-num" class="input-field" placeholder="Kimaradt tétel száma" min="1" max="2000">
         <button class="btn btn-secondary" id="btn-scanner-add-manual" style="width:auto; padding:8px 14px; white-space:nowrap;">+ Hozzáadás</button>
       </div>
 

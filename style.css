@@ -273,6 +273,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .page-progress { font-size: 0.8rem; color: var(--amber); font-weight: 600; }
 .slots-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
 
+/* Slot formák: Lutra álló/fekvő + Általános négyzetes */
 .slot {
   border: 2px dashed var(--slot-border); border-radius: 8px; background: rgba(13, 46, 44, 0.45);
   padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
@@ -280,6 +281,8 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .slot.orient-allo { width: 98px; height: 132px; }
 .slot.orient-fekvo { width: 132px; height: 98px; }
+.slot.orient-negyzet { width: 110px; height: 110px; }
+
 .slot .sticker-num { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-muted); }
 .slot .sticker-name { font-size: 0.72rem; font-weight: 500; margin: 2px 0; line-height: 1.15; max-height: 2.4em; overflow: hidden; }
 .slot .sticker-tag { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: rgba(0,0,0,0.25); }
@@ -325,7 +328,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .radar-attached-img { max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2); margin-top: 8px; display: block; object-fit: cover; cursor: pointer; }
 .meetup-time-badge { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 
-/* HUB KÁRTYÁK & FŐOLDAL (NAGYOBB KÉPEKKEL & RETRO JELVÉNNYEL) */
+/* HUB KÁRTYÁK & FŐOLDAL */
 .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .album-hub-card {
   background: var(--surface-card); border: 1px solid rgba(243, 238, 223, 0.12);
@@ -338,7 +341,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: linear-gradient(180deg, rgba(216, 155, 74, 0.15) 0%, rgba(20, 69, 63, 0.8) 100%);
 }
 
-/* Nagyobb, szebb borítóképek */
 .hub-card-thumb {
   width: 100%; height: 175px; object-fit: cover; border-radius: var(--radius-sm);
   margin-bottom: 10px; border: 1px solid rgba(243, 238, 223, 0.15); background: #081B1A;
@@ -347,7 +349,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .album-hub-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .album-type-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: rgba(216, 155, 74, 0.2); color: var(--amber); }
 
-/* 🕹️ Retro jelvény stílus */
 .album-type-badge.badge-retro {
   background: rgba(139, 94, 60, 0.45);
   color: var(--fur-brown-soft);
@@ -357,7 +358,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .album-hub-progress-track { background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
 .album-hub-progress-bar { background: var(--amber); height: 100%; border-radius: 999px; transition: width 0.4s ease; }
 
-/* 📥 KÖZÖSSÉGI VÁRÓLISTA KÁRTYÁK AZ ADMINBAN */
 .suggestion-item {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 209, 102, 0.3);
