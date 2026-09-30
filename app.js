@@ -4434,6 +4434,7 @@ document.getElementById('modal-image-lightbox')?.addEventListener('click', () =>
 try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
+  switchView('hub');
   renderHub();
   renderGrid();
   initFavoriteSelects();
