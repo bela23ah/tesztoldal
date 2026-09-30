@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Teljes)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Javított)
    ========================================================================= */
 
 :root {
@@ -273,7 +273,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .page-progress { font-size: 0.8rem; color: var(--amber); font-weight: 600; }
 .slots-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
 
-/* Slot formák: Lutra álló/fekvő + Általános négyzetes */
+/* Slot formák: Lutra álló/fekvő + Nem-Lutra egységes négyzet */
 .slot {
   border: 2px dashed var(--slot-border); border-radius: 8px; background: rgba(13, 46, 44, 0.45);
   padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
@@ -319,8 +319,21 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .message-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .message-card.incoming { border-left: 4px solid var(--amber); }
 .message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.9; }
-.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; }
+.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; gap: 6px; }
 .message-body { background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; }
+
+/* Kiemelt albumjelvény az üzenetekhez */
+.message-album-badge {
+  background: var(--amber) !important;
+  color: var(--water-deep) !important;
+  font-weight: 800 !important;
+  font-size: 0.75rem !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
 
 .radar-card, .meetup-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .badge-radar-van { background: var(--amber); color: var(--water-deep); font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
@@ -328,7 +341,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .radar-attached-img { max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2); margin-top: 8px; display: block; object-fit: cover; cursor: pointer; }
 .meetup-time-badge { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 
-/* HUB KÁRTYÁK & FŐOLDAL */
+/* HUB KÁRTYÁK & FŐOLDAL (100%-BAN TELJESEN LÁTHATÓ BORÍTÓKKAL) */
 .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .album-hub-card {
   background: var(--surface-card); border: 1px solid rgba(243, 238, 223, 0.12);
@@ -341,9 +354,16 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: linear-gradient(180deg, rgba(216, 155, 74, 0.15) 0%, rgba(20, 69, 63, 0.8) 100%);
 }
 
+/* Teljesen látható borítókép vágás nélkül */
 .hub-card-thumb {
-  width: 100%; height: 175px; object-fit: cover; border-radius: var(--radius-sm);
-  margin-bottom: 10px; border: 1px solid rgba(243, 238, 223, 0.15); background: #081B1A;
+  width: 100%;
+  height: 185px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  border: 1px solid rgba(243, 238, 223, 0.15);
+  background: #081B1A;
+  padding: 4px;
 }
 
 .album-hub-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }

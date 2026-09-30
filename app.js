@@ -408,48 +408,29 @@ function getItemFullName(num, albumId = currentAlbumId) {
   return getItemLabel(num, albumId);
 }
 
-// INTELLIGENS SORSZÁMOZOTT NÉV ÉS TARTOMÁNY ÉRTELMEZŐ
-// Kezeli: "1: Garfield 1, 2: Garfield 2", "1. Garfield 1", "#1 Garfield 1", "MEX 1-19"
+// INTELIGENS TARTOMÁNY ÉS SORSZÁMOZOTT NÉV KIBONTÓ
+// Kezeli: "1: Garfield kép 1   2: Garfield kép 2", "1. Név", "#1 Név", "MEX 1-19"
 function expandCustomItemsText(rawText) {
   if (!rawText || !rawText.trim()) return [];
-  const lines = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
-  const result = [];
   const mapByIndex = {};
   let maxIndexFound = 0;
   let hasIndexedNames = false;
 
-  lines.forEach(token => {
-    // 1. Sorszámozott formátum: "1: Név", "1. Név", "1 - Név", "#1 Név"
-    const namedMatch = token.match(/^#?(\d+)[\s:\.\-—–]+(.+)$/);
-    if (namedMatch) {
-      hasIndexedNames = true;
-      const idx = parseInt(namedMatch[1], 10);
-      const name = namedMatch[2].trim();
-      if (idx > 0) {
+  // Regex soron belüli és többsoros "1: Név", "#1 Név", "1. Név", "1 - Név" formátumokhoz
+  const regexNamed = /(?:^|\s+|,\s*)(?:#?(\d+))[\s:\.\-—–]+([^#\n\r]+?)(?=(?:\s+#?\d+[\s:\.\-—–]+)|$|,)/g;
+  let match;
+
+  if (/^#?\d+[\s:\.\-—–]+/m.test(rawText.trim()) || /(?:^|\s+)#?\d+[\s:\.\-—–]+/.test(rawText)) {
+    while ((match = regexNamed.exec(rawText)) !== null) {
+      const idx = parseInt(match[1], 10);
+      const name = match[2].trim().replace(/^[,\s]+|[,\s]+$/g, '');
+      if (idx > 0 && name.length > 0) {
         mapByIndex[idx] = name;
         if (idx > maxIndexFound) maxIndexFound = idx;
+        hasIndexedNames = true;
       }
-      return;
     }
-
-    // 2. Tartomány formátum: "MEX 1-19", "HUN 1 - 20"
-    const rangeMatch = token.match(/^([A-Za-z0-9_\s]+?)\s*(\d+)[\s\-—–]+(\d+)$/);
-    if (rangeMatch) {
-      const prefix = rangeMatch[1].trim();
-      const start = parseInt(rangeMatch[2], 10);
-      const end = parseInt(rangeMatch[3], 10);
-      const min = Math.min(start, end);
-      const max = Math.max(start, end);
-
-      for (let i = min; i <= max; i++) {
-        result.push(`${prefix} ${i}`);
-      }
-      return;
-    }
-
-    // 3. Sima egyedi tétel
-    result.push(token);
-  });
+  }
 
   if (hasIndexedNames && maxIndexFound > 0) {
     const indexedResult = [];
@@ -459,10 +440,28 @@ function expandCustomItemsText(rawText) {
     return indexedResult;
   }
 
+  // Tartományok feldolgozása: "MEX 1-19, HUN 1-20"
+  const tokens = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
+  const result = [];
+  tokens.forEach(token => {
+    const rangeMatch = token.match(/^([A-Za-z0-9_\s]+?)\s*(\d+)[\s\-—–]+(\d+)$/);
+    if (rangeMatch) {
+      const prefix = rangeMatch[1].trim();
+      const start = parseInt(rangeMatch[2], 10);
+      const end = parseInt(rangeMatch[3], 10);
+      const min = Math.min(start, end);
+      const max = Math.max(start, end);
+      for (let i = min; i <= max; i++) {
+        result.push(`${prefix} ${i}`);
+      }
+    } else {
+      result.push(token);
+    }
+  });
   return result;
 }
 
-// ROBUSTUS FEJEZET GENERÁTOR (Felismeri a nagykötőjelet –, gondolatjelet —, és kettőspontot is)
+// HIBATŰRŐ FEJEZETSZERKESZTŐ (–, —, -, :, Bevezető - #1-#4 matrica formátumokhoz)
 function parseChaptersText(rawText, customItems = []) {
   if (!rawText || !rawText.trim()) return [];
   const lines = rawText.split('\n');
@@ -472,56 +471,40 @@ function parseChaptersText(rawText, customItems = []) {
     line = line.trim();
     if (!line) return;
 
-    let title = `${idx + 1}. fejezet`;
-    let rangePart = '';
+    const isCombo = line.toLowerCase().includes('[combo]');
+    const cleanLine = line.replace(/\[combo\]/gi, '').trim();
 
-    if (line.includes(':')) {
-      const parts = line.split(':');
-      title = parts[0]?.trim() || title;
-      rangePart = parts.slice(1).join(':').trim();
-    } else if (line.includes('—') || line.includes('–')) {
-      const separator = line.includes('—') ? '—' : '–';
-      const parts = line.split(separator);
-      if (parts.length > 2) {
-        title = parts[0]?.trim() || title;
-        rangePart = parts.slice(1).join(separator).trim();
-      } else {
-        rangePart = line;
-      }
-    } else {
-      rangePart = line;
-    }
+    // Számok keresése bármilyen kötőjellel
+    const rangeMatch = cleanLine.match(/(?:#?\s*)(\d+)[\s\-—–−]+(?:#?\s*)(\d+)/);
+    if (!rangeMatch) return;
 
-    const isCombo = rangePart.toLowerCase().includes('[combo]');
-    const cleanRange = rangePart.replace(/\[combo\]/gi, '').trim();
-    
-    // Számok keresése bármilyen kötőjel típussal (-, –, —, −)
-    const rangeMatch = cleanRange.match(/(\d+)[\s\-—–−]+(\d+)/);
+    const start = parseInt(rangeMatch[1], 10);
+    const end = parseInt(rangeMatch[2], 10);
+    const min = Math.min(start, end);
+    const max = Math.max(start, end);
+
+    // Cím megtisztítása
+    let title = cleanLine.replace(/(?:#?\s*)\d+[\s\-—–−]+(?:#?\s*)\d+[\s\.\w]*/g, '').trim();
+    title = title.replace(/^[\s:\.\-—–]+|[\s:\.\-—–]+$/g, '');
+    if (!title) title = `${idx + 1}. fejezet`;
+
     const elements = [];
-
-    if (rangeMatch) {
-      const start = parseInt(rangeMatch[1], 10);
-      const end = parseInt(rangeMatch[2], 10);
-      const min = Math.min(start, end);
-      const max = Math.max(start, end);
-
-      if (isCombo && max - min === 1) {
+    if (isCombo && max - min === 1) {
+      elements.push({
+        type: "combo",
+        nums: [min, max],
+        name: title,
+        orient: "panoráma"
+      });
+    } else {
+      for (let n = min; n <= max; n++) {
+        const customName = customItems && customItems[n - 1] ? customItems[n - 1] : `#${n}`;
         elements.push({
-          type: "combo",
-          nums: [min, max],
-          name: title.split('—')[1]?.trim() || title,
-          orient: "panoráma"
+          type: "single",
+          num: n,
+          name: customName,
+          orient: "négyzet"
         });
-      } else {
-        for (let n = min; n <= max; n++) {
-          const customName = customItems && customItems[n - 1] ? customItems[n - 1] : `#${n}`;
-          elements.push({
-            type: "single",
-            num: n,
-            name: customName,
-            orient: "négyzet"
-          });
-        }
       }
     }
 
@@ -850,7 +833,6 @@ function initFavoriteSelects() {
   const totalSize = getActiveAlbumSize();
   const favContainer = document.getElementById('prof-favorites-container');
 
-  // Ha az albumnál ki van kapcsolva a kedvencválasztás, elrejtjük a dobozt
   if (favContainer) {
     favContainer.style.display = (activeAlbum.hasFavorites !== false) ? 'block' : 'none';
   }
@@ -887,7 +869,6 @@ function initFavoriteSelects() {
   });
 }
 
-// 6 KÁRTYÁS HUB MEGJELENÍTÉS + RETRO JELVÉNYEK + LENYITÓ GOMB
 function renderHub() {
   const container = document.getElementById('hub-albums-grid');
   const toggleBtn = document.getElementById('btn-toggle-all-hub-albums');
@@ -1079,7 +1060,6 @@ function selectAlbum(albumId) {
 
   const albumModeToggle = document.querySelector('.view-mode-toggle');
   if (albumModeToggle) {
-    // Csak matricaalbumoknál engedélyezett a könyv nézet
     albumModeToggle.style.display = (activeAlbum.type === 'sticker' && activeAlbum.hasChapters) ? 'flex' : 'none';
   }
 
@@ -1093,7 +1073,6 @@ function selectAlbum(albumId) {
   if (diffSec) diffSec.style.display = (activeAlbum.type === 'sticker' && activeAlbum.hasChapters) ? 'block' : 'none';
   if (diffJump) diffJump.style.display = (activeAlbum.type === 'sticker' && activeAlbum.hasChapters) ? 'inline-block' : 'none';
 
-  // Figurák / Kinder tojások esetén tojás alakú rács bekapcsolása
   const gridEl = document.getElementById('matrica-grid');
   if (gridEl) {
     gridEl.classList.toggle('matrica-grid-figures', activeAlbum.type === 'figure');
@@ -1117,7 +1096,6 @@ safeAddListener('btn-switch-album', () => {
   switchView('hub');
 });
 
-// JEGYZET ÉS ÁLLAPOT BETÖLTÉSE (Lutra meglévő jegyzetének visszatöltésével)
 function loadAlbumState(albumId) {
   myProfile.van = ensureArray(safeJsonParse(`lutra_van_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : [])).sort((a, b) => a - b);
   myProfile.vanCounts = safeJsonParse(`lutra_van_counts_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_van_counts', {}) : {});
@@ -1152,7 +1130,6 @@ document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   });
 });
 
-// RÁCS RAJZOLÁSA (FIGURÁKNÁL KINDERTOJÁS FORMÁVAL)
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
@@ -1221,7 +1198,6 @@ function initAlbumSelect() {
   };
 }
 
-// KÖNYVLAPOZÓ (Négyzetes slotok nem-Lutra albumoknál)
 function renderAlbumChapter() {
   const chapters = getActiveChapters();
   if (chapters.length === 0) return;
@@ -3452,14 +3428,14 @@ function renderMessages() {
     const partnerName = isIncoming ? msg.fromName : msg.toName;
     const partnerCity = isIncoming ? (msg.fromCity ? `(${msg.fromCity})` : '') : '';
     const dateStr = msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' }) : 'Nemrég';
-    const albumBadge = msg.albumId ? `<span class="badge-ratio" style="font-size:0.75rem; margin-left:6px; font-weight:700;">${escapeHtml(ALBUMS_REGISTRY[msg.albumId]?.title || msg.albumId)}</span>` : '';
+    const albumTitle = ALBUMS_REGISTRY[msg.albumId]?.title || (msg.albumId ? msg.albumId : 'Lutra Album (2026)');
 
     return `
       <div class="message-card ${isIncoming ? 'incoming' : 'outgoing'}">
         <div class="message-header">
           <div>
             <strong>${isIncoming ? 'Feladó:' : 'Címzett:'} ${escapeHtml(partnerName)} ${escapeHtml(partnerCity)}</strong>
-            ${albumBadge}
+            <span class="message-album-badge" style="margin-left:6px;">📦 ${escapeHtml(albumTitle)}</span>
           </div>
           <span style="font-size:0.75rem; color:var(--text-muted);">${dateStr}</span>
         </div>
@@ -3708,7 +3684,6 @@ function resetAdminAlbumForm() {
   if (saveBtn) saveBtn.textContent = "Gyűjtemény mentése és azonnali élesítése";
 }
 
-// Új gyűjtemény mentése vagy meglévő szerkesztése
 safeAddListener('btn-admin-save-album', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
 
@@ -3724,7 +3699,7 @@ safeAddListener('btn-admin-save-album', async () => {
   const isRetro = document.getElementById('admin-album-is-retro')?.checked || (year < 2010);
   const hasFavorites = document.getElementById('admin-album-has-favorites')?.checked !== false;
   const radarType = document.getElementById('admin-album-radar-type')?.value || 'none';
-  const hasChapters = (type === 'sticker') && document.getElementById('admin-album-has-chapters')?.checked || false;
+  const hasChapters = (type === 'sticker') && (document.getElementById('admin-album-has-chapters')?.checked || false);
 
   const customItemsRaw = document.getElementById('admin-album-custom-items')?.value.trim() || '';
   const customChaptersRaw = document.getElementById('admin-album-custom-chapters')?.value.trim() || '';
