@@ -1,5 +1,5 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0 Teljes, Végleges)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0 Teljes, Javított)
 // =========================================================================
 
 let ALBUMS_REGISTRY = {
@@ -992,7 +992,7 @@ function selectAlbum(albumId) {
   if (diffSec) diffSec.style.display = activeAlbum.hasChapters ? 'block' : 'none';
   if (diffJump) diffJump.style.display = activeAlbum.hasChapters ? 'inline-block' : 'none';
 
-  // Figurák / Kinder tojások esetén tojás alakú rács bekapcsolása
+  // Figurák esetén tojásdad rács aktiválása
   const gridEl = document.getElementById('matrica-grid');
   if (gridEl) {
     gridEl.classList.toggle('matrica-grid-figures', activeAlbum.type === 'figure');
@@ -1045,7 +1045,7 @@ document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   });
 });
 
-// RÁCS RAJZOLÁSA (KINDERTOJÁS / FIGURA FORMÁZÁSSAL)
+// RÁCS RAJZOLÁSA (FIGURÁKNÁL KINDERTOJÁS FORMÁVAL)
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
