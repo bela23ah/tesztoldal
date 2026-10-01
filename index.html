@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,">
   <meta name="theme-color" content="#0D2E2C">
   
   <!-- PWA & Mobil Támogatás -->
@@ -175,13 +175,13 @@
         <button class="filter-btn" data-hub-filter="sticker">Matricaalbumok</button>
         <button class="filter-btn" data-hub-filter="card">Kártyák</button>
         <button class="filter-btn" data-hub-filter="figure">Figurák</button>
-        <button class="filter-btn" data-hub-filter="retro">🕹️ Retro</button>
+        <button class="filter-btn" data-hub-filter="retro">Retro</button>
         <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
       </div>
 
       <!-- Gyorskereső a gyűjteményekhez -->
       <div style="margin-bottom:16px;">
-        <input type="text" id="hub-search-input" class="input-field" placeholder="🔍 Keresés gyűjtemény címe, kiadója vagy éve szerint...">
+        <input type="text" id="hub-search-input" class="input-field" placeholder="Keresés gyűjtemény címe, kiadója vagy éve szerint..." autocomplete="off" autocorrect="off" spellcheck="false" name="hub_search_field">
       </div>
 
       <!-- Gyűjteménykártyák Rácsa -->
@@ -337,7 +337,7 @@
       <p class="view-intro">Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>12, 45</code>) vagy névre is.</p>
       
       <div class="search-box">
-        <input type="text" id="search-input" class="input-field" placeholder="Pl. 42 vagy 30-38 vagy tigris">
+        <input type="text" id="search-input" class="input-field" placeholder="Pl. 42 vagy 30-38 vagy tigris" autocomplete="off" autocorrect="off" spellcheck="false" name="item_search_field">
         <button class="btn btn-primary" id="btn-search">Keresés</button>
       </div>
       
@@ -361,7 +361,7 @@
         
         <div class="form-group">
           <label>Válaszd ki vagy írd be az üzletet:</label>
-          <input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot...">
+          <i<input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a 221 Lidl áruház valamelyikét vagy a várost..." autocomplete="off" autocorrect="off" spellcheck="false" name="store_search_field">nput type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot...">
           
           <datalist id="lidl-all-stores">
             <option value="Agárd – Akácfa utca 2.">
