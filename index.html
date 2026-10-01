@@ -75,7 +75,7 @@
   <!-- 1. HIERARCHIA ELEM: AKTÍV GYŰJTEMÉNY SÁV -->
   <div id="active-album-bar" class="active-album-banner" style="display:none;">
     <div style="display:flex; align-items:center; gap:12px;">
-      <img id="active-album-thumb" src="og-image.png" style="width:46px; height:46px; border-radius:6px; object-fit:cover; border:1px solid var(--amber);" alt="Borító">
+      <img id="active-album-thumb" src="og-image.png" style="width:46px; height:46px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító">
       <div>
         <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Aktív Gyűjtemény</span>
         <strong id="active-album-title" style="color:#FFF; font-size:1rem;">Lutra Album 2026</strong>
@@ -163,14 +163,14 @@
   </div>
 
   <main>
-    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB: 6 KÁRTYA + LENYITÓ + BEKÜLDÉS) -->
+    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB) -->
     <section id="view-hub" class="view active">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
-        <h2>Gyűjtemények</h2>
+        <h2>Elérhető Gyűjtemények</h2>
       </div>
       <p class="view-intro">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
-      <div class="filter-group" style="margin-bottom: 16px;">
+      <div class="filter-group" style="margin-bottom: 12px;">
         <button class="filter-btn active" data-hub-filter="all">Kiemeltek</button>
         <button class="filter-btn" data-hub-filter="sticker">Matricaalbumok</button>
         <button class="filter-btn" data-hub-filter="card">Kártyák</button>
@@ -179,13 +179,18 @@
         <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
       </div>
 
-      <!-- Gyűjteménykártyák Rácsa (Alapból 6 legfontosabb) -->
+      <!-- Gyorskereső a gyűjteményekhez -->
+      <div style="margin-bottom:16px;">
+        <input type="text" id="hub-search-input" class="input-field" placeholder="🔍 Keresés gyűjtemény címe, kiadója vagy éve szerint...">
+      </div>
+
+      <!-- Gyűjteménykártyák Rácsa -->
       <div id="hub-albums-grid" class="hub-grid"></div>
 
       <!-- Lenyitó gomb az összes gyűjteményhez -->
       <div style="text-align:center; margin:16px 0 20px;">
         <button class="btn btn-secondary" id="btn-toggle-all-hub-albums" style="font-size:0.85rem; padding:8px 18px;">
-          Összes gyűjtemény listázása (<span id="hub-total-albums-count">19</span> db) ▼
+          Összes gyűjtemény listázása (<span id="hub-total-albums-count">21</span> db) ▼
         </button>
       </div>
 
@@ -193,7 +198,7 @@
       <div class="card" style="border: 1.5px dashed var(--amber); background: rgba(13,46,44,0.45); text-align: center; padding: 18px 14px;">
         <h3 style="margin:0 0 6px; font-size:1.1rem; color:var(--sand);">Nem találod a saját albumodat a listában?</h3>
         <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
-          Küldd be az album vagy kártyasorozat nevét, és felvesszük a rendszerbe, hogy elkezdhesd a cserét!
+          Küldd be az album vagy kártyasorozat nevét, és felvesszük a rendszerbe!
         </p>
         <button class="btn btn-primary btn-sm" id="btn-open-suggest-album" style="font-size:0.85rem; padding:8px 16px;">
           + Új gyűjtemény javaslata / beküldése
@@ -519,7 +524,7 @@
             <option value="Pécs – Málomi út 3.">
             <option value="Pécs – Puskin tér 22.">
             <option value="Pécs – Siklósi út 52/A">
-            <option value="Pilisvörösvár – Budai út 18.">
+            <option file="Pilisvörösvár – Budai út 18.">
             <option value="Pomáz – József Attila u. 32.">
             <option value="Püspökladány – Rákóczi utca 16-20.">
             <option value="Ráckeve – Lacházi út 26">
@@ -648,7 +653,7 @@
         </div>
         <div class="form-group">
           <label>Részletek / Leírás / Facebook link:</label>
-          <textarea id="meetup-input-desc" class="input-field" rows="2" placeholder="Pl. Hozzátok a duplákat, sokan leszünk! Csatlakozz a FB eseményhez..."></textarea>
+          <textarea id="meetup-input-desc" class="input-field" rows="2" placeholder="Pl. Hozzátok a duplákat, sokan leszünk! Csatlakozz a FB eseményhez: https://..."></textarea>
         </div>
         <div class="form-group">
           <label>Plakát / Fotó (Opcionális):</label>
@@ -665,17 +670,24 @@
       <div id="meetups-list">Találkozók betöltése...</div>
     </section>
 
-    <!-- 6. CSEREBERE: BELSŐ ÜZENETEK NÉZET -->
+    <!-- 6. CSEREBERE: BELSŐ ÜZENETEK NÉZET (ALBUMSZŰRŐVEL) -->
     <section id="view-uzeneteim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <h2>Üzeneteim</h2>
         <button class="btn btn-secondary" id="btn-refresh-inbox" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat. A beszélgetés teljesen zárt és privát.</p>
+      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat gyűjtemények szerint.</p>
 
-      <div class="filter-group" style="margin-bottom: 14px;">
+      <div class="filter-group" style="margin-bottom: 10px;">
         <button class="filter-btn active" id="btn-msg-tab-inbox">Beérkező üzenetek</button>
         <button class="filter-btn" id="btn-msg-tab-sent">Elküldött üzenetek</button>
+      </div>
+
+      <!-- Gyűjtemény szerinti szűrő az üzenetekhez -->
+      <div style="margin-bottom: 14px;">
+        <select id="msg-album-filter-select" class="input-field" style="padding: 6px 10px; font-size: 0.85rem; font-weight: 600;">
+          <option value="all">📦 Minden gyűjtemény üzenetei</option>
+        </select>
       </div>
 
       <div id="messages-inbox-list">Bejelentkezés szükséges az üzenetek megtekintéséhez.</div>
@@ -834,12 +846,12 @@
       </div>
     </section>
 
-    <!-- 8. PROFIL & ADATOK: PROFIL & JEGYZET NÉZET (250 KARAKTERES JEGYZETTEL) -->
+    <!-- 8. PROFIL & ADATOK: PROFIL & JEGYZET NÉZET -->
     <section id="view-profil" class="view">
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <!-- FELSŐ DOBOZ: Gyűjteményi Privát Jegyzet -->
+      <!-- FELSŐ DOBOZ: Gyűjteményi Privát Jegyzet (250 karakter) -->
       <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
           <span>Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
@@ -869,7 +881,7 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- TOP 3 KEDVENC TÉTEL (Opcionálisan rejtve ha az albumnál nincs bekapcsolva) -->
+        <!-- TOP 3 KEDVENC TÉTEL -->
         <div id="prof-favorites-container" style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
           <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);" id="prof-favorites-title">Top 3 Kedvenc Tételed <strong style="color:var(--amber);">* (Kötelező)</strong></h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
@@ -935,7 +947,7 @@
       </div>
     </section>
 
-    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET -->
+    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET (SZÉTVÁLASZTOTT KÓDOKKAL ÉS NEVEKKEL) -->
     <section id="view-admin" class="view">
       <h2>Adminisztrátori Vezérlőpult</h2>
       <p class="view-intro">Gyűjtemények létrehozása, szerkesztése, közösségi javaslatok jóváhagyása és rendszerüzenetek kezelése.</p>
@@ -958,7 +970,7 @@
           </button>
         </div>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;" id="admin-album-form-desc">
-          Itt adhatsz hozzá új gyűjteményeket vagy módosíthatod a meglévőket. A mentés után azonnal megjelenik az összes látogatónál.
+          Itt adhatsz hozzá új gyűjteményeket vagy módosíthatod a meglévőket.
         </p>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
@@ -1001,14 +1013,20 @@
           <label>Borítókép / Indexkép feltöltése (Képfájl a gépről):</label>
           <input type="file" id="admin-album-cover-input" accept="image/*" class="input-field" style="padding:4px;">
           <div id="admin-album-cover-preview-box" style="display:none; margin-top:8px;">
-            <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; border:1px solid var(--amber);" alt="Borító előnézet">
+            <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító előnézet">
           </div>
         </div>
 
-        <!-- EGYEDI AZONOSÍTÓK / SORSZÁMOZOTT NEVEK MEZŐ -->
+        <!-- 1. ABLAK: EGYEDI TÉTELKÓDOK (RÁCSBAN LÁTSZIK) -->
         <div class="form-group">
-          <label>Egyedi tételkódok vagy sorszámozott nevek (Tartomány: <code>MEX 1-19, HUN 1-20</code> VAGY Nevek: <code>1: Garfield kép 1, 2: Garfield kép 2</code>):</label>
-          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="Példák:&#10;1. Tartomány: MEX 1-19, HUN 1-20, LE 1-5&#10;2. Sorszámozott nevek: 1: Garfield csoportkép1, 2: Garfield csoportkép2, 3: Garfield és Ubul"></textarea>
+          <label>1. Egyedi tételkódok / jelölések (a csempékre kerül, pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
+          <textarea id="admin-album-custom-items" class="input-field" rows="2" placeholder="pl. MEX 1-19, HUN 1-20, LE 1-5&#10;(Ha üres, sima 1-től N-ig számozást kap)"></textarea>
+        </div>
+
+        <!-- 2. ABLAK: SORSZÁMOZOTT TÉTELNEVEK (CSAK LEBEGŐ BUBORÉK ÉS KEDVENCEK) -->
+        <div class="form-group">
+          <label>2. Sorszámozott tételnevek (NEM kerül a csempére, csak lebegő infó és kedvencek, pl. <code>1: Garfield 1, 2: Garfield 2</code>):</label>
+          <textarea id="admin-album-custom-names" class="input-field" rows="3" placeholder="Példák (új sorban vagy egymás után):&#10;1: Garfield csoportkép   2: Garfield és Ubul   3: Ubul alszik..."></textarea>
         </div>
 
         <!-- DINAMIKUS OLDALBEOSZTÁS / FEJEZETEK -->
