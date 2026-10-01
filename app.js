@@ -1,5 +1,5 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0 - 1. RÉSZ: ALAPOK & HUB)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0 - 1. RÉSZ: MOTOR & RÁCS)
 // =========================================================================
 
 let ALBUMS_REGISTRY = {
@@ -347,6 +347,10 @@ let showAllHubAlbums = false;
 let editingAlbumId = null;
 let saveDebounceTimer = null;
 
+// 3. FÁZIS: GPS & TÁVOLSÁGI ÁLLAPOTOK
+let myGpsCoords = safeJsonParse('cserelj_gps_coords', null);
+let selectedSearchRadius = 'all';
+
 function getActiveAlbum() {
   return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"];
 }
@@ -358,28 +362,149 @@ function getActiveAlbumSize() {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-const STORE_DATABASES = {
-  lidl: [], // Betöltődik a HTML-ben lévő 221 pontos listából
-  spar: [
-    "Budapest – Október huszonharmadika u. 8-10. (Allee Interspar)",
-    "Budapest – Váci út 1-3. (Westend Spar)",
-    "Debrecen – Csapó u. 30. (Fórum Spar)",
-    "Győr – Budai út 1. (Árkád Interspar)",
-    "Kecskemét – Korona u. 2. (Malom Spar)",
-    "Szeged – Londoni krt. 3. (Árkád Interspar)",
-    "Pécs – Bajcsy-Zsilinszky u. 11. (Árkád Interspar)"
-  ],
-  tesco: [
-    "Budapest – Váci út 152-156. (Tesco Extra)",
-    "Budapest – Pillangó utca 15. (Tesco Extra)",
-    "Debrecen – Kishegyesi út 1-11. (Tesco Extra)",
-    "Győr – Királyszék út 33. (Tesco Hipermarket)",
-    "Szeged – Rókusi krt. 42-64. (Tesco Extra)"
-  ],
-  penny: [
-    "Budapest – Hős utca 2.", "Kecskemét – Kodály Zoltán tér", "Debrecen – Sámsoni út"
-  ]
+// 3. FÁZIS: HAVERSINE TÁVOLSÁGSZÁMÍTÁS ÉS TELEPÜLÉS KOORDINÁTÁK
+const CITY_COORDINATES = {
+  "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
+  "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
+  "budapest_2": { lat: 47.530, lng: 18.990, x: 51.5, y: 37.5 },
+  "budapest_3": { lat: 47.560, lng: 19.040, x: 52.0, y: 36.5 },
+  "budapest_4": { lat: 47.565, lng: 19.090, x: 53.0, y: 36.5 },
+  "budapest_5": { lat: 47.499, lng: 19.052, x: 52.5, y: 39.0 },
+  "budapest_6": { lat: 47.506, lng: 19.062, x: 52.7, y: 38.8 },
+  "budapest_7": { lat: 47.502, lng: 19.080, x: 52.9, y: 38.9 },
+  "budapest_8": { lat: 47.490, lng: 19.085, x: 52.8, y: 39.2 },
+  "budapest_9": { lat: 47.470, lng: 19.080, x: 52.7, y: 39.5 },
+  "budapest_10": { lat: 47.485, lng: 19.145, x: 53.5, y: 39.2 },
+  "budapest_11": { lat: 47.465, lng: 19.030, x: 52.0, y: 39.8 },
+  "budapest_12": { lat: 47.495, lng: 18.995, x: 51.5, y: 39.0 },
+  "budapest_13": { lat: 47.535, lng: 19.075, x: 52.8, y: 37.8 },
+  "budapest_14": { lat: 47.520, lng: 19.120, x: 53.2, y: 38.2 },
+  "budapest_15": { lat: 47.555, lng: 19.135, x: 53.4, y: 37.0 },
+  "budapest_16": { lat: 47.525, lng: 19.200, x: 54.0, y: 38.0 },
+  "budapest_17": { lat: 47.480, lng: 19.260, x: 54.5, y: 39.2 },
+  "budapest_18": { lat: 47.435, lng: 19.185, x: 53.8, y: 40.5 },
+  "budapest_19": { lat: 47.450, lng: 19.145, x: 53.4, y: 40.0 },
+  "budapest_20": { lat: 47.435, lng: 19.110, x: 53.0, y: 40.5 },
+  "budapest_21": { lat: 47.415, lng: 19.070, x: 52.5, y: 41.0 },
+  "budapest_22": { lat: 47.420, lng: 19.020, x: 51.8, y: 40.8 },
+  "budapest_23": { lat: 47.395, lng: 19.130, x: 53.2, y: 41.5 },
+  "gyor": { lat: 47.6875, lng: 17.6504, x: 26.0, y: 27.0 },
+  "sopron": { lat: 47.6865, lng: 16.5843, x: 10.5, y: 30.0 },
+  "szombathely": { lat: 47.2307, lng: 16.6218, x: 13.0, y: 44.0 },
+  "zalaegerszeg": { lat: 46.8417, lng: 16.8416, x: 20.0, y: 56.0 },
+  "veszprem": { lat: 47.0933, lng: 17.9115, x: 35.0, y: 46.0 },
+  "szekesfehervar": { lat: 47.1860, lng: 18.4221, x: 44.0, y: 45.0 },
+  "pecs": { lat: 46.0727, lng: 18.2323, x: 41.0, y: 83.0 },
+  "kaposvar": { lat: 46.3594, lng: 17.7968, x: 32.0, y: 73.0 },
+  "szekszard": { lat: 46.3501, lng: 18.7091, x: 50.0, y: 73.0 },
+  "kecskemet": { lat: 46.9069, lng: 19.6913, x: 61.0, y: 59.0 },
+  "szeged": { lat: 46.2530, lng: 20.1414, x: 66.0, y: 81.0 },
+  "bekescsaba": { lat: 46.6796, lng: 21.0911, x: 84.0, y: 69.0 },
+  "szolnok": { lat: 47.1756, lng: 20.1764, x: 69.0, y: 51.0 },
+  "debrecen": { lat: 47.5316, lng: 21.6273, x: 88.0, y: 40.0 },
+  "nyiregyhaza": { lat: 47.9554, lng: 21.7167, x: 90.0, y: 26.0 },
+  "miskolc": { lat: 48.1035, lng: 20.7784, x: 77.0, y: 23.0 },
+  "eger": { lat: 47.9025, lng: 20.3772, x: 71.0, y: 31.0 },
+  "salgotarjan": { lat: 48.0934, lng: 19.8030, x: 62.0, y: 21.0 },
+  "tatabanya": { lat: 47.5849, lng: 18.3932, x: 42.0, y: 32.0 },
+  "erd": { lat: 47.3789, lng: 18.9192, x: 51.0, y: 43.0 },
+  "dunaujvaros": { lat: 46.9619, lng: 18.9355, x: 53.0, y: 53.0 },
+  "baja": { lat: 46.1819, lng: 18.9568, x: 54.0, y: 80.0 },
+  "hodmezovasarhely": { lat: 46.4303, lng: 20.3189, x: 71.0, y: 75.0 },
+  "oroshaza": { lat: 46.5667, lng: 20.6667, x: 78.0, y: 73.0 },
+  "gyula": { lat: 46.6500, lng: 21.2833, x: 89.0, y: 68.0 },
+  "siofok": { lat: 46.9041, lng: 18.0580, x: 42.0, y: 50.0 },
+  "keszthely": { lat: 46.7691, lng: 17.2481, x: 27.0, y: 58.0 },
+  "nagykanizsa": { lat: 46.4535, lng: 16.9910, x: 21.0, y: 70.0 }
 };
+
+// Haversine formula légvonalbeli távolsághoz
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  const R = 6371; // Föld sugara km-ben
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+// 3. FÁZIS: INTELLIGENS TELEPÜLÉS ÉS BUDAPEST KERÜLET NORMALIZÁLÓ
+function normalizeText(text) {
+  if (!text) return '';
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+function parseBudapestDistricts(text) {
+  if (!text) return [];
+  const clean = text.toLowerCase();
+  const districts = [];
+
+  const romanMap = {
+    i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10,
+    xi: 11, xii: 12, xiii: 13, xiv: 14, xv: 15, xvi: 16, xvii: 17, xviii: 18,
+    xix: 19, xx: 20, xxi: 21, xxii: 22, xxiii: 23
+  };
+
+  const arabMatches = clean.match(/\b([1-9]|1[0-9]|2[0-3])\b/g);
+  if (arabMatches) arabMatches.forEach(n => districts.push(parseInt(n, 10)));
+
+  const romanMatches = clean.match(/\b(xxiii|xxii|xxi|xx|xix|xviii|xvii|xvi|xv|xiv|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/g);
+  if (romanMatches) {
+    romanMatches.forEach(r => { if (romanMap[r]) districts.push(romanMap[r]); });
+  }
+
+  return [...new Set(districts)];
+}
+
+function extractCanonicalCities(locationInput) {
+  if (!locationInput) return [];
+  const result = [];
+
+  let rawList = [];
+  if (Array.isArray(locationInput)) {
+    locationInput.forEach(loc => {
+      if (typeof loc === 'string') rawList.push(loc);
+      else if (loc && loc.city) {
+        rawList.push(loc.city);
+        if (loc.districts && loc.districts.length > 0) {
+          loc.districts.forEach(d => result.push(`budapest_${d}`));
+        }
+      }
+    });
+  } else if (typeof locationInput === 'string') {
+    rawList = locationInput.split(/[\/,;\+]|\bés\b/).map(t => t.trim()).filter(t => t.length > 0);
+  }
+
+  rawList.forEach(raw => {
+    const norm = normalizeText(raw);
+    if (!norm) return;
+
+    if (norm.includes('budapest') || norm.includes('bp') || norm.includes('pest')) {
+      result.push('budapest');
+      const dists = parseBudapestDistricts(raw);
+      dists.forEach(d => result.push(`budapest_${d}`));
+    } else if (norm.includes('erd')) {
+      result.push('erd');
+    } else if (norm.includes('gyor')) {
+      result.push('gyor');
+    } else {
+      result.push(norm.replace(/[\s\.\-]+/g, ''));
+    }
+  });
+
+  return [...new Set(result)];
+}
+
+function isLocalCityMatch(locA, locB) {
+  const citiesA = extractCanonicalCities(locA);
+  const citiesB = extractCanonicalCities(locB);
+  if (citiesA.length === 0 || citiesB.length === 0) return false;
+  return citiesA.some(cA => citiesB.includes(cA));
+}
 
 // 1. TÉTELKÓD (A csempén látható szöveg, pl. #1 vagy #MEX 11)
 function getItemLabel(num, albumId = currentAlbumId) {
@@ -403,7 +528,7 @@ function getItemFullName(num, albumId = currentAlbumId) {
   return getItemLabel(num, albumId);
 }
 
-// TARTOMÁNYOK ÉS TÉTELKÓDOK KIBONTÓJA (pl. MEX 1-19)
+// TARTOMÁNYOK ÉS TÉTELKÓDOK KIBONTÓJA
 function expandCustomItemsText(rawText) {
   if (!rawText || !rawText.trim()) return [];
   const tokens = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
@@ -427,7 +552,7 @@ function expandCustomItemsText(rawText) {
   return result;
 }
 
-// SORSZÁMOZOTT TÉTELNEVEK KIBONTÓJA (1: Garfield 1   2: Garfield 2)
+// SORSZÁMOZOTT TÉTELNEVEK KIBONTÓJA
 function expandCustomNamesText(rawText) {
   if (!rawText || !rawText.trim()) return [];
   const mapByIndex = {};
@@ -460,7 +585,7 @@ function expandCustomNamesText(rawText) {
   return rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
 }
 
-// FEJEZET GENERÁTOR (–, —, -, :, Bevezető - #1-#4 matrica formátumokhoz)
+// FEJEZET GENERÁTOR
 function parseChaptersText(rawText, customItems = []) {
   if (!rawText || !rawText.trim()) return [];
   const lines = rawText.split('\n');
@@ -582,12 +707,15 @@ function getFirstValidString(...values) {
   return '';
 }
 
+// 3. FÁZIS: TÖBB TELEPÜLÉS & GEO KOORDINÁTÁK BEOLVASÁSA
 function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   if (!data) return null;
 
   const nev = getFirstValidString(data.nev, data.nickname, data.name, data.displayName) || 'Névtelen gyűjtő';
   const telepules = getFirstValidString(data.telepules, data.city, data.varos);
   const email = getFirstValidString(data.notifyEmail, data.email, data.mail);
+  const locations = Array.isArray(data.locations) ? data.locations : (telepules ? [{ city: telepules, districts: [] }] : []);
+  const geo = (data.geo && typeof data.geo.lat === 'number') ? data.geo : null;
 
   let rawVan = [];
   let rawKell = [];
@@ -625,6 +753,8 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     id: docId,
     nev,
     telepules,
+    locations,
+    geo,
     email,
     van,
     kell,
@@ -643,6 +773,8 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
 let myProfile = {
   nev: "Vendég gyűjtő",
   telepules: "",
+  locations: [{ city: "", districts: [] }],
+  geo: myGpsCoords,
   email: "",
   isGiftOffering: false,
   showEmailToUsers: false,
@@ -700,115 +832,6 @@ let activeContactTarget = {
   showEmail: false,
   subject: ''
 };
-
-const CITY_COORDINATES = {
-  "budapest": { x: 52.5, y: 39.0 }, "győr": { x: 26.0, y: 27.0 }, "gyor": { x: 26.0, y: 27.0 },
-  "sopron": { x: 10.5, y: 30.0 }, "szombathely": { x: 13.0, y: 44.0 }, "zalaegerszeg": { x: 20.0, y: 56.0 },
-  "veszprém": { x: 35.0, y: 46.0 }, "veszprem": { x: 35.0, y: 46.0 }, "székesfehérvár": { x: 44.0, y: 45.0 },
-  "szekesfehervar": { x: 44.0, y: 45.0 }, "pécs": { x: 41.0, y: 83.0 }, "pecs": { x: 41.0, y: 83.0 },
-  "kaposvár": { x: 32.0, y: 73.0 }, "kaposvar": { x: 32.0, y: 73.0 }, "szekszárd": { x: 50.0, y: 73.0 },
-  "szekszard": { x: 50.0, y: 73.0 }, "kecskemét": { x: 61.0, y: 59.0 }, "kecskemet": { x: 61.0, y: 59.0 },
-  "szeged": { x: 66.0, y: 81.0 }, "békéscsaba": { x: 84.0, y: 69.0 }, "bekescsaba": { x: 84.0, y: 69.0 },
-  "szolnok": { x: 69.0, y: 51.0 }, "debrecen": { x: 88.0, y: 40.0 }, "nyíregyháza": { x: 90.0, y: 26.0 },
-  "nyiregyhaza": { x: 90.0, y: 26.0 }, "miskolc": { x: 77.0, y: 23.0 }, "eger": { x: 71.0, y: 31.0 },
-  "salgótarján": { x: 62.0, y: 21.0 }, "salgotarjan": { x: 62.0, y: 21.0 }, "tatabánya": { x: 42.0, y: 32.0 },
-  "tatabanya": { x: 42.0, y: 32.0 }, "érd": { x: 51.0, y: 43.0 }, "erd": { x: 51.0, y: 43.0 },
-  "dunaújváros": { x: 53.0, y: 53.0 }, "dunaujvaros": { x: 53.0, y: 53.0 }, "baja": { x: 54.0, y: 80.0 },
-  "hódmezővásárhely": { x: 71.0, y: 75.0 }, "hodmezovasarhely": { x: 71.0, y: 75.0 }, "orosháza": { x: 78.0, y: 73.0 },
-  "oroshaza": { x: 78.0, y: 73.0 }, "gyula": { x: 89.0, y: 68.0 }, "siófok": { x: 42.0, y: 50.0 },
-  "siofok": { x: 42.0, y: 50.0 }, "keszthely": { x: 27.0, y: 58.0 }, "nagykanizsa": { x: 21.0, y: 70.0 }
-};
-
-const FEJEZETEK = [
-  { id: "bevezeto", cim: "1. oldal — Bevezető", elemek: [ { type: "single", num: 1, name: "WWF Magyarország logó", orient: "álló" } ] },
-  { id: "elettel_teli_bolygo", cim: "2–3. oldal — Élettel teli bolygó", elemek: [
-      { type: "single", num: 2, name: "Kék bálna", orient: "fekvő" }, { type: "single", num: 3, name: "Jegesmedve", orient: "fekvő" },
-      { type: "single", num: 4, name: "Hópárduc", orient: "fekvő" }, { type: "single", num: 5, name: "Óriáspanda", orient: "fekvő" },
-      { type: "single", num: 6, name: "Kondorkeselyű", orient: "fekvő" }, { type: "single", num: 7, name: "Bogáncslepke", orient: "fekvő" },
-      { type: "single", num: 8, name: "Atlanti tokhal", orient: "fekvő" }, { type: "single", num: 9, name: "Vidra", orient: "fekvő" }
-  ]},
-  { id: "europa", cim: "4–5. oldal — Európa", elemek: [
-      { type: "single", num: 10, name: "Vöröshasú unka", orient: "fekvő" }, { type: "single", num: 11, name: "Barna medve", orient: "fekvő" },
-      { type: "single", num: 12, name: "Eurázsiai hiúz", orient: "fekvő" }, { type: "single", num: 13, name: "Szürke farkas", orient: "fekvő" },
-      { type: "single", num: 14, name: "Kacsafarkú szender", orient: "fekvő" }, { type: "single", num: 15, name: "Törpekuvik", orient: "fekvő" }
-  ]},
-  { id: "afrika", cim: "6–7. oldal — Afrika", elemek: [
-      { type: "single", num: 16, name: "Erdei elefánt", orient: "fekvő" }, { type: "single", num: 17, name: "Gepárd", orient: "fekvő" },
-      { type: "single", num: 18, name: "Fehérhátú keselyű", orient: "fekvő" }, { type: "single", num: 19, name: "Közönséges cserepesteknős", orient: "fekvő" },
-      { type: "single", num: 20, name: "Nyugati gorilla", orient: "fekvő" }, { type: "single", num: 21, name: "Szélesszájú orrszarvú", orient: "fekvő" }
-  ]},
-  { id: "eszak_amerika", cim: "8–9. oldal — Észak-Amerika", elemek: [
-      { type: "single", num: 22, name: "Amerikai bölény", orient: "fekvő" }, { type: "single", num: 23, name: "Fehérfejű rétisas", orient: "fekvő" },
-      { type: "single", num: 24, name: "Kaliforniai disznódelfin", orient: "fekvő" }, { type: "single", num: 25, name: "Vörhenyes kolibri", orient: "fekvő" },
-      { type: "single", num: 26, name: "Királylazac", orient: "fekvő" }, { type: "single", num: 27, name: "Pompás királylepke", orient: "fekvő" }
-  ]},
-  { id: "del_amerika", cim: "10–11. oldal — Dél-Amerika", elemek: [
-      { type: "single", num: 28, name: "Jaguár", orient: "fekvő" }, { type: "single", num: 29, name: "Kutyafejű boa", orient: "fekvő" },
-      { type: "single", num: 30, name: "Arany oroszlánmajom", orient: "fekvő" }, { type: "single", num: 31, name: "Nagy jácintara", orient: "fekvő" },
-      { type: "single", num: 32, name: "Sakáre-kajmán", orient: "fekvő" }, { type: "single", num: 33, name: "Amazonasi folyamidelfin", orient: "fekvő" }
-  ]},
-  { id: "azsia", cim: "12–13. oldal — Ázsia", elemek: [
-      { type: "single", num: 34, name: "Mongol szajga", orient: "fekvő" }, { type: "combo", nums: [35, 36], name: "Tigris (2 részes kép)", orient: "panoráma" },
-      { type: "single", num: 37, name: "Borneói orangután", orient: "álló" }, { type: "single", num: 38, name: "Mandzsu daru", orient: "álló" },
-      { type: "single", num: 39, name: "Komodói sárkány", orient: "fekvő" }, { type: "single", num: 40, name: "Aranyarcú gibbon", orient: "fekvő" }
-  ]},
-  { id: "ausztralia", cim: "14–15. oldal — Ausztrália és Óceánia", elemek: [
-      { type: "single", num: 41, name: "Keleti szürke óriáskenguru", orient: "fekvő" }, { type: "single", num: 42, name: "Tasman vombat", orient: "fekvő" },
-      { type: "single", num: 43, name: "Koala", orient: "fekvő" }, { type: "single", num: 44, name: "Kakapó", orient: "fekvő" },
-      { type: "single", num: 45, name: "Kacsacsőrű emlős", orient: "fekvő" }, { type: "single", num: 46, name: "Barna kivi", orient: "fekvő" }
-  ]},
-  { id: "antarktisz", cim: "16–17. oldal — Antarktisz", elemek: [
-      { type: "single", num: 47, name: "Leopárdfóka", orient: "fekvő" }, { type: "single", num: 48, name: "Weddell-fóka", orient: "fekvő" },
-      { type: "single", num: 49, name: "Császárpingvin", orient: "álló" }, { type: "combo", nums: [50, 51], name: "Adélie-pingvin (2 részes)", orient: "panoráma" },
-      { type: "single", num: 52, name: "Galambhojsza", orient: "álló" }, { type: "single", num: 53, name: "Antarktiszi krill", orient: "fekvő" }
-  ]},
-  { id: "tengerek", cim: "18–19. oldal — Tengerek és óceánok", elemek: [
-      { type: "single", num: 54, name: "Hosszúszárnyú bálna", orient: "fekvő" }, { type: "combo", nums: [55, 56], name: "Kardszárnyú delfin (2 részes)", orient: "panoráma" },
-      { type: "single", num: 57, name: "Óriáscápa", orient: "fekvő" }, { type: "single", num: 58, name: "Kúpos fóka", orient: "fekvő" },
-      { type: "single", num: 59, name: "Parti lile", orient: "fekvő" }, { type: "single", num: 60, name: "Barna delfin", orient: "fekvő" }
-  ]},
-  { id: "kihalt_allatok", cim: "20–21. oldal — Kihalt állatok", elemek: [
-      { type: "single", num: 61, name: "Dodó", orient: "álló" }, { type: "single", num: 62, name: "Vékonycsőrű póling", orient: "álló" },
-      { type: "single", num: 63, name: "Erszényesfarkas", orient: "fekvő" }, { type: "single", num: 64, name: "Tarpán", orient: "fekvő" },
-      { type: "single", num: 65, name: "Vándorgalamb", orient: "fekvő" }, { type: "single", num: 66, name: "Őstulok", orient: "fekvő" },
-      { type: "single", num: 67, name: "Elefántmadár", orient: "fekvő" }, { type: "single", num: 68, name: "Korallszirti patkány", orient: "fekvő" }
-  ]},
-  { id: "veszelyeztetett", cim: "22–23. oldal — Veszélyeztetett fajok", elemek: [
-      { type: "single", num: 69, name: "Jávai orrszarvú", orient: "fekvő" }, { type: "single", num: 70, name: "Mezei hörcsög", orient: "fekvő" },
-      { type: "single", num: 71, name: "Röviduszonyú makócápa", orient: "fekvő" }, { type: "single", num: 72, name: "Európai angolna", orient: "fekvő" },
-      { type: "single", num: 73, name: "Spix-ara", orient: "fekvő" }, { type: "single", num: 74, name: "Vastagfarkú oposszum", orient: "fekvő" }
-  ]},
-  { id: "megmentett", cim: "24–25. oldal — Megmentett állatok", elemek: [
-      { type: "single", num: 75, name: "Arab bejza", orient: "fekvő" }, { type: "single", num: 76, name: "Fehérfarkú gnú", orient: "fekvő" },
-      { type: "single", num: 77, name: "Európai bölény", orient: "fekvő" }, { type: "single", num: 78, name: "Nagy szikibagoly", orient: "fekvő" },
-      { type: "single", num: 79, name: "Vörös kánya", orient: "fekvő" }, { type: "single", num: 80, name: "Mallorcai béka", orient: "fekvő" }
-  ]},
-  { id: "fenyegetes", cim: "26–27. oldal — Mi fenyegeti a természetet?", elemek: [
-      { type: "single", num: 81, name: "Élőhelyek elvesztése", orient: "fekvő" }, { type: "single", num: 82, name: "Élelmiszeripar", orient: "fekvő" },
-      { type: "single", num: 83, name: "Szennyezés", orient: "fekvő" }, { type: "combo", nums: [84, 85], name: "Túlzott kizsákmányolás (2 részes)", orient: "panoráma" },
-      { type: "single", num: 86, name: "Túlhalászás", orient: "fekvő" }, { type: "single", num: 87, name: "Műanyaghulladék", orient: "fekvő" },
-      { type: "single", num: 88, name: "Folyószabályozás", orient: "fekvő" }, { type: "single", num: 89, name: "Erőforrások", orient: "fekvő" },
-      { type: "single", num: 90, name: "Éghajlatváltozás", orient: "fekvő" }, { type: "single", num: 91, name: "Inváziós fajok", orient: "fekvő" }
-  ]},
-  { id: "megoldasok", cim: "28–29. oldal — Bolygóbarát megoldások", elemek: [
-      { type: "single", num: 92, name: "Védett területek", orient: "fekvő" }, { type: "single", num: 93, name: "Élelmiszerrendszer", orient: "fekvő" },
-      { type: "single", num: 94, name: "Megújuló energia", orient: "fekvő" }, { type: "single", num: 95, name: "Természetalapú megoldások", orient: "fekvő" },
-      { type: "single", num: 96, name: "Közösségi bevonás", orient: "fekvő" }
-  ]},
-  { id: "wwf", cim: "30–31. oldal — WWF Magyarország", elemek: [
-      { type: "single", num: 97, name: "WWF hazai programok", orient: "fekvő" }, { type: "single", num: 98, name: "WWF erdőprogram", orient: "fekvő" },
-      { type: "single", num: 99, name: "Vizesélőhelyek", orient: "fekvő" }, { type: "single", num: 100, name: "Klímaprogramok", orient: "fekvő" },
-      { type: "single", num: 101, name: "Környezeti nevelés", orient: "fekvő" }, { type: "single", num: 102, name: "Jelképes örökbefogadás", orient: "álló" }
-  ]},
-  { id: "szuperhos", cim: "32. oldal — Legyél bolygóvédő szuperhős!", elemek: [
-      { type: "single", num: 103, name: "Természetmegfigyelés", orient: "álló" }, { type: "single", num: 104, name: "Kihívások otthon", orient: "fekvő" },
-      { type: "single", num: 105, name: "Vadon élő állatok", orient: "fekvő" }
-  ]},
-  { id: "lidl_zold", cim: "33. oldal — Zöldebb jövő a Lidlnél", elemek: [
-      { type: "single", num: 106, name: "Biotermékek", orient: "fekvő" }, { type: "single", num: 107, name: "Vadvirágos rétek", orient: "fekvő" },
-      { type: "single", num: 108, name: "Planetary Health Diet", orient: "álló" }
-  ] }
-];
 
 const STICKER_NAMES = {};
 const STICKER_ORIENTS = {};
@@ -928,7 +951,7 @@ function renderHub() {
           <div class="album-hub-header">
             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
               <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
-              ${isRetro ? `<span class="album-type-badge badge-retro">Retro (${album.year})</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">${album.year}</span>`}
+              ${isRetro ? `<span class="album-type-badge badge-retro">🕹️ Retro (${album.year})</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">${album.year}</span>`}
             </div>
             <span style="font-size:0.75rem; color:var(--sand); font-weight:700;">${album.totalItems} db</span>
           </div>
@@ -1132,12 +1155,11 @@ function loadAlbumState(albumId) {
   renderMatches();
 }
 
-// KÉTÁLLÁSÚ (TOGGLE) HUB SZŰRŐ GOMBOK
+// 3. FÁZIS: KÉTÁLLÁSÚ (TOGGLE) HUB SZŰRŐ GOMBOK
 document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
     const clickedFilter = btn.dataset.hubFilter;
     
-    // Ha ugyanarra a gombra kattint, ami már aktív volt -> visszavált 'all'-ra
     if (btn.classList.contains('active') && clickedFilter !== 'all') {
       document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
       document.querySelector('.filter-btn[data-hub-filter="all"]')?.classList.add('active');
@@ -1225,6 +1247,7 @@ function initAlbumSelect() {
   };
 }
 
+// KÖNYVLAPOZÓ
 function renderAlbumChapter() {
   const chapters = getActiveChapters();
   if (chapters.length === 0) return;
@@ -1297,7 +1320,6 @@ function renderAlbumChapter() {
           const isFog = foglalvaSet.has(el.num);
           const q = isVan ? (myProfile.vanCounts[el.num] || 1) : (myProfile.foglalvaCounts?.[el.num] || 1);
           let cls = isVan ? 'van' : isKell ? 'kell' : isFog ? 'foglalva' : '';
-          let tag = isVan ? 'Dupla' : isKell ? 'Hiányzik' : isFog ? 'Foglalt' : 'Üres';
           
           let orientClass = isLutra 
             ? (el.orient === 'álló' ? 'orient-allo' : 'orient-fekvo')
@@ -1308,7 +1330,7 @@ function renderAlbumChapter() {
               ${((isVan || isFog) && q > 1) ? `<span class="qty-badge ${isFog ? 'foglalva' : ''}">×${q}</span>` : ''}
               <span class="sticker-num">${escapeHtml(getItemLabel(el.num))}</span>
               <span class="sticker-name">${escapeHtml(el.name)}</span>
-              <span class="sticker-tag">${tag}</span>
+              <span class="sticker-tag">${isVan ? 'Dupla' : isKell ? 'Hiányzik' : isFog ? 'Foglalt' : 'Üres'}</span>
             </div>
           `;
         }
@@ -1322,7 +1344,7 @@ const popover = document.getElementById('qty-popover');
 let lastToggleTimestamp = 0;
 let lastToggledStickerNum = null;
 
-// ⚡ 0 MS-OS VILLÁMGYORS KATTINTÁS (Megszűnt a DOM újraépítés és a beragadás)
+// ⚡ 0 MS-OS GYORS KATTINTÁSKEZELŐ
 function toggleStickerState(num) {
   const now = Date.now();
   if (num === lastToggledStickerNum && now - lastToggleTimestamp < 150) return;
@@ -1369,47 +1391,8 @@ function toggleStickerState(num) {
   // 2. Számlálók azonnali frissítése a fejlécben
   updateBadgeCounts();
 
-  // 3. Késleltetett háttérmentés (nem terheli a böngészőt gépelés/kattintás közben)
+  // 3. Mentés és felhőszinkron debounce-szal
   saveMyStateFast();
-}
-
-function saveMyStateFast() {
-  const albumId = currentAlbumId;
-
-  // Helyi mentés
-  localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
-  localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
-  localStorage.setItem(`lutra_kell_${albumId}`, JSON.stringify(myProfile.kell));
-  localStorage.setItem(`lutra_foglalva_${albumId}`, JSON.stringify(myProfile.foglalva));
-  localStorage.setItem(`lutra_foglalva_counts_${albumId}`, JSON.stringify(myProfile.foglalvaCounts || {}));
-
-  if (albumId === 'lidl-lutra-2026') {
-    localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
-    localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
-    localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
-    localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
-    localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
-  }
-
-  // Debounce-olt felhőszinkron
-  clearTimeout(saveDebounceTimer);
-  saveDebounceTimer = setTimeout(() => {
-    refreshMatchesIfVisible();
-    renderCompletionOdds();
-
-    if (currentUser && db) {
-      db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(albumId).set({
-        albumId: albumId,
-        van: myProfile.van,
-        vanCounts: myProfile.vanCounts || {},
-        kell: myProfile.kell,
-        foglalva: myProfile.foglalva,
-        foglalvaCounts: myProfile.foglalvaCounts || {},
-        localUpdatedAt: Date.now(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(() => {});
-    }
-  }, 450);
 }
 
 function showQtyPopover(num, targetEl) {
@@ -1510,9 +1493,6 @@ function attachStickerInteraction(container) {
 
 function saveMyStateFast() {
   const albumId = currentAlbumId;
-  myProfile.van = ensureArray(myProfile.van).sort((a, b) => a - b);
-  myProfile.kell = ensureArray(myProfile.kell).filter(n => !myProfile.van.includes(n)).sort((a, b) => a - b);
-  myProfile.foglalva = ensureArray(myProfile.foglalva).filter(n => !myProfile.van.includes(n) && !myProfile.kell.includes(n)).sort((a, b) => a - b);
 
   localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
   localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
@@ -1528,7 +1508,6 @@ function saveMyStateFast() {
     localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
   }
 
-  // Késleltetett felhő- és nézetfrissítés (nem akasztja meg a rácskattintást)
   clearTimeout(saveDebounceTimer);
   saveDebounceTimer = setTimeout(() => {
     refreshMatchesIfVisible();
@@ -1567,7 +1546,7 @@ function saveMyStateFast() {
 
       db.collection("public_profiles").doc(currentUser.uid).update(updatePayload).catch(() => {});
     }
-  }, 400);
+  }, 450);
 }
 
 function saveMyState() {
@@ -1626,23 +1605,49 @@ safeAddListener('btn-close-batch-box', () => {
   }
 });
 
+// INTERVALLUMOS TÖMEGES BEVITEL (1-12, 1-5*2, 12*3)
 function parseBatchInput(raw) {
   const tokens = raw.split(/[\s,;]+/);
   const parsed = {};
   const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
+
   tokens.forEach(t => {
     t = t.trim();
     if (!t) return;
+
+    // 1. Intervallum sokszorozóval vagy anélkül: "1-12", "1-5*2"
+    const rangeMatch = t.match(/^(\d+)[\s\-—–]+(\d+)(?:[*xX](\d+))?$/);
+    if (rangeMatch) {
+      const start = parseInt(rangeMatch[1], 10);
+      const end = parseInt(rangeMatch[2], 10);
+      const qty = parseInt(rangeMatch[3] || '1', 10);
+      const min = Math.min(start, end);
+      const max = Math.max(start, end);
+
+      for (let num = min; num <= max; num++) {
+        if (num >= 1 && num <= maxLimit && qty > 0) {
+          parsed[num] = (parsed[num] || 0) + qty;
+        }
+      }
+      return;
+    }
+
+    // 2. Egyedi tétel sokszorozóval: "12*3"
     const multMatch = t.match(/^(\d+)[*xX](\d+)$/);
     if (multMatch) {
       const num = parseInt(multMatch[1], 10);
       const qty = parseInt(multMatch[2], 10);
       if (num >= 1 && num <= maxLimit && qty > 0) parsed[num] = (parsed[num] || 0) + qty;
-    } else {
-      const num = parseInt(t, 10);
-      if (num >= 1 && num <= maxLimit) parsed[num] = (parsed[num] || 0) + 1;
+      return;
+    }
+
+    // 3. Sima szám
+    const num = parseInt(t, 10);
+    if (!isNaN(num) && num >= 1 && num <= maxLimit) {
+      parsed[num] = (parsed[num] || 0) + 1;
     }
   });
+
   return parsed;
 }
 
@@ -1748,20 +1753,11 @@ safeAddListener('btn-album-next', () => {
   const chapters = getActiveChapters();
   if (currentChapterIndex < chapters.length - 1) { currentChapterIndex++; renderAlbumChapter(); }
 });
-
-document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    renderGrid();
-  });
-});
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 - 2. RÉSZ: ROUTER, PÁROSÍTÁSOK & RADAR)
+// Cserélj Okosan - app.js (v4.0 - 2. RÉSZ: ROUTER, GPS & PÁROSÍTÁSOK)
 // =========================================================================
 
-// AUTOMATIKUS LINKFELISMERŐ ÉS KATTINTHATÓVÁ TEVŐ SEGÉDFÜGGVÉNY
+// AUTOMATIKUS LINKFELISMERŐ
 function formatLinksWithAnchors(text) {
   if (!text) return '';
   const escaped = escapeHtml(text);
@@ -1850,7 +1846,10 @@ function switchView(viewName) {
     renderAdminAlbumsList();
     renderAdminSuggestionsList();
   }
-  if (viewName === 'profil') initFavoriteSelects();
+  if (viewName === 'profil') {
+    initFavoriteSelects();
+    renderProfileLocations();
+  }
 }
 
 document.querySelectorAll('.primary-tab').forEach(t => {
@@ -1877,9 +1876,66 @@ function updateCserebereBadge() {
   badge.style.display = (hasUnread || hasMeetup) ? 'inline-block' : 'none';
 }
 
+// 3. FÁZIS: GPS ÉS TÁVOLSÁGI HELYZET LEKÉRÉSE A FELHASZNÁLÓTÓL
+function getUserCoordinates(userObj) {
+  if (userObj.geo && typeof userObj.geo.lat === 'number') {
+    return userObj.geo;
+  }
+  const cities = extractCanonicalCities(userObj.locations || userObj.telepules);
+  for (const c of cities) {
+    if (CITY_COORDINATES[c]) {
+      return { lat: CITY_COORDINATES[c].lat, lng: CITY_COORDINATES[c].lng };
+    }
+  }
+  return null;
+}
+
+safeAddListener('btn-search-gps-locate', () => {
+  const statusEl = document.getElementById('search-gps-status');
+  if (!navigator.geolocation) {
+    return showToast("A böngésződ nem támogatja a GPS helymeghatározást.");
+  }
+
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--amber);">📍 Helyzet bemérése folyamatban...</span>';
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      myGpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      localStorage.setItem('cserelj_gps_coords', JSON.stringify(myGpsCoords));
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color:var(--moss-soft);">✓ Helyzet sikeresen bemérve! A távolsági szűrők aktívak.</span>';
+      }
+      showToast("GPS koordináták rögzítve!");
+      renderMatches();
+    },
+    (err) => {
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color:var(--danger);">Nem sikerült lekérni a GPS pozíciót.</span>';
+      }
+      showToast("GPS hiba: " + err.message);
+    },
+    { timeout: 10000, enableHighAccuracy: true }
+  );
+});
+
+// Keresési sugár gombok kezelése
+document.querySelectorAll('#search-radius-group .filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#search-radius-group .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedSearchRadius = btn.dataset.radius;
+    renderMatches();
+  });
+});
+
 safeAddListener('btn-match-all', 'click', function() { setActiveMatchFilter(this, 'all'); });
 safeAddListener('btn-match-city', 'click', function() {
-  if (!myProfile.telepules) return showToast("Előbb add meg a településed a Profil fülön!");
+  if (!myProfile.telepules && (!myProfile.locations || myProfile.locations.length === 0)) {
+    return showToast("Előbb add meg a településed a Profil fülön!");
+  }
   setActiveMatchFilter(this, 'city');
 });
 safeAddListener('btn-match-gift', 'click', function() { setActiveMatchFilter(this, 'gift'); });
@@ -1906,7 +1962,6 @@ function computeLoopMatches() {
   const myId = currentUser ? currentUser.uid : 'me';
   const myVanSet = new Set(ensureArray(myProfile.van));
   const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
-  const myCity = (myProfile.telepules || '').trim().toLowerCase();
   const otherUsers = allUsersData.filter(u => u.id !== myId);
   const loops = [];
 
@@ -1930,20 +1985,22 @@ function computeLoopMatches() {
       const giveCtoMe = [...cVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).sort((a, b) => a - b);
       if (giveCtoMe.length === 0) continue;
 
-      const isLocalLoop = (userB.telepules || '').trim().toLowerCase() === myCity && (userC.telepules || '').trim().toLowerCase() === myCity;
+      const isLocalLoop = isLocalCityMatch(myProfile.locations || myProfile.telepules, userB.locations || userB.telepules) &&
+                          isLocalCityMatch(userB.locations || userB.telepules, userC.locations || userC.telepules);
       loops.push({ userB, userC, giveToB, giveBtoC, giveCtoMe, isLocalLoop });
     }
   }
   return loops;
 }
 
+// 3. FÁZIS: PÁROSÍTÁSOK LISTÁZÁSA TÁVOLSÁG ÉS TÖBB TELEPÜLÉS SZERINT
 function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
 
   const myVanSet = new Set(ensureArray(myProfile.van));
   const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
-  const myCity = (myProfile.telepules || '').trim().toLowerCase();
+  const myCoords = myGpsCoords || getUserCoordinates(myProfile);
 
   if (matchFilter === 'loop') {
     const loops = computeLoopMatches();
@@ -1995,19 +2052,36 @@ function renderMatches() {
       
       const give = [...myVanSet].filter(n => uKellSet.has(n) && !uVanSet.has(n)).sort((a, b) => a - b);
       const get = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).sort((a, b) => a - b);
-      
       const score = Math.min(give.length, get.length);
-      const isSameCity = myCity && (u.telepules || '').trim().toLowerCase() === myCity;
+
+      const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
       const isGift = u.isGiftOffering === true;
-      return { ...u, give, get, score, isSameCity, isGift };
+
+      // Távolság számítása (Haversine)
+      const uCoords = getUserCoordinates(u);
+      let distanceKm = null;
+      if (myCoords && uCoords) {
+        distanceKm = calculateDistanceKm(myCoords.lat, myCoords.lng, uCoords.lat, uCoords.lng);
+      }
+
+      return { ...u, give, get, score, isSameCity, isGift, distanceKm };
     })
     .filter(m => m.score > 0 || (m.isGift && m.get.length > 0));
 
   if (matchFilter === 'city') matches = matches.filter(m => m.isSameCity);
   if (matchFilter === 'gift') matches = matches.filter(m => m.isGift);
 
+  // Sugár szerinti szűrés
+  if (selectedSearchRadius === 'city') {
+    matches = matches.filter(m => m.isSameCity);
+  } else if (selectedSearchRadius !== 'all') {
+    const maxDist = parseInt(selectedSearchRadius, 10);
+    matches = matches.filter(m => m.distanceKm !== null && m.distanceKm <= maxDist);
+  }
+
   matches.sort((a, b) => {
     if (b.isSameCity !== a.isSameCity) return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
+    if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
     return b.score - a.score;
   });
 
@@ -2018,6 +2092,8 @@ function renderMatches() {
 
   list.innerHTML = matches.map((m) => {
     const isCheckedInPlan = selectedTradePlanUids.has(m.id);
+    const distBadge = m.distanceKm !== null ? `<span style="font-size:0.75rem; color:var(--amber); font-weight:700;">📍 kb. ${m.distanceKm} km</span>` : '';
+
     return `
     <div class="card ${m.isSameCity ? 'card-local' : ''}">
       <div class="card-header-row">
@@ -2025,8 +2101,9 @@ function renderMatches() {
           <h3 style="margin:0; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
             ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''}
           </h3>
+          ${distBadge}
         </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
           ${m.isSameCity ? '<span class="badge-local">Helyi csere</span>' : ''}
           ${m.isGift ? '<span class="badge-gift">Ingyen felajánló</span>' : ''}
           <span class="badge-ratio">${m.give.length} db ⇄ ${m.get.length} db</span>
@@ -2117,7 +2194,6 @@ function renderTradePlannerModal() {
 
   const myVanSet = new Set(ensureArray(myProfile.van));
   const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
-  const myCity = (myProfile.telepules || '').trim().toLowerCase();
 
   const stickerDemandMap = {};
   selectedUsers.forEach(u => {
@@ -2125,7 +2201,7 @@ function renderTradePlannerModal() {
     const uKellSet = new Set(ensureArray(u.kell).filter(n => !uVanSet.has(n)));
     
     const totalGivesToMe = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).length;
-    const isSameCity = myCity && (u.telepules || '').trim().toLowerCase() === myCity;
+    const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
 
     [...myVanSet].filter(n => uKellSet.has(n)).forEach(stickerNum => {
       if (!stickerDemandMap[stickerNum]) stickerDemandMap[stickerNum] = [];
@@ -2313,10 +2389,7 @@ safeAddListener('matches-list', 'click', (e) => {
   }
 });
 
-function normalizeText(text) {
-  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
+// KERESŐ
 safeAddListener('btn-search', () => {
   const raw = document.getElementById('search-input')?.value.trim() || '';
   if (!raw) return showToast("Írj be egy keresőszót!");
@@ -2712,7 +2785,7 @@ function listenToMeetups() {
     }, err => console.warn("Meetups listener:", err));
 }
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 - 3. RÉSZ: STATISZTIKA, ADMIN & MOTOR)
+// Cserélj Okosan - app.js (v4.0 - 3. RÉSZ: STATISZTIKA, ADMIN & PROFIL MOTOR)
 // =========================================================================
 
 // STATISZTIKA & HŐTÉRKÉP
@@ -2947,6 +3020,9 @@ function renderHeatmap() {
   const avgDupesEl = document.getElementById('stats-avg-dupes');
   const avgProgressEl = document.getElementById('stats-avg-progress');
   const hoardingEl = document.getElementById('stats-hoarding-sticker');
+  const usersCountEl = document.getElementById('stats-users-count');
+
+  if (usersCountEl) usersCountEl.textContent = `${allUsersData.length} fő`;
 
   if (avgDupesEl && allUsersData.length > 0) {
     avgDupesEl.textContent = `${Math.round(totalPoolCount / allUsersData.length)} db/fő`;
@@ -3152,8 +3228,6 @@ function renderStatistics() {
       <span style="color:var(--sand); font-size:0.8rem;">${c.supply} db dupla</span>
     </div>
   `).join('');
-  const uCount = document.getElementById('stats-users-count');
-  if (uCount) uCount.textContent = allUsersData.length;
 
   renderFavoritesRanking();
   renderCompletionDistribution();
@@ -3502,7 +3576,7 @@ safeAddListener('btn-refresh-inbox', () => {
   showToast("Üzenetek frissítve.");
 });
 
-// ÜZENETEK SZŰRŐ LEVÁLOGATÁSA ÉS LISTÁZÁSA
+// ÜZENETEK SZŰRŐJE
 function updateMsgAlbumFilterOptions() {
   const sel = document.getElementById('msg-album-filter-select');
   if (!sel) return;
@@ -3772,6 +3846,123 @@ function listenToMyMessages(uid) {
   messagesUnsubscribe = () => { unsubIn(); unsubOut(); };
 }
 
+// 3. FÁZIS: PROFIL TELEPÜLÉS-KEZELŐ & BUDAPEST KERÜLETI CHIPEK
+function renderProfileLocations() {
+  const container = document.getElementById('profile-locations-list');
+  const bpPicker = document.getElementById('bp-districts-picker');
+  if (!container) return;
+
+  if (!myProfile.locations || myProfile.locations.length === 0) {
+    myProfile.locations = [{ city: myProfile.telepules || '', districts: [] }];
+  }
+
+  let hasBp = false;
+
+  container.innerHTML = myProfile.locations.map((loc, idx) => {
+    const isBp = (loc.city || '').toLowerCase().includes('budapest') || (loc.city || '').toLowerCase().includes('bp');
+    if (isBp) hasBp = true;
+
+    return `
+      <div class="location-row" data-loc-idx="${idx}">
+        <input type="text" class="input-field profile-location-input" data-idx="${idx}" value="${escapeHtml(loc.city)}" placeholder="${idx === 0 ? '1. Helyszín (Lakóhely, pl. Szeged)' : (idx + 1) + '. Helyszín (Ingázás / Munkahely)'}" autocomplete="chrome-off">
+        ${idx > 0 ? `<button class="btn btn-secondary btn-sm btn-del-location" data-idx="${idx}" type="button" style="color:var(--danger); border-color:var(--danger); padding:4px 8px;">✕</button>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  if (bpPicker) {
+    bpPicker.style.display = hasBp ? 'block' : 'none';
+    if (hasBp) renderBpDistrictChips();
+  }
+}
+
+function renderBpDistrictChips() {
+  const container = document.getElementById('bp-district-chips');
+  if (!container) return;
+
+  const bpLoc = (myProfile.locations || []).find(l => (l.city || '').toLowerCase().includes('budapest') || (l.city || '').toLowerCase().includes('bp'));
+  const activeDists = new Set(bpLoc ? (bpLoc.districts || []) : []);
+
+  const romanDistricts = [
+    'I.', 'II.', 'III.', 'IV.', 'V.', 'VI.', 'VII.', 'VIII.', 'IX.', 'X.',
+    'XI.', 'XII.', 'XIII.', 'XIV.', 'XV.', 'XVI.', 'XVII.', 'XVIII.', 'XIX.', 'XX.',
+    'XXI.', 'XXII.', 'XXIII.'
+  ];
+
+  container.innerHTML = romanDistricts.map((name, idx) => {
+    const dNum = idx + 1;
+    const isAct = activeDists.has(dNum);
+    return `<div class="bp-chip ${isAct ? 'active' : ''}" data-dist="${dNum}">${name} ker.</div>`;
+  }).join('');
+}
+
+safeAddListener('bp-district-chips', 'click', (e) => {
+  const chip = e.target.closest('.bp-chip');
+  if (!chip) return;
+  const dNum = parseInt(chip.dataset.dist, 10);
+
+  const bpLoc = (myProfile.locations || []).find(l => (l.city || '').toLowerCase().includes('budapest') || (l.city || '').toLowerCase().includes('bp'));
+  if (!bpLoc) return;
+
+  if (!bpLoc.districts) bpLoc.districts = [];
+  const idx = bpLoc.districts.indexOf(dNum);
+  if (idx > -1) {
+    bpLoc.districts.splice(idx, 1);
+  } else {
+    bpLoc.districts.push(dNum);
+  }
+
+  renderBpDistrictChips();
+});
+
+safeAddListener('profile-locations-list', 'input', (e) => {
+  const input = e.target.closest('.profile-location-input');
+  if (!input) return;
+  const idx = parseInt(input.dataset.idx, 10);
+  if (myProfile.locations[idx]) {
+    myProfile.locations[idx].city = input.value.trim();
+    const isBp = myProfile.locations[idx].city.toLowerCase().includes('budapest') || myProfile.locations[idx].city.toLowerCase().includes('bp');
+    const bpPicker = document.getElementById('bp-districts-picker');
+    if (bpPicker) {
+      const anyBp = myProfile.locations.some(l => (l.city || '').toLowerCase().includes('budapest') || (l.city || '').toLowerCase().includes('bp'));
+      bpPicker.style.display = anyBp ? 'block' : 'none';
+      if (anyBp) renderBpDistrictChips();
+    }
+  }
+});
+
+safeAddListener('profile-locations-list', 'click', (e) => {
+  const btn = e.target.closest('.btn-del-location');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.idx, 10);
+  if (idx > 0) {
+    myProfile.locations.splice(idx, 1);
+    renderProfileLocations();
+  }
+});
+
+safeAddListener('btn-add-location', () => {
+  if (!myProfile.locations) myProfile.locations = [];
+  if (myProfile.locations.length >= 5) {
+    return showToast("Legfeljebb 5 helyszínt adhatsz meg.");
+  }
+  myProfile.locations.push({ city: "", districts: [] });
+  renderProfileLocations();
+});
+
+safeAddListener('btn-geo-detect-profile', () => {
+  if (!navigator.geolocation) return showToast("A böngésződ nem támogatja a GPS-t.");
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      myGpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      myProfile.geo = myGpsCoords;
+      localStorage.setItem('cserelj_gps_coords', JSON.stringify(myGpsCoords));
+      showToast("GPS koordináták sikeresen rögzítve a profilodhoz!");
+    },
+    (err) => showToast("GPS hiba: " + err.message)
+  );
+});
+
 // ADMIN GYŰJTEMÉNY-KEZELŐ, SZERKESZTŐ ÉS VÁRÓLISTA
 let adminAlbumCoverBase64 = '';
 
@@ -3912,7 +4103,6 @@ safeAddListener('btn-admin-save-album', async () => {
 
     await db.collection("albums").doc(id).set(payload, { merge: true });
 
-    // Helyi memóriában azonnali frissítés
     ALBUMS_REGISTRY[id] = { ...payload };
 
     showToast(editingAlbumId ? "Gyűjtemény sikeresen módosítva!" : "Új gyűjtemény közzétéve!");
@@ -4003,7 +4193,6 @@ safeAddListener('admin-albums-list', async (e) => {
     const current = ALBUMS_REGISTRY[albumId]?.featured || false;
     const newFeatured = !current;
     
-    // Helyi memóriában és Firestore-ban is azonnal frissül
     if (ALBUMS_REGISTRY[albumId]) ALBUMS_REGISTRY[albumId].featured = newFeatured;
     await db.collection("albums").doc(albumId).set({ featured: newFeatured }, { merge: true });
     
@@ -4312,7 +4501,7 @@ safeAddListener('btn-open-auth', () => document.getElementById('modal-auth')?.cl
 safeAddListener('btn-close-auth', () => document.getElementById('modal-auth')?.classList.remove('open'));
 safeAddListener('link-open-profile', () => switchView('profil'));
 
-// KÜLÖNÁLLÓ JEGYZET MENTÉS (250 karakter limit)
+// KÜLÖNÁLLÓ JEGYZET MENTÉS (250 karakter)
 safeAddListener('btn-save-note', () => {
   const noteVal = (document.getElementById('prof-private-note')?.value || '').trim().slice(0, 250);
   myProfile.privateNote = noteVal;
@@ -4341,19 +4530,38 @@ if (noteTextarea) {
   });
 }
 
-// GLOBÁLIS PROFIL ADATOK MENTÉSE
+// GLOBÁLIS PROFIL ADATOK MENTÉSE (3. FÁZIS: LOCATIONS & CONCATENATED TELEPULES & GEO)
 safeAddListener('btn-save-profile', () => {
   if (!currentUser) return showToast("Előbb lépj be a fiókodba!");
   const nev = document.getElementById('prof-nev')?.value.trim() || '';
-  const tel = document.getElementById('prof-telepules')?.value.trim() || '';
   const em = document.getElementById('prof-email')?.value.trim() || '';
   const gdpr = document.getElementById('prof-gdpr')?.checked;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!nev) return showToast("A megjelenő név megadása kötelező!");
-  if (!tel) return showToast("A település megadása kötelező a helyi cserékhez!");
   if (!em || !emailRegex.test(em)) return showToast("Kérlek adj meg egy érvényes e-mail címet!");
   if (!gdpr) return showToast("A cserékhez el kell fogadnod az adatkezelést!");
+
+  // Települések összefűzése
+  const validLocs = (myProfile.locations || []).filter(l => l.city && l.city.trim().length > 0);
+  if (validLocs.length === 0) {
+    return showToast("Legalább egy település megadása kötelező a helyi cserékhez!");
+  }
+
+  const concatenatedCity = validLocs.map(l => {
+    if (l.districts && l.districts.length > 0) {
+      const romanDists = l.districts.sort((a, b) => a - b).map(d => {
+        const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
+        return roman[d - 1] ? `${roman[d - 1]}.` : `${d}.`;
+      }).join(', ');
+      return `${l.city} (${romanDists} ker.)`;
+    }
+    return l.city;
+  }).join(', ');
+
+  myProfile.telepules = concatenatedCity;
+  myProfile.locations = validLocs;
+  myProfile.geo = myGpsCoords;
 
   const activeAlbum = getActiveAlbum();
   if (activeAlbum.hasFavorites !== false) {
@@ -4368,7 +4576,6 @@ safeAddListener('btn-save-profile', () => {
   }
 
   myProfile.nev = nev;
-  myProfile.telepules = tel;
   myProfile.email = em;
   myProfile.isGiftOffering = document.getElementById('prof-gift')?.checked || false;
   myProfile.showEmailToUsers = document.getElementById('prof-show-email')?.checked || false;
@@ -4381,26 +4588,42 @@ safeAddListener('btn-save-profile', () => {
       const batch = db.batch();
       const userRef = db.collection("users").doc(currentUser.uid);
       batch.set(userRef, {
-        nev: myProfile.nev, telepules: myProfile.telepules, email: myProfile.email,
-        favorites: myProfile.favorites, isGiftOffering: myProfile.isGiftOffering,
-        showEmailToUsers: myProfile.showEmailToUsers, emailNotifications: myProfile.emailNotifications,
-        allowInspect: myProfile.allowInspect, gdprAccepted: true,
+        nev: myProfile.nev,
+        telepules: myProfile.telepules,
+        locations: myProfile.locations,
+        geo: myProfile.geo,
+        email: myProfile.email,
+        favorites: myProfile.favorites,
+        isGiftOffering: myProfile.isGiftOffering,
+        showEmailToUsers: myProfile.showEmailToUsers,
+        emailNotifications: myProfile.emailNotifications,
+        allowInspect: myProfile.allowInspect,
+        gdprAccepted: true,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
       const publicRef = db.collection("public_profiles").doc(currentUser.uid);
       batch.set(publicRef, {
-        nev: myProfile.nev, nickname: myProfile.nev, telepules: myProfile.telepules, city: myProfile.telepules,
-        email: myProfile.showEmailToUsers ? myProfile.email : '', notifyEmail: myProfile.email,
-        favorites: myProfile.favorites, isGiftOffering: myProfile.isGiftOffering,
-        showEmailToUsers: myProfile.showEmailToUsers, emailNotifications: myProfile.emailNotifications,
-        allowInspect: myProfile.allowInspect, gdprAccepted: true,
+        nev: myProfile.nev,
+        nickname: myProfile.nev,
+        telepules: myProfile.telepules,
+        city: myProfile.telepules,
+        locations: myProfile.locations,
+        geo: myProfile.geo,
+        email: myProfile.showEmailToUsers ? myProfile.email : '',
+        notifyEmail: myProfile.email,
+        favorites: myProfile.favorites,
+        isGiftOffering: myProfile.isGiftOffering,
+        showEmailToUsers: myProfile.showEmailToUsers,
+        emailNotifications: myProfile.emailNotifications,
+        allowInspect: myProfile.allowInspect,
+        gdprAccepted: true,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
       await batch.commit();
       checkMandatoryProfile();
-      showToast("Profil adatok elmentve.");
+      showToast("Profil adatok és települések elmentve.");
     } catch (err) {
       showToast("Mentési hiba: " + err.message);
     }
@@ -4518,7 +4741,7 @@ function checkMandatoryProfile() {
   const isFavoritesMissing = (activeAlbum.hasFavorites !== false) && (favs.length < 3 || favs.some(n => !n || n < 1));
 
   const isMissing = !myProfile.nev || !myProfile.nev.trim() || myProfile.nev === 'Vendég gyűjtő' ||
-                    !myProfile.telepules || !myProfile.telepules.trim() ||
+                    (!myProfile.telepules && (!myProfile.locations || myProfile.locations.length === 0)) ||
                     !myProfile.email || !myProfile.email.trim() || !myProfile.gdprAccepted || isFavoritesMissing;
 
   if (currentUser && isMissing && warning) {
@@ -4563,7 +4786,6 @@ function listenToMyProfile(uid) {
     const parsed = extractUserData(merged, uid, currentAlbumId);
 
     if (parsed) {
-      // Jegyzet visszatöltése a felhős users dokumentumból vagy kollekcióból
       let loadedNote = userData?.privateNote;
       if (!loadedNote && merged.collections && merged.collections[currentAlbumId]) {
         loadedNote = merged.collections[currentAlbumId].privateNote;
@@ -4576,6 +4798,8 @@ function listenToMyProfile(uid) {
         ...myProfile,
         nev: parsed.nev,
         telepules: parsed.telepules,
+        locations: parsed.locations && parsed.locations.length > 0 ? parsed.locations : [{ city: parsed.telepules || '', districts: [] }],
+        geo: parsed.geo || myGpsCoords,
         email: getFirstValidString(userData?.email, pubData?.email, myProfile.email),
         privateNote: (loadedNote || '').slice(0, 250),
         favorites: parsed.favorites || ensureArray(safeJsonParse('lutra_favorites', [9, 4, 35])),
@@ -4604,7 +4828,6 @@ function listenToMyProfile(uid) {
       if (getActiveAlbum().type === 'sticker' && getActiveAlbum().hasChapters) renderAlbumChapter();
 
       const nI = document.getElementById('prof-nev'); if (nI) nI.value = myProfile.nev || '';
-      const tI = document.getElementById('prof-telepules'); if (tI) tI.value = myProfile.telepules || '';
       const eI = document.getElementById('prof-email'); if (eI) eI.value = myProfile.email || '';
       const gI = document.getElementById('prof-gift'); if (gI) gI.checked = !!myProfile.isGiftOffering;
       const seI = document.getElementById('prof-show-email'); if (seI) seI.checked = !!myProfile.showEmailToUsers;
@@ -4620,6 +4843,7 @@ function listenToMyProfile(uid) {
       }
 
       initFavoriteSelects();
+      renderProfileLocations();
       checkMandatoryProfile();
       refreshMatchesIfVisible();
       renderCompletionOdds();
@@ -4697,7 +4921,7 @@ document.getElementById('modal-image-lightbox')?.addEventListener('click', () =>
   document.getElementById('modal-image-lightbox')?.classList.remove('open');
 });
 
-// INDÍTÁS
+// TELJES RENDSZER INDÍTÁSA
 try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
