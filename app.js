@@ -928,7 +928,7 @@ function renderHub() {
           <div class="album-hub-header">
             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
               <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
-              ${isRetro ? `<span class="album-type-badge badge-retro">🕹️ Retro (${album.year})</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">${album.year}</span>`}
+              ${isRetro ? `<span class="album-type-badge badge-retro">Retro (${album.year})</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">${album.year}</span>`}
             </div>
             <span style="font-size:0.75rem; color:var(--sand); font-weight:700;">${album.totalItems} db</span>
           </div>
@@ -1132,11 +1132,22 @@ function loadAlbumState(albumId) {
   renderMatches();
 }
 
+// KÉTÁLLÁSÚ (TOGGLE) HUB SZŰRŐ GOMBOK
 document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentHubFilter = btn.dataset.hubFilter;
+    const clickedFilter = btn.dataset.hubFilter;
+    
+    // Ha ugyanarra a gombra kattint, ami már aktív volt -> visszavált 'all'-ra
+    if (btn.classList.contains('active') && clickedFilter !== 'all') {
+      document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
+      document.querySelector('.filter-btn[data-hub-filter="all"]')?.classList.add('active');
+      currentHubFilter = 'all';
+    } else {
+      document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentHubFilter = clickedFilter;
+    }
+    
     renderHub();
   });
 });
@@ -1311,10 +1322,10 @@ const popover = document.getElementById('qty-popover');
 let lastToggleTimestamp = 0;
 let lastToggledStickerNum = null;
 
-// ⚡ 0 MS-OS GYORS KATTINTÁSKEZELŐ (Csak az adott cella DOM-ját módosítja azonnal)
+// ⚡ 0 MS-OS VILLÁMGYORS KATTINTÁS (Megszűnt a DOM újraépítés és a beragadás)
 function toggleStickerState(num) {
   const now = Date.now();
-  if (num === lastToggledStickerNum && now - lastToggleTimestamp < 180) return;
+  if (num === lastToggledStickerNum && now - lastToggleTimestamp < 150) return;
   lastToggleTimestamp = now;
   lastToggledStickerNum = num;
 
@@ -1346,22 +1357,59 @@ function toggleStickerState(num) {
     newState = 'van';
   }
 
-  // 1. Azonnali helyi cella-frissítés (nincs rács újrarajzolás!)
+  // 1. Azonnali helyi cella-frissítés a képernyőn
   const cell = document.querySelector(`.matrica-cell[data-num="${num}"]`);
   if (cell) {
     cell.classList.remove('van', 'kell', 'foglalva');
     if (newState) cell.classList.add(newState);
-    
-    // Jelvény eltávolítása vagy visszaállítása
     const existingBadge = cell.querySelector('.qty-badge');
     if (existingBadge) existingBadge.remove();
   }
 
-  // 2. Számlálók azonnali frissítése
+  // 2. Számlálók azonnali frissítése a fejlécben
   updateBadgeCounts();
 
-  // 3. Mentés és felhőszinkron debounce-szal
+  // 3. Késleltetett háttérmentés (nem terheli a böngészőt gépelés/kattintás közben)
   saveMyStateFast();
+}
+
+function saveMyStateFast() {
+  const albumId = currentAlbumId;
+
+  // Helyi mentés
+  localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
+  localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
+  localStorage.setItem(`lutra_kell_${albumId}`, JSON.stringify(myProfile.kell));
+  localStorage.setItem(`lutra_foglalva_${albumId}`, JSON.stringify(myProfile.foglalva));
+  localStorage.setItem(`lutra_foglalva_counts_${albumId}`, JSON.stringify(myProfile.foglalvaCounts || {}));
+
+  if (albumId === 'lidl-lutra-2026') {
+    localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
+    localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
+    localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
+    localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
+    localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
+  }
+
+  // Debounce-olt felhőszinkron
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(() => {
+    refreshMatchesIfVisible();
+    renderCompletionOdds();
+
+    if (currentUser && db) {
+      db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(albumId).set({
+        albumId: albumId,
+        van: myProfile.van,
+        vanCounts: myProfile.vanCounts || {},
+        kell: myProfile.kell,
+        foglalva: myProfile.foglalva,
+        foglalvaCounts: myProfile.foglalvaCounts || {},
+        localUpdatedAt: Date.now(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(() => {});
+    }
+  }, 450);
 }
 
 function showQtyPopover(num, targetEl) {
