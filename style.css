@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Javított)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Teljes)
    ========================================================================= */
 
 :root {
@@ -341,7 +341,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .radar-attached-img { max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2); margin-top: 8px; display: block; object-fit: cover; cursor: pointer; }
 .meetup-time-badge { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 
-/* HUB KÁRTYÁK & FŐOLDAL (100%-BAN TELJESEN LÁTHATÓ BORÍTÓKKAL) */
+/* HUB KÁRTYÁK & FŐOLDAL (100%-BAN LÁTHATÓ BORÍTÓKKAL TÖRTFEHÉR HÁTTÉREN) */
 .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .album-hub-card {
   background: var(--surface-card); border: 1px solid rgba(243, 238, 223, 0.12);
@@ -354,15 +354,15 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: linear-gradient(180deg, rgba(216, 155, 74, 0.15) 0%, rgba(20, 69, 63, 0.8) 100%);
 }
 
-/* Teljesen látható borítókép vágás nélkül */
+/* Teljesen látható borítókép törtfehér háttérrel */
 .hub-card-thumb {
   width: 100%;
   height: 185px;
   object-fit: contain;
   border-radius: var(--radius-sm);
   margin-bottom: 10px;
-  border: 1px solid rgba(243, 238, 223, 0.15);
-  background: #081B1A;
+  border: 1px solid rgba(243, 238, 223, 0.25);
+  background: #F3EEDF;
   padding: 4px;
 }
 
