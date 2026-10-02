@@ -3397,7 +3397,7 @@ function renderCompletionOdds() {
   oddsText.innerHTML = `A hiányzóidból <strong>${matchedMissing.length} / ${myMissing.length} db</strong> azonnal beszerezhető a közösségtől!`;
 }
 
-// VÁROSI HŐTÉRKÉP MOTOR (SZIGORÚ VÁROS- ÉS KERÜLETTISZTÍTÁSSAL)
+// VÁROSI HŐTÉRKÉP MOTOR (SZIGORÚAN JAVÍTOTT VÁROSTISZTÍTÁSSAL)
 function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
@@ -3412,7 +3412,6 @@ function renderHeatmap() {
   }
 
   allUsersData.forEach(u => {
-    // Minden felhasználó összes megadott települését külön-külön kinyerjük
     const normalizedLocs = extractNormalizedLocations(u.locations && u.locations.length > 0 ? u.locations : u.telepules);
     const userMissing = ensureArray(u.kell);
     totalMissingCount += userMissing.length;
@@ -3426,7 +3425,6 @@ function renderHeatmap() {
 
     if (normalizedLocs.length === 0) return;
 
-    // Minden egyes tiszta településhez hozzáadjuk a felhasználót
     normalizedLocs.forEach(loc => {
       if (!cityStats[loc.canonicalKey]) {
         cityStats[loc.canonicalKey] = {
@@ -3477,6 +3475,7 @@ function renderHeatmap() {
     }
   }
 
+  // JAVÍTVA: hoardingEl deklaráció és használat egyetlen, tiszta helyen
   const hoardingEl = document.getElementById('stats-hoarding-sticker');
   if (hoardingEl) {
     if (maxHoardNum) {
