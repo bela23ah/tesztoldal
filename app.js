@@ -1,3 +1,625 @@
+/* =========================================================================
+   Cserélj Okosan (csereljokosan.hu) - style.css (v3.5 - Teljes & Tisztított)
+   ========================================================================= */
+
+:root {
+  --water-deep: #0D2E2C;
+  --water-mid: #14453F;
+  --water-light: #1D5750;
+  --surface-card: rgba(20, 69, 63, 0.75);
+  
+  /* Szigorú matrica állapot színek */
+  --moss: #6B8A5A;
+  --moss-soft: #93B382;
+  --fur-brown: #8B5E3C;
+  --fur-brown-soft: #C99568;
+  --reserved-blue: #2B6CB0;
+  --reserved-blue-soft: #63B3ED;
+
+  /* Elsődleges Arany / Akcent színek */
+  --amber: #D89B4A;
+  --amber-hover: #E5A855;
+  --gift-gold: #FFD166;
+  --danger: #E85A4F;
+  
+  /* Tipográfia és szövegszínek */
+  --text-primary: #F3EEDF;
+  --text-muted: #9FB3A3;
+  --sand: #E3D5B8;
+  --page-bg: #143834;
+  --slot-border: rgba(227, 213, 184, 0.25);
+  
+  /* Egységes lekerekítések */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Work Sans', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--water-deep); color: var(--text-primary);
+  font-family: var(--font-body); line-height: 1.5; -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+.page { max-width: 760px; margin: 0 auto; padding: 16px 12px 60px; }
+
+/* FELSŐ DÍSZES ÉRTESÍTÉSI SÁV */
+.announcement-banner {
+  background: linear-gradient(90deg, #8B5E3C 0%, #D89B4A 100%);
+  color: #081B1A; border-radius: var(--radius-sm);
+  padding: 8px 12px; margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  box-shadow: 0 4px 15px rgba(216, 155, 74, 0.3); font-size: 0.85rem; font-weight: 600;
+}
+.announcement-content { display: flex; align-items: center; gap: 8px; }
+.announcement-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #081B1A; }
+
+header {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 12px; margin-bottom: 14px;
+}
+.wordmark { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; }
+.wordmark span { font-size: 0.85rem; color: var(--amber); font-weight: 400; }
+
+.btn-pwa-install {
+  background: var(--amber); color: var(--water-deep); font-weight: 800; font-size: 0.78rem;
+  padding: 5px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 0 0 10px rgba(216, 155, 74, 0.4); cursor: pointer; animation: pulse 2.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.auth-box { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.user-badge { display: flex; align-items: center; gap: 6px; background: var(--water-mid); padding: 4px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.15); }
+
+.notice-banner {
+  background: rgba(216, 155, 74, 0.12); border: 1px solid var(--amber); border-radius: var(--radius-sm);
+  padding: 10px 14px; font-size: 0.82rem; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.profile-warning-banner {
+  background: rgba(232, 90, 79, 0.15); border: 1px solid var(--danger); border-radius: var(--radius-sm);
+  padding: 10px 14px; font-size: 0.84rem; margin-bottom: 14px; color: #FFC0BA; display: none;
+}
+.profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+/* AKTÍV ALBUM SÁV */
+.active-album-banner {
+  background: rgba(20, 69, 63, 0.85);
+  border: 1.5px solid var(--amber);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* FŐNAVIGÁCIÓ */
+.primary-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+@media (max-width: 520px) {
+  .primary-nav {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+}
+
+.nav-dropdown-item { position: relative; }
+.primary-tab {
+  width: 100%; background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15);
+  color: var(--text-muted); font-family: var(--font-body); font-size: 0.84rem; font-weight: 600;
+  padding: 10px 4px; border-radius: var(--radius-sm); cursor: pointer; text-align: center;
+  white-space: nowrap; transition: all 0.2s ease; display: flex; align-items: center;
+  justify-content: center; gap: 4px;
+}
+.primary-tab.active { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
+.primary-tab.tab-highlight-radar { border-color: rgba(216, 155, 74, 0.4); }
+.dropdown-arrow { font-size: 0.65rem; opacity: 0.7; }
+
+/* ASZTALI LEBEGŐ DROPDOWN MENÜ */
+.dropdown-menu {
+  position: absolute; top: 100%; left: 0; min-width: 185px; background: #081B1A;
+  border: 1.5px solid var(--amber); border-radius: var(--radius-sm);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); padding: 6px; display: none;
+  flex-direction: column; gap: 4px; z-index: 1000; margin-top: 2px;
+}
+.dropdown-menu::before {
+  content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 10px; background: transparent;
+}
+.dropdown-link {
+  background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body);
+  font-size: 0.82rem; font-weight: 500; padding: 8px 10px; border-radius: 6px; text-align: left;
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;
+}
+.dropdown-link:hover, .dropdown-link.active { background: var(--water-mid); color: var(--amber); font-weight: 700; }
+
+@media (min-width: 768px) {
+  .nav-dropdown-item:hover .dropdown-menu { display: flex; }
+}
+
+/* MOBIL ALNAVIGÁCIÓS SÁV */
+.mobile-subnav-wrapper {
+  margin-bottom: 18px; border-bottom: 1px solid rgba(243,238,223,0.1); padding-bottom: 8px;
+}
+.sub-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.sub-tab {
+  background: transparent; border: 1px solid rgba(243,238,223,0.18); color: var(--text-muted);
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 5px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s ease;
+}
+.sub-tab.active { background: var(--water-light); color: var(--text-primary); border-color: var(--amber); font-weight: 700; }
+
+/* JELVÉNYEK */
+.nav-badge {
+  background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800;
+  padding: 1px 6px; border-radius: 999px; margin-left: 3px; vertical-align: middle;
+}
+.nav-badge.read { background: rgba(216, 155, 74, 0.4); color: var(--sand); }
+.badge-radar-count, .badge-meetup-count { background: var(--amber); color: var(--water-deep); }
+.alert-badge { background: var(--danger); color: #FFFFFF; font-size: 0.7rem; font-weight: 900; padding: 0 5px; line-height: 1.2; }
+
+.view { display: none; }
+.view.active { display: block; }
+h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
+.view-intro { color: var(--text-muted); font-size: 0.88rem; margin: 0 0 14px; }
+
+/* 4-ÁLLAPOTÚ JELMAGYARÁZAT */
+.legend-box {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; background: rgba(0,0,0,0.25);
+  padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 0.78rem;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-chip { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.legend-chip.state-van { background: var(--moss); }
+.legend-chip.state-kell { background: var(--fur-brown); }
+.legend-chip.state-foglalva { background: var(--reserved-blue); }
+.legend-chip.state-ures { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.2); }
+
+.view-mode-toggle { display: flex; gap: 8px; }
+.mode-btn {
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.25); color: var(--text-primary);
+  padding: 6px 14px; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: var(--font-body);
+}
+.mode-btn.active { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
+
+.grid-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); color: var(--text-muted);
+  font-size: 0.75rem; padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; font-family: var(--font-body);
+}
+.filter-btn.active { background: var(--amber); color: var(--water-deep); font-weight: 700; border-color: var(--amber); }
+
+.stats-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat-chip { font-size: 0.8rem; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); }
+.stat-van strong { color: var(--moss-soft); }
+.stat-kell strong { color: var(--fur-brown-soft); }
+.stat-foglalva strong { color: var(--reserved-blue-soft); }
+
+/* RÁCSOS NÉZET */
+#matrica-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 6px; width: 100%; min-height: 200px;
+}
+.matrica-cell {
+  min-height: 52px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.14); border-radius: var(--radius-sm);
+  color: var(--text-muted); font-weight: 600; font-size: 0.8rem; cursor: pointer;
+  user-select: none; -webkit-user-select: none; position: relative; -webkit-tap-highlight-color: transparent;
+  text-align: center; padding: 2px; line-height: 1.1; word-break: break-word;
+}
+.matrica-cell:active { transform: scale(0.94); }
+.matrica-cell.van { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
+.matrica-cell.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; font-weight: 700; }
+.matrica-cell.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; font-weight: 700; }
+
+/* KINDERTOJÁS / FIGURA KÜLÖNLEGES CSEMPÉK */
+.matrica-grid-figures {
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)) !important;
+  gap: 8px !important;
+}
+.matrica-cell.cell-figure {
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40% !important;
+  aspect-ratio: 0.82 !important;
+  min-height: 64px !important;
+  box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.15), 0 4px 10px rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(227, 213, 184, 0.3);
+  font-size: 0.76rem;
+  padding: 4px 2px;
+}
+.matrica-cell.cell-figure.van { border-color: var(--moss-soft) !important; }
+.matrica-cell.cell-figure.kell { border-color: var(--fur-brown-soft) !important; }
+.matrica-cell.cell-figure.foglalva { border-color: var(--reserved-blue-soft) !important; }
+
+.qty-badge {
+  position: absolute; top: -4px; right: -4px; background: var(--amber); color: var(--water-deep);
+  font-size: 0.65rem; font-weight: 800; padding: 1px 5px; border-radius: 999px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1px solid var(--water-deep); z-index: 5; pointer-events: none;
+}
+.qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
+
+/* ALBUM LAPOZÓ NÉZET */
+.book-nav {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 14px; background: var(--water-mid); padding: 8px 14px; border-radius: var(--radius-md);
+}
+.chapter-select {
+  background: var(--water-deep); color: var(--text-primary); border: 1px solid rgba(243,238,223,0.25);
+  padding: 6px 12px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+}
+.album-page-box {
+  background: var(--page-bg); border-radius: var(--radius-lg); padding: 18px 12px;
+  border: 1px solid rgba(243,238,223,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 250px;
+}
+.page-header {
+  display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px;
+  border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 8px; margin-bottom: 16px;
+}
+.page-title { font-family: var(--font-display); font-size: 1.3rem; margin: 0; color: var(--sand); }
+.page-progress { font-size: 0.8rem; color: var(--amber); font-weight: 600; }
+.slots-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
+
+/* Slot formák */
+.slot {
+  border: 2px dashed var(--slot-border); border-radius: 8px; background: rgba(13, 46, 44, 0.45);
+  padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; -webkit-user-select: none; text-align: center; position: relative; flex: 0 1 auto;
+}
+.slot.orient-allo { width: 98px; height: 132px; }
+.slot.orient-fekvo { width: 132px; height: 98px; }
+.slot.orient-negyzet { width: 110px; height: 110px; }
+
+.slot .sticker-num { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-muted); }
+.slot .sticker-name { font-size: 0.72rem; font-weight: 500; margin: 2px 0; line-height: 1.15; max-height: 2.4em; overflow: hidden; }
+.slot .sticker-tag { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: rgba(0,0,0,0.25); }
+
+.combo-wrapper {
+  width: 200px; height: 132px; display: flex; flex-direction: column; border: 2px dashed var(--slot-border);
+  border-radius: 8px; background: rgba(13, 46, 44, 0.45); overflow: hidden; position: relative; flex: 0 1 auto;
+}
+.combo-title { background: rgba(0,0,0,0.4); font-size: 0.68rem; text-align: center; padding: 2px 8px; font-weight: 600; color: var(--sand); }
+.combo-halves { display: flex; flex: 1; }
+.combo-half { flex: 1; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; text-align: center; position: relative; }
+.combo-half:first-child { border-right: 1px dashed rgba(227, 213, 184, 0.35); }
+.combo-half .sticker-num { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-muted); }
+.combo-half .sticker-tag { font-size: 0.6rem; font-weight: 700; }
+
+.slot.van, .combo-half.van { background: var(--moss) !important; color: var(--water-deep) !important; border-style: solid; border-color: var(--moss-soft); }
+.slot.van .sticker-num, .combo-half.van .sticker-num, .slot.van .sticker-name, .combo-half.van .sticker-name { color: var(--water-deep); font-weight: 700; }
+.slot.kell, .combo-half.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; border-style: solid; border-color: var(--fur-brown-soft); }
+.slot.kell .sticker-num, .combo-half.kell .sticker-num { color: var(--text-primary); }
+.slot.foglalva, .combo-half.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; border-style: solid; border-color: var(--reserved-blue-soft); }
+.slot.foglalva .sticker-num, .combo-half.foglalva .sticker-num { color: #FFF; }
+
+/* KÁRTYÁK & ÜZENETEK */
+.card {
+  background: var(--surface-card); border: 1px solid rgba(243,238,223,0.12);
+  border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;
+}
+.card-local { border-left: 4px solid var(--amber); }
+.card-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.badge-local { background: var(--amber); color: var(--water-deep); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.badge-gift { background: var(--gift-gold); color: var(--water-deep); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.badge-ratio { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+
+.message-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
+.message-card.incoming { border-left: 4px solid var(--amber); }
+.message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.9; }
+.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; gap: 6px; }
+.message-body { background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; }
+
+.message-album-badge {
+  background: var(--amber) !important;
+  color: var(--water-deep) !important;
+  font-weight: 800 !important;
+  font-size: 0.75rem !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.radar-card, .meetup-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
+.badge-radar-van { background: var(--amber); color: var(--water-deep); font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
+.badge-radar-nincs { background: var(--danger); color: #FFF; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
+.radar-attached-img { max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2); margin-top: 8px; display: block; object-fit: cover; cursor: pointer; }
+.meetup-time-badge { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+
+/* HUB KÁRTYÁK & FŐOLDAL */
+.hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.album-hub-card {
+  background: var(--surface-card); border: 1px solid rgba(243, 238, 223, 0.12);
+  border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column;
+  justify-content: space-between; transition: transform 0.2s ease, border-color 0.2s ease; cursor: pointer;
+}
+.album-hub-card:hover { transform: translateY(-2px); border-color: var(--amber); }
+.album-hub-card.featured-card {
+  border: 2px solid var(--amber);
+  background: linear-gradient(180deg, rgba(216, 155, 74, 0.15) 0%, rgba(20, 69, 63, 0.8) 100%);
+}
+
+.hub-card-thumb {
+  width: 100%;
+  height: 185px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  border: 1px solid rgba(243, 238, 223, 0.25);
+  background: #F3EEDF;
+  padding: 4px;
+}
+
+.album-hub-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.album-type-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: rgba(216, 155, 74, 0.2); color: var(--amber); }
+
+.album-type-badge.badge-retro {
+  background: rgba(139, 94, 60, 0.45);
+  color: var(--fur-brown-soft);
+  border: 1px solid var(--fur-brown);
+}
+
+.album-hub-progress-track { background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
+.album-hub-progress-bar { background: var(--amber); height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+
+.suggestion-item {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* PROFIL TELEPÜLÉS SOROK & BUDAPEST CHIPEK */
+.location-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.bp-chip {
+  background: var(--water-mid);
+  border: 1px solid rgba(243, 238, 223, 0.2);
+  color: var(--sand);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+.bp-chip:hover {
+  border-color: var(--amber);
+  color: #FFF;
+}
+.bp-chip.active {
+  background: var(--amber);
+  color: var(--water-deep);
+  border-color: var(--amber);
+  font-weight: 800;
+}
+
+/* LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
+.trade-planner-bar {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  max-width: 720px; width: calc(100% - 24px); background: rgba(8, 27, 26, 0.95);
+  backdrop-filter: blur(10px); border: 1.5px solid var(--amber); border-radius: var(--radius-md);
+  padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 2500; animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+.planner-info { font-size: 0.85rem; color: var(--sand); font-weight: 600; }
+
+/* STATISZTIKA GYORSUGRÓ */
+.stats-quicknav-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 14px; }
+.stats-quicknav { display: flex; overflow-x: auto; gap: 6px; padding: 4px 30px 6px 30px; width: 100%; scrollbar-width: none; scroll-behavior: smooth; }
+.stats-quicknav::-webkit-scrollbar { display: none; }
+.btn-stat-jump {
+  background: var(--water-mid); border: 1px solid rgba(216, 155, 74, 0.35); color: var(--sand);
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 6px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s ease;
+}
+.btn-stat-jump:hover { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
+.quicknav-arrow-left, .quicknav-arrow { position: absolute; top: 50%; transform: translateY(-50%); color: var(--amber); font-size: 0.75rem; font-weight: 800; cursor: pointer; z-index: 10; }
+.quicknav-arrow-left { left: 0; padding: 6px 14px 6px 4px; }
+.quicknav-arrow { right: 0; padding: 6px 4px 6px 14px; }
+.stat-section-anchor { scroll-margin-top: 100px; }
+
+/* HŐTÉRKÉP */
+.map-heatmap-container {
+  position: relative; width: 100%; background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
+  border-radius: var(--radius-md); border: 1px solid rgba(216, 155, 74, 0.3); overflow: hidden; padding: 8px; margin-bottom: 12px;
+}
+.hungary-svg-map { width: 100%; height: auto; max-height: 420px; display: block; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+.map-outline { fill: rgba(20, 69, 63, 0.75); stroke: var(--amber); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.map-river { fill: none; stroke: rgba(99, 179, 237, 0.4); stroke-width: 2; stroke-dasharray: 4, 3; }
+.map-lake { fill: #3182CE; stroke: #63B3ED; stroke-width: 1.5; }
+#heatmap-overlay-pins { position: absolute; inset: 0; pointer-events: none; }
+.heat-pin {
+  position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer; pointer-events: auto; transition: transform 0.25s ease; user-select: none;
+}
+.heat-pin:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 20; }
+.heat-pin.fire { background: radial-gradient(circle, #FF453A 0%, #E85A4F 100%); box-shadow: 0 0 14px rgba(232, 90, 79, 1); border: 2px solid #FFFFFF; color: #FFF; font-size: 0.72rem; font-weight: 800; animation: pulseHeat 1.8s infinite; }
+.heat-pin.warm { background: radial-gradient(circle, #FFD166 0%, #D89B4A 100%); box-shadow: 0 0 10px rgba(216, 155, 74, 0.85); border: 1.5px solid #FFFFFF; color: #081B1A; font-size: 0.68rem; font-weight: 800; }
+.heat-pin.cool { background: var(--water-light); box-shadow: 0 0 6px rgba(243, 238, 223, 0.4); border: 1.2px solid rgba(243, 238, 223, 0.6); color: var(--sand); font-size: 0.62rem; font-weight: 700; }
+.heat-chip-fire { background: var(--danger); color: #FFF; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.heat-chip-warm { background: var(--amber); color: var(--water-deep); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.heat-chip-cool { background: var(--water-light); color: var(--sand); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+@keyframes pulseHeat { 0% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); } 50% { box-shadow: 0 0 16px rgba(232, 90, 79, 1); } 100% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); } }
+
+.segment-card { background: rgba(0, 0, 0, 0.25); padding: 10px 8px; border-radius: var(--radius-sm); text-align: center; }
+.difficulty-bar-row { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; }
+.difficulty-bar-header { display: flex; justify-content: space-between; color: var(--sand); }
+.difficulty-bar-track { background: rgba(0,0,0,0.3); height: 8px; border-radius: 999px; overflow: hidden; }
+.difficulty-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+
+/* GOMBOK ÉS MEZŐK */
+.btn {
+  background: var(--amber); color: var(--water-deep); border: none; border-radius: var(--radius-sm);
+  padding: 8px 16px; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font-body);
+  transition: all 0.15s ease;
+}
+.btn:hover { background: var(--amber-hover); }
+.btn-sm { padding: 5px 12px; font-size: 0.78rem; border-radius: var(--radius-sm); }
+.btn-contact-green { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
+.btn-contact-green:hover { background: var(--moss-soft) !important; }
+.btn-primary { background: var(--amber); color: var(--water-deep); }
+.btn-google { background: #FFFFFF; color: #333333; }
+.btn-secondary { background: transparent; border: 1px solid rgba(243,238,223,0.3); color: var(--text-primary); }
+.btn-secondary:hover { border-color: var(--amber); color: var(--amber); background: transparent; }
+.btn-blue { background: var(--reserved-blue); color: #FFFFFF; }
+.btn-danger { background: var(--danger); color: #FFFFFF; }
+.btn-fb { background: #1877F2; color: #FFFFFF; }
+
+/* KIEMELT PULZÁLÓ SZÁMSZKENNER GOMB */
+.btn-scanner-pulse {
+  background: linear-gradient(135deg, #FFD166 0%, #D89B4A 100%) !important;
+  color: #081B1A !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 14px rgba(216, 155, 74, 0.6) !important;
+  border: 1.5px solid #FFFFFF !important;
+  animation: pulseScanner 2.2s infinite;
+}
+@keyframes pulseScanner {
+  0% { transform: scale(1); box-shadow: 0 0 6px rgba(216, 155, 74, 0.4); }
+  50% { transform: scale(1.04); box-shadow: 0 0 16px rgba(255, 209, 102, 0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 6px rgba(216, 155, 74, 0.4); }
+}
+
+.search-box { display: flex; gap: 8px; margin-bottom: 12px; }
+.input-field {
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.25); color: var(--text-primary);
+  padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; width: 100%; font-family: var(--font-body);
+}
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted); }
+.checkbox-label, .radio-label { display: flex; gap: 8px; font-size: 0.82rem; color: var(--text-muted); align-items: flex-start; cursor: pointer; margin-bottom: 10px; }
+.checkbox-label input, .radio-label input { margin-top: 3px; }
+
+.batch-box { background: rgba(13, 46, 44, 0.6); border: 1px dashed var(--amber); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; display: none; }
+.stats-ranking-list { list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.stats-ranking-item {
+  display: flex; justify-content: space-between; align-items: center; background: rgba(13, 46, 44, 0.4);
+  padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; cursor: pointer; transition: background 0.2s ease;
+}
+.stats-ranking-item:hover { background: rgba(216, 155, 74, 0.15); }
+
+/* BEOLVASÓ MODAL 3-AS KÁRTYA STÍLUSAI */
+.scanner-method-card {
+  position: relative;
+  display: block;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(243, 238, 223, 0.2);
+  background: var(--water-mid);
+}
+.scanner-method-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+.scanner-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scanner-card-primary {
+  background: linear-gradient(135deg, rgba(216,155,74,0.25) 0%, rgba(20,69,63,0.85) 100%);
+  border: 1.5px solid var(--amber);
+}
+
+.scanner-card-secondary {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(243,238,223,0.2);
+}
+
+.scanner-card-ar {
+  background: linear-gradient(135deg, rgba(13,46,44,0.9) 0%, rgba(20,69,63,0.95) 100%);
+  border: 1.5px dashed var(--amber);
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.badge-beta {
+  background: var(--amber);
+  color: var(--water-deep);
+  font-weight: 800;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+/* POPOVER ÉS MODALOK */
+.qty-popover {
+  position: fixed; background: var(--water-deep); border: 1.5px solid var(--amber); border-radius: var(--radius-md);
+  padding: 6px 8px; display: none; flex-direction: column; gap: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 2500;
+  align-items: center; max-width: calc(100vw - 20px);
+}
+.qty-popover.open { display: flex; }
+.qty-row { display: flex; gap: 4px; }
+.qty-pop-btn {
+  background: var(--water-mid); border: 1px solid rgba(243,238,223,0.2); color: var(--sand);
+  padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; min-width: 32px; text-align: center;
+}
+.qty-pop-btn.active, .qty-pop-btn:hover { background: var(--amber); color: var(--water-deep); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none;
+  align-items: center; justify-content: center; z-index: 2500; padding: 16px;
+}
+.modal-overlay.open { display: flex; }
+.modal-card {
+  background: var(--water-deep); border: 1px solid var(--amber); border-radius: var(--radius-md);
+  padding: 22px; max-width: 520px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+
+.certificate-card { background: #081B1A; border: 2px solid var(--amber); border-radius: var(--radius-md); padding: 24px 16px; text-align: center; color: var(--sand); margin-bottom: 14px; }
+.cert-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--amber); margin: 0 0 6px; }
+.cert-name { font-size: 1.3rem; font-weight: 700; color: #FFF; margin: 8px 0; border-bottom: 1px dashed var(--amber); padding-bottom: 6px; }
+
+.support-footer {
+  margin-top: 40px; padding: 22px 16px; border-radius: var(--radius-md); background: rgba(20, 69, 63, 0.7);
+  border: 1.5px solid rgba(216, 155, 74, 0.35); text-align: center; color: var(--text-primary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.btn-donably {
+  background: #E85A4F !important; color: #FFFFFF !important; font-weight: 800; font-size: 0.92rem;
+  padding: 10px 22px; text-decoration: none; border-radius: var(--radius-sm); box-shadow: 0 4px 14px rgba(232, 90, 79, 0.45); display: inline-flex;
+}
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--amber);
+  color: var(--water-deep); padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
+  display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
+}
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v3.5 - 1. RÉSZ: MOTOR & RÁCS)
 // =========================================================================
@@ -362,7 +984,7 @@ function getActiveAlbumSize() {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// HAVERSINE TÁVOLSÁGSZÁMÍTÁS ÉS TELEPÜLÉS KOORDINÁTÁK
+// KIBŐVÍTETT TELEPÜLÉS KOORDINÁTÁK (MAGYARORSZÁG & AGGLOMERÁCIÓK)
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -388,6 +1010,13 @@ const CITY_COORDINATES = {
   "budapest_21": { lat: 47.415, lng: 19.070, x: 52.5, y: 41.0 },
   "budapest_22": { lat: 47.420, lng: 19.020, x: 51.8, y: 40.8 },
   "budapest_23": { lat: 47.395, lng: 19.130, x: 53.2, y: 41.5 },
+  "kecskemet": { lat: 46.9069, lng: 19.6913, x: 61.0, y: 59.0 },
+  "nagykoros": { lat: 47.0324, lng: 19.7828, x: 62.5, y: 56.0 },
+  "cegled": { lat: 47.1743, lng: 19.7997, x: 63.0, y: 51.0 },
+  "kiskunfelegyhaza": { lat: 46.7119, lng: 19.8458, x: 63.0, y: 64.0 },
+  "lajosmizse": { lat: 47.0253, lng: 19.5583, x: 59.0, y: 56.0 },
+  "kiskunhalas": { lat: 46.4319, lng: 19.4853, x: 58.0, y: 73.0 },
+  "dabas": { lat: 47.1872, lng: 19.3106, x: 56.0, y: 50.0 },
   "gyor": { lat: 47.6875, lng: 17.6504, x: 26.0, y: 27.0 },
   "sopron": { lat: 47.6865, lng: 16.5843, x: 10.5, y: 30.0 },
   "szombathely": { lat: 47.2307, lng: 16.6218, x: 13.0, y: 44.0 },
@@ -397,7 +1026,6 @@ const CITY_COORDINATES = {
   "pecs": { lat: 46.0727, lng: 18.2323, x: 41.0, y: 83.0 },
   "kaposvar": { lat: 46.3594, lng: 17.7968, x: 32.0, y: 73.0 },
   "szekszard": { lat: 46.3501, lng: 18.7091, x: 50.0, y: 73.0 },
-  "kecskemet": { lat: 46.9069, lng: 19.6913, x: 61.0, y: 59.0 },
   "szeged": { lat: 46.2530, lng: 20.1414, x: 66.0, y: 81.0 },
   "bekescsaba": { lat: 46.6796, lng: 21.0911, x: 84.0, y: 69.0 },
   "szolnok": { lat: 47.1756, lng: 20.1764, x: 69.0, y: 51.0 },
@@ -408,14 +1036,33 @@ const CITY_COORDINATES = {
   "salgotarjan": { lat: 48.0934, lng: 19.8030, x: 62.0, y: 21.0 },
   "tatabanya": { lat: 47.5849, lng: 18.3932, x: 42.0, y: 32.0 },
   "erd": { lat: 47.3789, lng: 18.9192, x: 51.0, y: 43.0 },
+  "dunakeszi": { lat: 47.6333, lng: 19.1333, x: 53.0, y: 34.0 },
+  "budaors": { lat: 47.4619, lng: 18.9583, x: 50.5, y: 40.0 },
+  "szentendre": { lat: 47.6667, lng: 19.0833, x: 52.5, y: 33.0 },
+  "vac": { lat: 47.7833, lng: 19.1333, x: 53.0, y: 30.0 },
+  "godollo": { lat: 47.6000, lng: 19.3667, x: 56.0, y: 36.0 },
+  "szigetszentmiklos": { lat: 47.3439, lng: 19.0436, x: 52.5, y: 43.0 },
   "dunaujvaros": { lat: 46.9619, lng: 18.9355, x: 53.0, y: 53.0 },
   "baja": { lat: 46.1819, lng: 18.9568, x: 54.0, y: 80.0 },
   "hodmezovasarhely": { lat: 46.4303, lng: 20.3189, x: 71.0, y: 75.0 },
   "oroshaza": { lat: 46.5667, lng: 20.6667, x: 78.0, y: 73.0 },
   "gyula": { lat: 46.6500, lng: 21.2833, x: 89.0, y: 68.0 },
   "siofok": { lat: 46.9041, lng: 18.0580, x: 42.0, y: 50.0 },
+  "balatonfured": { lat: 46.9564, lng: 17.8936, x: 38.0, y: 49.0 },
   "keszthely": { lat: 46.7691, lng: 17.2481, x: 27.0, y: 58.0 },
-  "nagykanizsa": { lat: 46.4535, lng: 16.9910, x: 21.0, y: 70.0 }
+  "nagykanizsa": { lat: 46.4535, lng: 16.9910, x: 21.0, y: 70.0 },
+  "papa": { lat: 47.3308, lng: 17.4672, x: 28.0, y: 38.0 },
+  "ajka": { lat: 47.1047, lng: 17.5583, x: 30.0, y: 46.0 },
+  "mosonmagyarovar": { lat: 47.8667, lng: 17.2667, x: 20.0, y: 22.0 },
+  "esztergom": { lat: 47.7856, lng: 18.7406, x: 47.0, y: 29.0 },
+  "jaszbereny": { lat: 47.5000, lng: 19.9167, x: 65.0, y: 42.0 },
+  "szentes": { lat: 46.6500, lng: 20.2500, x: 70.0, y: 71.0 },
+  "kazincbarcika": { lat: 48.2500, lng: 20.6333, x: 75.0, y: 19.0 },
+  "oroszlan": { lat: 47.4833, lng: 18.3167, x: 41.0, y: 36.0 },
+  "paks": { lat: 46.6231, lng: 18.8558, x: 51.0, y: 66.0 },
+  "mor": { lat: 47.3700, lng: 18.2078, x: 40.0, y: 41.0 },
+  "bicske": { lat: 47.4917, lng: 18.6361, x: 45.5, y: 38.0 },
+  "mohacs": { lat: 45.9906, lng: 18.6839, x: 50.0, y: 86.0 }
 };
 
 // BOLTI KÉSZLETRADAR ADATBÁZIS
@@ -513,10 +1160,9 @@ const STORE_DATABASES = {
   ]
 };
 
-// Haversine formula légvonalbeli távolsághoz
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-  const R = 6371; // Föld sugara km-ben
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a =
@@ -528,7 +1174,7 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
 }
 
 // =========================================================================
-// MEGJÚJÍTOTT INTELLIGENS TELEPÜLÉS- ÉS KERÜLET-NORMALIZÁLÓ MOTOR
+// INTELLIGENS TELEPÜLÉS- ÉS KERÜLET-NORMALIZÁLÓ MOTOR
 // =========================================================================
 
 const ROMAN_NUMERALS = [
@@ -547,7 +1193,9 @@ const KNOWN_CANONICAL_CITIES = {
   "nagykanizsa": "Nagykanizsa", "dunaujvaros": "Dunaújváros",
   "hodmezovasarhely": "Hódmezővásárhely", "salgotarjan": "Salgótarján",
   "szekszard": "Szekszárd", "baja": "Baja", "siofok": "Siófok",
-  "gyula": "Gyula", "oroshaza": "Orosháza", "keszthely": "Keszthely"
+  "gyula": "Gyula", "oroshaza": "Orosháza", "keszthely": "Keszthely",
+  "nagykoros": "Nagykőrös", "cegled": "Cegléd", "kiskunfelegyhaza": "Kiskunfélegyháza",
+  "lajosmizse": "Lajosmizse", "kiskunhalas": "Kiskunhalas", "dabas": "Dabas"
 };
 
 function normalizeText(text) {
@@ -579,7 +1227,7 @@ function parseBudapestDistricts(text) {
   return [...new Set(districts)].sort((a, b) => a - b);
 }
 
-// Intelligens felbontó (szétszedi: Cegléd/Budapest, Szeged és Kecskemét, Győr, Sopron stb.)
+// MINDEN VEGYES BEJEGYZÉST (pl. "Budapest, Cegléd", "Szeged / Kecskemét") SZIGORÚAN SZÉTVÁG
 function extractNormalizedLocations(locationInput) {
   if (!locationInput) return [];
   const results = [];
@@ -588,17 +1236,18 @@ function extractNormalizedLocations(locationInput) {
   let rawList = [];
   if (Array.isArray(locationInput)) {
     locationInput.forEach(loc => {
-      if (typeof loc === 'string') rawList.push(loc);
-      else if (loc && loc.city) {
+      if (typeof loc === 'string') {
+        loc.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
+      } else if (loc && loc.city) {
         if (loc.districts && loc.districts.length > 0) {
           loc.districts.forEach(d => rawList.push(`Budapest ${d}. kerület`));
         } else {
-          rawList.push(loc.city);
+          loc.city.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
         }
       }
     });
   } else if (typeof locationInput === 'string') {
-    rawList = locationInput.split(SPLIT_REGEX).map(t => t.trim()).filter(t => t.length > 0);
+    locationInput.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
   }
 
   rawList.forEach(raw => {
@@ -666,7 +1315,6 @@ function isLocalCityMatch(locA, locB) {
   return citiesA.some(cA => citiesB.includes(cA));
 }
 
-// 1. TÉTELKÓD (A csempén látható szöveg, pl. #1 vagy #MEX 11)
 function getItemLabel(num, albumId = currentAlbumId) {
   const album = ALBUMS_REGISTRY[albumId];
   if (album && album.customItems && album.customItems[num - 1]) {
@@ -676,7 +1324,6 @@ function getItemLabel(num, albumId = currentAlbumId) {
   return `#${num}`;
 }
 
-// 2. TELJES TÉTELNÉV (Csak lebegő buborékban, tooltipben és kedvenceknél!)
 function getItemFullName(num, albumId = currentAlbumId) {
   if (albumId === 'lidl-lutra-2026') {
     return STICKER_NAMES[num] ? `#${num} ${STICKER_NAMES[num]}` : `#${num}`;
@@ -688,7 +1335,6 @@ function getItemFullName(num, albumId = currentAlbumId) {
   return getItemLabel(num, albumId);
 }
 
-// TARTOMÁNYOK ÉS TÉTELKÓDOK KIBONTÓJA
 function expandCustomItemsText(rawText) {
   if (!rawText || !rawText.trim()) return [];
   const tokens = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
@@ -712,7 +1358,6 @@ function expandCustomItemsText(rawText) {
   return result;
 }
 
-// SORSZÁMOZOTT TÉTELNEVEK KIBONTÓJA
 function expandCustomNamesText(rawText) {
   if (!rawText || !rawText.trim()) return [];
   const mapByIndex = {};
@@ -745,16 +1390,13 @@ function expandCustomNamesText(rawText) {
   return rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
 }
 
-// FEJEZET GENERÁTOR
+// JAVÍTOTT, ÉKEZETBIZTOS KÖNYVLAPOZÓ FEJEZETGENERÁTOR (NEM VÁGJA LE AZ ÉKEZETEKET!)
 function parseChaptersText(rawText, customItems = []) {
   if (!rawText || !rawText.trim()) return [];
-  const lines = rawText.split('\n');
+  const lines = rawText.split(/[\r\n;]+/).map(l => l.trim()).filter(l => l.length > 0);
   const chapters = [];
 
   lines.forEach((line, idx) => {
-    line = line.trim();
-    if (!line) return;
-
     const isCombo = line.toLowerCase().includes('[combo]');
     const cleanLine = line.replace(/\[combo\]/gi, '').trim();
 
@@ -766,9 +1408,14 @@ function parseChaptersText(rawText, customItems = []) {
     const min = Math.min(start, end);
     const max = Math.max(start, end);
 
-    let title = cleanLine.replace(/(?:#?\s*)\d+[\s\-—–−]+(?:#?\s*)\d+[\s\.\w]*/g, '').trim();
-    title = title.replace(/^[\s:\.\-—–]+|[\s:\.\-—–]+$/g, '');
-    if (!title) title = `${idx + 1}. fejezet`;
+    let title = cleanLine;
+    if (cleanLine.includes(':')) {
+      title = cleanLine.split(':')[0].trim();
+    } else {
+      title = cleanLine.replace(rangeMatch[0], '').trim();
+    }
+    title = title.replace(/^[\s:\.\-—–]+|[\s:\.\-—–]+$/g, '').trim();
+    if (!title) title = `${idx + 1}. fejezet (${min} – ${max})`;
 
     const elements = [];
     if (isCombo && max - min === 1) {
@@ -1245,7 +1892,6 @@ safeAddListener('hub-albums-grid', (e) => {
   selectAlbum(albumId);
 });
 
-// KÖZÖSSÉGI ÚJ GYŰJTEMÉNY JAVASLAT BEKÜLDÉSE (MODAL)
 safeAddListener('btn-open-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.add('open'));
 safeAddListener('btn-close-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
 safeAddListener('btn-close-suggest-album-2', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
@@ -1590,7 +2236,6 @@ const popover = document.getElementById('qty-popover');
 let lastToggleTimestamp = 0;
 let lastToggledStickerNum = null;
 
-// 0 MS-OS GYORS KATTINTÁSKEZELŐ
 function toggleStickerState(num) {
   const now = Date.now();
   if (num === lastToggledStickerNum && now - lastToggleTimestamp < 150) return;
@@ -1756,6 +2401,9 @@ function saveMyStateFast() {
     renderCompletionOdds();
 
     if (currentUser && db) {
+      const isLutra = (albumId === 'lidl-lutra-2026');
+
+      // 1. Almappa mentés (v3.5 / 4.0 struktúra)
       db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(albumId).set({
         albumId: albumId,
         van: myProfile.van,
@@ -1767,7 +2415,8 @@ function saveMyStateFast() {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true }).catch(() => {});
 
-      const updatePayload = {
+      // 2. Fő dokumentum mentés (.set merge: true a NOT_FOUND hibák ellen!)
+      const publicPayload = {
         [`collections.${albumId}`]: {
           van: myProfile.van,
           vanCounts: myProfile.vanCounts || {},
@@ -1775,18 +2424,20 @@ function saveMyStateFast() {
           foglalva: myProfile.foglalva,
           foglalvaCounts: myProfile.foglalvaCounts || {},
           updatedAt: Date.now()
-        }
+        },
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      if (albumId === 'lidl-lutra-2026') {
-        updatePayload.van = myProfile.van;
-        updatePayload.vanCounts = myProfile.vanCounts || {};
-        updatePayload.kell = myProfile.kell;
-        updatePayload.foglalva = myProfile.foglalva;
-        updatePayload.foglalvaCounts = myProfile.foglalvaCounts || {};
+      // HA LUTRA: Párhuzamosan ment a régi gyökér mezőkbe is az élő oldal miatt!
+      if (isLutra) {
+        publicPayload.van = myProfile.van;
+        publicPayload.vanCounts = myProfile.vanCounts || {};
+        publicPayload.kell = myProfile.kell;
+        publicPayload.foglalva = myProfile.foglalva;
+        publicPayload.foglalvaCounts = myProfile.foglalvaCounts || {};
       }
 
-      db.collection("public_profiles").doc(currentUser.uid).update(updatePayload).catch(() => {});
+      db.collection("public_profiles").doc(currentUser.uid).set(publicPayload, { merge: true }).catch(() => {});
     }
   }, 450);
 }
@@ -1847,7 +2498,6 @@ safeAddListener('btn-close-batch-box', () => {
   }
 });
 
-// INTERVALLUMOS TÖMEGES BEVITEL (1-12, 1-5*2, 12*3)
 function parseBatchInput(raw) {
   const tokens = raw.split(/[\s,;]+/);
   const parsed = {};
@@ -2116,18 +2766,34 @@ function updateCserebereBadge() {
   badge.style.display = (hasUnread || hasMeetup) ? 'inline-block' : 'none';
 }
 
-// GPS ÉS TÁVOLSÁGI HELYZET LEKÉRÉSE A FELHASZNÁLÓTÓL
-function getUserCoordinates(userObj) {
+// GPS ÉS TÁVOLSÁGI HELYZET LEKÉRÉSE (TÖBB TELEPÜLÉS/INGÁZÁS ESETÉN A LEGKÖZELEBBIT ADJA)
+function getUserCoordinatesList(userObj) {
+  const coordsList = [];
   if (userObj.geo && typeof userObj.geo.lat === 'number') {
-    return userObj.geo;
+    coordsList.push(userObj.geo);
   }
   const normList = extractNormalizedLocations(userObj.locations && userObj.locations.length > 0 ? userObj.locations : userObj.telepules);
   for (const loc of normList) {
     if (CITY_COORDINATES[loc.canonicalKey]) {
-      return { lat: CITY_COORDINATES[loc.canonicalKey].lat, lng: CITY_COORDINATES[loc.canonicalKey].lng };
+      coordsList.push({ lat: CITY_COORDINATES[loc.canonicalKey].lat, lng: CITY_COORDINATES[loc.canonicalKey].lng });
     }
   }
-  return null;
+  return coordsList;
+}
+
+function getMinDistanceKm(coordsA, userB) {
+  if (!coordsA) return null;
+  const listB = getUserCoordinatesList(userB);
+  if (listB.length === 0) return null;
+
+  let min = null;
+  listB.forEach(cB => {
+    const d = calculateDistanceKm(coordsA.lat, coordsA.lng, cB.lat, cB.lng);
+    if (d !== null && (min === null || d < min)) {
+      min = d;
+    }
+  });
+  return min;
 }
 
 function requestGpsLocation(callback) {
@@ -2149,7 +2815,7 @@ function requestGpsLocation(callback) {
       myProfile.geo = myGpsCoords;
       localStorage.setItem('cserelj_gps_coords', JSON.stringify(myGpsCoords));
       if (statusEl) {
-        statusEl.innerHTML = '<span style="color:var(--moss-soft);">✓ Helyzet bemérve! A távolsági szűrők aktívak.</span>';
+        statusEl.innerHTML = '<span style="color:var(--moss-soft);">✓ Helyzet sikeresen bemérve! A távolsági szűrők aktívak.</span>';
       }
       showToast("GPS koordináták rögzítve!");
       renderMatches();
@@ -2169,13 +2835,14 @@ function requestGpsLocation(callback) {
 
 safeAddListener('btn-search-gps-locate', () => requestGpsLocation());
 
-// Távolsági gombok kezelése (ha nincs GPS, rákérdez)
+// Távolsági gombok kezelése
 document.querySelectorAll('#search-radius-group .filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const radius = btn.dataset.radius;
     document.querySelectorAll('#search-radius-group .filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedSearchRadius = radius;
+    proximityPageLimit = 25; // Lapozás visszaállítása
 
     if (radius !== 'all' && radius !== 'city' && !myGpsCoords) {
       requestGpsLocation(() => renderProximityPartners());
@@ -2254,7 +2921,7 @@ function renderMatches() {
 
   const myVanSet = new Set(ensureArray(myProfile.van));
   const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
-  const myCoords = myGpsCoords || getUserCoordinates(myProfile);
+  const myCoords = myGpsCoords || (getUserCoordinatesList(myProfile)[0] || null);
 
   if (matchFilter === 'loop') {
     const loops = computeLoopMatches();
@@ -2310,12 +2977,7 @@ function renderMatches() {
 
       const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
       const isGift = u.isGiftOffering === true;
-
-      const uCoords = getUserCoordinates(u);
-      let distanceKm = null;
-      if (myCoords && uCoords) {
-        distanceKm = calculateDistanceKm(myCoords.lat, myCoords.lng, uCoords.lat, uCoords.lng);
-      }
+      const distanceKm = getMinDistanceKm(myCoords, u);
 
       return { ...u, give, get, score, isSameCity, isGift, distanceKm };
     })
@@ -2635,7 +3297,7 @@ safeAddListener('matches-list', 'click', (e) => {
 });
 
 // =========================================================================
-// 1. BLOKK: TÉTELKERESŐ (SZÁM, NÉV, ÖSSZES HIÁNYZÓ)
+// 1. BLOKK: TÉTELKERESŐ (ON/OFF TOGGLE KAPCSOLÓVAL)
 // =========================================================================
 
 safeAddListener('btn-search', () => {
@@ -2644,6 +3306,13 @@ safeAddListener('btn-search', () => {
   const queryNorm = normalizeText(raw);
   const matchedNums = [];
   const totalSize = getActiveAlbumSize();
+
+  // Ha manuális keresés fut, a hiányzó gomb kikapcsol
+  const missingBtn = document.getElementById('btn-search-all-missing');
+  if (missingBtn) {
+    missingBtn.classList.remove('active');
+    missingBtn.textContent = '📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)';
+  }
 
   const rangeMatch = raw.match(/^(\d+)[\s\-—–]+(\d+)$/);
   if (rangeMatch) {
@@ -2670,8 +3339,24 @@ safeAddListener('btn-search', () => {
   renderSearchResults(matchedNums.sort((a, b) => a - b), `Keresés: „${raw}”`);
 });
 
+// KÉTÁLLÁSÚ (ON/OFF) HIÁNYZÓ KERESŐ GOMB
 safeAddListener('btn-search-all-missing', () => {
+  const btn = document.getElementById('btn-search-all-missing');
+  const container = document.getElementById('search-results');
+  if (!btn || !container) return;
+
+  // Ha már aktív volt ➔ KIKAPCSOLÁS
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    btn.textContent = '📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)';
+    container.innerHTML = '';
+    return;
+  }
+
+  // Ha nem volt aktív ➔ BEKAPCSOLÁS
   if (myProfile.kell.length === 0) return showToast("Nincs bejelölt hiányzó tételed.");
+  btn.classList.add('active');
+  btn.textContent = '✕ Hiányzók listájának elrejtése';
   renderSearchResults(myProfile.kell, `Összes hiányzód (${myProfile.kell.length} db)`);
 });
 
@@ -2725,24 +3410,22 @@ safeAddListener('search-results', 'click', (e) => {
 });
 
 // =========================================================================
-// 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (FÖLDRAJZI KÖZELSÉG)
+// 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (FINOMHANGOLT GPS + LAPOZÁS)
 // =========================================================================
+
+let proximityPageLimit = 25;
 
 function renderProximityPartners() {
   const container = document.getElementById('proximity-partners-list');
   if (!container) return;
 
-  const myCoords = myGpsCoords || getUserCoordinates(myProfile);
+  const myCoords = myGpsCoords || (getUserCoordinatesList(myProfile)[0] || null);
   const myId = currentUser ? currentUser.uid : 'me';
 
   let list = allUsersData
     .filter(u => u.id !== myId)
     .map(u => {
-      const uCoords = getUserCoordinates(u);
-      let distanceKm = null;
-      if (myCoords && uCoords) {
-        distanceKm = calculateDistanceKm(myCoords.lat, myCoords.lng, uCoords.lat, uCoords.lng);
-      }
+      const distanceKm = getMinDistanceKm(myCoords, u);
       const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
       const totalDupes = ensureArray(u.van).length;
       return { ...u, distanceKm, isSameCity, totalDupes };
@@ -2755,11 +3438,13 @@ function renderProximityPartners() {
     list = list.filter(u => u.distanceKm !== null && u.distanceKm <= maxDist);
   }
 
+  // Rendezés távolság szerint (legközelebbi legelöl)
   list.sort((a, b) => {
     if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
     if (a.distanceKm !== null) return -1;
     if (b.distanceKm !== null) return 1;
-    return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
+    if (b.isSameCity !== a.isSameCity) return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
+    return b.totalDupes - a.totalDupes;
   });
 
   if (list.length === 0) {
@@ -2770,30 +3455,51 @@ function renderProximityPartners() {
     return;
   }
 
-  container.innerHTML = list.slice(0, 15).map(u => {
-    const distText = u.distanceKm !== null ? `📍 kb. ${u.distanceKm} km-re tőled` : (u.isSameCity ? '📍 Helyi gyűjtő' : '📍 Nincs GPS adat');
-    return `
-      <div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-        <div>
-          <strong style="color:#FFF; font-size:0.95rem; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
-            ${escapeHtml(u.nev)}
-          </strong>
-          <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${escapeHtml(u.telepules || '')}</span>
-          <div style="font-size:0.75rem; color:var(--amber); font-weight:600; margin-top:2px;">
-            ${distText} • ${u.totalDupes} db cserélhető duplája van
+  const displayedList = list.slice(0, proximityPageLimit);
+  const hasMore = list.length > proximityPageLimit;
+
+  container.innerHTML = `
+    <div style="font-size:0.8rem; color:var(--sand); margin-bottom:8px;">
+      Találatok száma: <strong>${list.length} gyűjtő</strong> (${selectedSearchRadius === 'all' ? 'Országos' : selectedSearchRadius + ' km-en belül'})
+    </div>
+    ${displayedList.map(u => {
+      const distText = u.distanceKm !== null ? `📍 kb. ${u.distanceKm} km-re tőled` : (u.isSameCity ? '📍 Helyi gyűjtő' : '📍 Országos');
+      return `
+        <div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <div>
+            <strong style="color:#FFF; font-size:0.95rem; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
+              ${escapeHtml(u.nev)}
+            </strong>
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${escapeHtml(u.telepules || '')}</span>
+            <div style="font-size:0.75rem; color:var(--amber); font-weight:600; margin-top:2px;">
+              ${distText} • ${u.totalDupes} db cserélhető duplája van
+            </div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
+              Adatlap megtekintése
+            </button>
           </div>
         </div>
-        <div style="display:flex; gap:6px;">
-          <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
-            Adatlap megtekintése
-          </button>
-        </div>
+      `;
+    }).join('')}
+    ${hasMore ? `
+      <div style="text-align:center; margin-top:10px;">
+        <button class="btn btn-secondary btn-sm" id="btn-load-more-proximity" style="width:100%; padding:8px;">
+          + További 25 gyűjtő mutatása (${list.length - proximityPageLimit} maradt)
+        </button>
       </div>
-    `;
-  }).join('');
+    ` : ''}
+  `;
 }
 
 safeAddListener('proximity-partners-list', 'click', (e) => {
+  const moreBtn = e.target.closest('#btn-load-more-proximity');
+  if (moreBtn) {
+    proximityPageLimit += 25;
+    renderProximityPartners();
+    return;
+  }
   const btn = e.target.closest('[data-action="inspect-user"]');
   if (btn) openUserProfileModal(btn.dataset.uid);
 });
@@ -3313,7 +4019,7 @@ function renderCompletionOdds() {
   oddsText.innerHTML = `A hiányzóidból <strong>${matchedMissing.length} / ${myMissing.length} db</strong> azonnal beszerezhető a közösségtől!`;
 }
 
-// MEGJÚJÍTOTT VÁROSI HŐTÉRKÉP MOTOR (VISSZAMENŐLEGES KERÜLET- ÉS VÁROSTISZTÍTÁSSAL)
+// VÁROSI HŐTÉRKÉP MOTOR (SZIGORÚ VÁROS- ÉS KERÜLETTISZTÍTÁSSAL)
 function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
@@ -3328,6 +4034,7 @@ function renderHeatmap() {
   }
 
   allUsersData.forEach(u => {
+    // Minden felhasználó összes megadott települését külön-külön kinyerjük
     const normalizedLocs = extractNormalizedLocations(u.locations && u.locations.length > 0 ? u.locations : u.telepules);
     const userMissing = ensureArray(u.kell);
     totalMissingCount += userMissing.length;
@@ -3341,6 +4048,7 @@ function renderHeatmap() {
 
     if (normalizedLocs.length === 0) return;
 
+    // Minden egyes tiszta településhez hozzáadjuk a felhasználót
     normalizedLocs.forEach(loc => {
       if (!cityStats[loc.canonicalKey]) {
         cityStats[loc.canonicalKey] = {
@@ -3391,6 +4099,7 @@ function renderHeatmap() {
     }
   }
 
+  const hoardingEl = document.getElementById('stats-hoarding-sticker');
   if (hoardingEl) {
     if (maxHoardNum) {
       const label = getItemFullName(maxHoardNum, currentAlbumId);
@@ -4351,11 +5060,11 @@ safeAddListener('btn-admin-migrate-locations', async () => {
         }).join(', ');
 
         const docRef = db.collection("public_profiles").doc(doc.id);
-        batch.update(docRef, {
+        batch.set(docRef, {
           locations: cleanLocations,
           telepules: prettyTelepules,
           city: prettyTelepules
-        });
+        }, { merge: true });
 
         const userRef = db.collection("users").doc(doc.id);
         batch.set(userRef, {
@@ -4940,6 +5649,31 @@ if (noteTextarea) {
   });
 }
 
+// VISSZATÉRŐ FELHASZNÁLÓI DONABLY FELUGRÓ IDŐZÍTŐ
+function checkDonablyReturningPrompt() {
+  const visitCount = parseInt(localStorage.getItem('cserelj_visit_count') || '0', 10) + 1;
+  localStorage.setItem('cserelj_visit_count', visitCount.toString());
+
+  const lastPromptTime = parseInt(localStorage.getItem('cserelj_last_donably_prompt') || '0', 10);
+  const alreadyDonated = localStorage.getItem('cserelj_already_donated') === 'true';
+  const now = Date.now();
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+  if (!alreadyDonated && visitCount >= 3 && (now - lastPromptTime > sevenDays)) {
+    setTimeout(() => {
+      document.getElementById('modal-donably-support')?.classList.add('open');
+      localStorage.setItem('cserelj_last_donably_prompt', now.toString());
+    }, 2500);
+  }
+}
+
+safeAddListener('btn-close-donably-modal', () => document.getElementById('modal-donably-support')?.classList.remove('open'));
+safeAddListener('btn-donably-later', () => document.getElementById('modal-donably-support')?.classList.remove('open'));
+safeAddListener('btn-donably-donate-click', () => {
+  localStorage.setItem('cserelj_already_donated', 'true');
+  document.getElementById('modal-donably-support')?.classList.remove('open');
+});
+
 // GLOBÁLIS PROFIL ADATOK MENTÉSE
 safeAddListener('btn-save-profile', () => {
   if (!currentUser) return showToast("Előbb lépj be a fiókodba!");
@@ -5337,6 +6071,7 @@ try {
   initFavoriteSelects();
   initFirebase();
   listenToAlbums();
+  checkDonablyReturningPrompt();
 } catch (err) {
   console.error("Indítási hiba:", err);
 }
