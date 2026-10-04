@@ -1,6 +1,56 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v3.5 - Teljes & Hibajavított)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v3.5 - 1. RÉSZ: ALAPOK & RÁCS)
 // =========================================================================
+
+// -------------------------------------------------------------------------
+// 1. ALAPVETŐ SEGÉDFÜGGVÉNYEK (LEGFELÜL, HOGY MINDENKI ELÉRJE)
+// -------------------------------------------------------------------------
+
+function safeJsonParse(key, fallback) {
+  try {
+    const item = localStorage.getItem(key);
+    if (!item) return fallback;
+    return JSON.parse(item);
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getFirstValidString(...values) {
+  for (const v of values) {
+    if (typeof v === 'string' && v.trim().length > 0) return v.trim();
+  }
+  return '';
+}
+
+function safeAddListener(id, eventOrHandler, handler) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (typeof eventOrHandler === 'function') {
+    el.addEventListener('click', eventOrHandler);
+  } else if (typeof eventOrHandler === 'string' && typeof handler === 'function') {
+    el.addEventListener(eventOrHandler, handler);
+  }
+}
+
+function normalizeText(text) {
+  if (!text) return '';
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+// -------------------------------------------------------------------------
+// 2. GYŰJTEMÉNYEK KATALÓGUSA (21 GYŰJTEMÉNY)
+// -------------------------------------------------------------------------
 
 let ALBUMS_REGISTRY = {
   "lidl-lutra-2026": {
@@ -347,10 +397,6 @@ let showAllHubAlbums = false;
 let editingAlbumId = null;
 let saveDebounceTimer = null;
 
-// GPS & TÁVOLSÁGI ÁLLAPOTOK
-let myGpsCoords = safeJsonParse('cserelj_gps_coords', null);
-let selectedSearchRadius = 'all';
-
 function getActiveAlbum() {
   return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"];
 }
@@ -359,10 +405,35 @@ function getActiveAlbumSize() {
   return getActiveAlbum().totalItems;
 }
 
+function ensureArray(val) {
+  if (!val) return [];
+  const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
+  if (Array.isArray(val)) {
+    return val.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
+  }
+  if (typeof val === 'string') {
+    return val.split(/[\s,;]+/)
+      .map(Number)
+      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
+  }
+  if (typeof val === 'object') {
+    return Object.keys(val)
+      .map(Number)
+      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
+  }
+  return [];
+}
+
+// -------------------------------------------------------------------------
+// 3. GLOBÁLIS ÁLLAPOTOK & ADATBÁZISOK
+// -------------------------------------------------------------------------
+
+let myGpsCoords = safeJsonParse('cserelj_gps_coords', null);
+let selectedSearchRadius = 'all';
+
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// KIBŐVÍTETT TELEPÜLÉS KOORDINÁTÁK
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -571,11 +642,6 @@ const KNOWN_CANONICAL_CITIES = {
   "lajosmizse": "Lajosmizse", "kiskunhalas": "Kiskunhalas", "dabas": "Dabas"
 };
 
-function normalizeText(text) {
-  if (!text) return '';
-  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
 function parseBudapestDistricts(text) {
   if (!text) return [];
   const clean = text.toLowerCase().replace(/kerület|kerulet|ker\.?|district/g, ' ');
@@ -600,7 +666,6 @@ function parseBudapestDistricts(text) {
   return [...new Set(districts)].sort((a, b) => a - b);
 }
 
-// 100% HIBAVÉDETT TELEPÜLÉSFELBONTÓ
 function extractNormalizedLocations(locationInput) {
   if (!locationInput) return [];
   const results = [];
@@ -830,61 +895,9 @@ function getActiveChapters() {
   return [];
 }
 
-function safeAddListener(id, eventOrHandler, handler) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (typeof eventOrHandler === 'function') {
-    el.addEventListener('click', eventOrHandler);
-  } else if (typeof eventOrHandler === 'string' && typeof handler === 'function') {
-    el.addEventListener(eventOrHandler, handler);
-  }
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function ensureArray(val) {
-  if (!val) return [];
-  const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
-  if (Array.isArray(val)) {
-    return val.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
-  }
-  if (typeof val === 'string') {
-    return val.split(/[\s,;]+/)
-      .map(Number)
-      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
-  }
-  if (typeof val === 'object') {
-    return Object.keys(val)
-      .map(Number)
-      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
-  }
-  return [];
-}
-
-function safeJsonParse(key, fallback) {
-  try {
-    const item = localStorage.getItem(key);
-    if (!item) return fallback;
-    return JSON.parse(item);
-  } catch (e) {
-    return fallback;
-  }
-}
-
-function getFirstValidString(...values) {
-  for (const v of values) {
-    if (typeof v === 'string' && v.trim().length > 0) return v.trim();
-  }
-  return '';
-}
+// -------------------------------------------------------------------------
+// 4. FELHASZNÁLÓI ADATSTRUKTÚRA ÉS PROFIL
+// -------------------------------------------------------------------------
 
 function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   if (!data) return null;
@@ -1011,7 +1024,10 @@ let activeContactTarget = {
   subject: ''
 };
 
-// HIVATALOS LIDL LUTRA 2026 FEJEZETEK ÉS MATRICÁK
+// -------------------------------------------------------------------------
+// 5. LUTRA FEJEZETEK ÉS MATRICÁK FELTÖLTÉSE
+// -------------------------------------------------------------------------
+
 const FEJEZETEK = [
   { id: "bevezeto", cim: "1. oldal — Bevezető", elemek: [ { type: "single", num: 1, name: "WWF Magyarország logó", orient: "álló" } ] },
   { id: "elettel_teli_bolygo", cim: "2–3. oldal — Élettel teli bolygó", elemek: [
@@ -1160,20 +1176,20 @@ function initFavoriteSelects() {
   });
 }
 
+// -------------------------------------------------------------------------
+// 6. GYŰJTEMÉNYEK FŐOLDAL (HUB) RENDEREZŐ
+// -------------------------------------------------------------------------
+
 function renderHub() {
   const container = document.getElementById('hub-albums-grid');
-  const toggleBtn = document.getElementById('btn-toggle-all-hub-albums');
-  const countSpan = document.getElementById('hub-total-albums-count');
+  if (!container) return;
+
   const searchInput = document.getElementById('hub-search-input');
-  
-  // GOLYÓÁLLÓ VÉDELEM: Ha az inputba e-mail cím került az autofill miatt, töröljük
-  let query = (searchInput?.value || '').toLowerCase().trim();
+  let query = (searchInput && searchInput.value) ? searchInput.value.toLowerCase().trim() : '';
   if (query.includes('@')) {
     if (searchInput) searchInput.value = '';
     query = '';
   }
-
-  if (!container) return;
 
   const allFilteredList = Object.values(ALBUMS_REGISTRY).filter(album => {
     if (query) {
@@ -1194,7 +1210,10 @@ function renderHub() {
     return true;
   });
 
+  const countSpan = document.getElementById('hub-total-albums-count');
   if (countSpan) countSpan.textContent = allFilteredList.length;
+
+  const toggleBtn = document.getElementById('btn-toggle-all-hub-albums');
 
   if (allFilteredList.length === 0) {
     container.innerHTML = `
@@ -1456,6 +1475,10 @@ document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
     renderHub();
   });
 });
+
+// -------------------------------------------------------------------------
+// 7. RÁCSOS NÉZET ÉS KÖNYVLAPOZÓ
+// -------------------------------------------------------------------------
 
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
@@ -2028,11 +2051,11 @@ safeAddListener('btn-album-next', () => {
   const chapters = getActiveChapters();
   if (currentChapterIndex < chapters.length - 1) { currentChapterIndex++; renderAlbumChapter(); }
 });
-
 // =========================================================================
-// ROUTER & NAVIGÁCIÓ
+// Cserélj Okosan - app.js (v3.5 - 2. RÉSZ: ROUTER, KERESŐ, GPS & RADAR)
 // =========================================================================
 
+// AUTOMATIKUS LINKFELISMERŐ
 function formatLinksWithAnchors(text) {
   if (!text) return '';
   const escaped = escapeHtml(text);
@@ -2682,6 +2705,10 @@ safeAddListener('matches-list', 'click', (e) => {
   }
 });
 
+// =========================================================================
+// 1. BLOKK: TÉTELKERESŐ (ON/OFF TOGGLE KAPCSOLÓVAL)
+// =========================================================================
+
 safeAddListener('btn-search', () => {
   const raw = document.getElementById('search-input')?.value.trim() || '';
   if (!raw) return showToast("Írj be egy keresőszót!");
@@ -2787,6 +2814,10 @@ safeAddListener('search-results', 'click', (e) => {
   }
 });
 
+// =========================================================================
+// 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (FINOMHANGOLT GPS + LAPOZÁS)
+// =========================================================================
+
 let proximityPageLimit = 25;
 
 function renderProximityPartners() {
@@ -2797,7 +2828,7 @@ function renderProximityPartners() {
   const myId = currentUser ? currentUser.uid : 'me';
 
   let list = allUsersData
-    .filter(u => u.id !== myId)
+    .filter(u => u && u.id !== myId)
     .map(u => {
       const distanceKm = getMinDistanceKm(myCoords, u);
       const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
@@ -2876,6 +2907,10 @@ safeAddListener('proximity-partners-list', 'click', (e) => {
   const btn = e.target.closest('[data-action="inspect-user"]');
   if (btn) openUserProfileModal(btn.dataset.uid);
 });
+
+// =========================================================================
+// BOLTI KÉSZLETRADAR & TALÁLKOZÓK
+// =========================================================================
 
 safeAddListener('radar-photo-input', 'change', (e) => {
   const file = e.target.files[0];
@@ -3192,11 +3227,11 @@ function listenToMeetups() {
       renderMeetups();
     }, err => console.warn("Meetups listener:", err));
 }
-
 // =========================================================================
+// Cserélj Okosan - app.js (v3.5 - 3. RÉSZ: STATISZTIKA, ADMIN & PROFIL MOTOR)
+// =========================================================================
+
 // STATISZTIKA & HŐTÉRKÉP
-// =========================================================================
-
 function renderFavoritesRanking() {
   const favScores = {};
   const totalSize = getActiveAlbumSize();
@@ -3387,6 +3422,7 @@ function renderCompletionOdds() {
   oddsText.innerHTML = `A hiányzóidból <strong>${matchedMissing.length} / ${myMissing.length} db</strong> azonnal beszerezhető a közösségtől!`;
 }
 
+// VÁROSI HŐTÉRKÉP MOTOR
 function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
@@ -5424,16 +5460,27 @@ document.getElementById('modal-image-lightbox')?.addEventListener('click', () =>
   document.getElementById('modal-image-lightbox')?.classList.remove('open');
 });
 
-// TELJES RENDSZER INDÍTÁSA
-try {
-  attachStickerInteraction(document.getElementById('matrica-grid'));
-  attachStickerInteraction(document.getElementById('album-chapter-content'));
-  renderHub();
-  renderGrid();
-  initFavoriteSelects();
-  initFirebase();
-  listenToAlbums();
-  checkDonablyReturningPrompt();
-} catch (err) {
-  console.error("Indítási hiba:", err);
+// -------------------------------------------------------------------------
+// 8. RENDSZERINDÍTÓ BLOKK (DOM READY VÉDELEMMEL)
+// -------------------------------------------------------------------------
+
+function startApp() {
+  try {
+    attachStickerInteraction(document.getElementById('matrica-grid'));
+    attachStickerInteraction(document.getElementById('album-chapter-content'));
+    renderHub();
+    renderGrid();
+    initFavoriteSelects();
+    initFirebase();
+    listenToAlbums();
+    checkDonablyReturningPrompt();
+  } catch (err) {
+    console.error("Indítási hiba:", err);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
 }
