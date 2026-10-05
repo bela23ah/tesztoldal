@@ -362,7 +362,7 @@ function getActiveAlbumSize() {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// KIBŐVÍTETT TELEPÜLÉS KOORDINÁTÁK (MAGYARORSZÁG & AGGLOMERÁCIÓK)
+// KIBŐVÍTETT TELEPÜLÉS KOORDINÁTÁK
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -443,7 +443,6 @@ const CITY_COORDINATES = {
   "mohacs": { lat: 45.9906, lng: 18.6839, x: 50.0, y: 86.0 }
 };
 
-// BOLTI KÉSZLETRADAR ADATBÁZIS
 const STORE_DATABASES = {
   "lidl": [
     "Agárd – Akácfa utca 2.", "Ajka – Hársfa utca 1/A", "Aszód – Pesti út 14-16.",
@@ -551,10 +550,6 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   return Math.round(R * c * 10) / 10;
 }
 
-// =========================================================================
-// INTELLIGENS TELEPÜLÉS- ÉS KERÜLET-NORMALIZÁLÓ MOTOR
-// =========================================================================
-
 const ROMAN_NUMERALS = [
   "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
   "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX",
@@ -605,7 +600,6 @@ function parseBudapestDistricts(text) {
   return [...new Set(districts)].sort((a, b) => a - b);
 }
 
-// MINDEN VEGYES BEJEGYZÉST (pl. "Budapest, Cegléd", "Szeged / Kecskemét") SZIGORÚAN SZÉTVÁG
 function extractNormalizedLocations(locationInput) {
   if (!locationInput) return [];
   const results = [];
@@ -616,11 +610,12 @@ function extractNormalizedLocations(locationInput) {
     locationInput.forEach(loc => {
       if (typeof loc === 'string') {
         loc.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
-      } else if (loc && loc.city) {
-        if (loc.districts && loc.districts.length > 0) {
+      } else if (loc && typeof loc === 'object') {
+        const cityStr = String(loc.city || '');
+        if (Array.isArray(loc.districts) && loc.districts.length > 0) {
           loc.districts.forEach(d => rawList.push(`Budapest ${d}. kerület`));
-        } else {
-          loc.city.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
+        } else if (cityStr) {
+          cityStr.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
         }
       }
     });
@@ -640,7 +635,7 @@ function extractNormalizedLocations(locationInput) {
         districts.forEach(d => {
           results.push({
             canonicalKey: `budapest_${d}`,
-            displayName: `Budapest ${ROMAN_NUMERALS[d]}. kerület`,
+            displayName: `Budapest ${ROMAN_NUMERALS[d] || d}. kerület`,
             cityGroup: "Budapest"
           });
         });
@@ -768,7 +763,7 @@ function expandCustomNamesText(rawText) {
   return rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
 }
 
-// JAVÍTOTT, ÉKEZETBIZTOS KÖNYVLAPOZÓ FEJEZETGENERÁTOR (NEM VÁGJA LE AZ ÉKEZETEKET!)
+// JAVÍTOTT FEJEZETGENERÁTOR (ÉKEZETBIZTOS, NEM VÁGJA LE A NEVEKET)
 function parseChaptersText(rawText, customItems = []) {
   if (!rawText || !rawText.trim()) return [];
   const lines = rawText.split(/[\r\n;]+/).map(l => l.trim()).filter(l => l.length > 0);
@@ -1781,7 +1776,6 @@ function saveMyStateFast() {
     if (currentUser && db) {
       const isLutra = (albumId === 'lidl-lutra-2026');
 
-      // 1. Almappa mentés (v3.5 / 4.0 struktúra)
       db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(albumId).set({
         albumId: albumId,
         van: myProfile.van,
@@ -1793,7 +1787,6 @@ function saveMyStateFast() {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true }).catch(() => {});
 
-      // 2. Fő dokumentum mentés (.set merge: true a NOT_FOUND hibák ellen!)
       const publicPayload = {
         [`collections.${albumId}`]: {
           van: myProfile.van,
@@ -1806,7 +1799,6 @@ function saveMyStateFast() {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      // HA LUTRA: Párhuzamosan ment a régi gyökér mezőkbe is az élő oldal miatt!
       if (isLutra) {
         publicPayload.van = myProfile.van;
         publicPayload.vanCounts = myProfile.vanCounts || {};
@@ -2144,7 +2136,7 @@ function updateCserebereBadge() {
   badge.style.display = (hasUnread || hasMeetup) ? 'inline-block' : 'none';
 }
 
-// GPS ÉS TÁVOLSÁGI HELYZET LEKÉRÉSE (TÖBB TELEPÜLÉS/INGÁZÁS ESETÉN A LEGKÖZELEBBIT ADJA)
+// GPS ÉS TÁVOLSÁGI HELYZET LEKÉRÉSE (TÖBB TELEPÜLÉS ESETÉN A LEGKÖZELEBBIT SZÁMÍTJA)
 function getUserCoordinatesList(userObj) {
   const coordsList = [];
   if (userObj.geo && typeof userObj.geo.lat === 'number') {
@@ -2213,14 +2205,14 @@ function requestGpsLocation(callback) {
 
 safeAddListener('btn-search-gps-locate', () => requestGpsLocation());
 
-// Távolsági gombok kezelése
+// Távolsági szűrő gombok kezelése
 document.querySelectorAll('#search-radius-group .filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const radius = btn.dataset.radius;
     document.querySelectorAll('#search-radius-group .filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedSearchRadius = radius;
-    proximityPageLimit = 25; // Lapozás visszaállítása
+    proximityPageLimit = 25;
 
     if (radius !== 'all' && radius !== 'city' && !myGpsCoords) {
       requestGpsLocation(() => renderProximityPartners());
@@ -2685,7 +2677,6 @@ safeAddListener('btn-search', () => {
   const matchedNums = [];
   const totalSize = getActiveAlbumSize();
 
-  // Ha manuális keresés fut, a hiányzó gomb kikapcsol
   const missingBtn = document.getElementById('btn-search-all-missing');
   if (missingBtn) {
     missingBtn.classList.remove('active');
@@ -2717,13 +2708,11 @@ safeAddListener('btn-search', () => {
   renderSearchResults(matchedNums.sort((a, b) => a - b), `Keresés: „${raw}”`);
 });
 
-// KÉTÁLLÁSÚ (ON/OFF) HIÁNYZÓ KERESŐ GOMB
 safeAddListener('btn-search-all-missing', () => {
   const btn = document.getElementById('btn-search-all-missing');
   const container = document.getElementById('search-results');
   if (!btn || !container) return;
 
-  // Ha már aktív volt ➔ KIKAPCSOLÁS
   if (btn.classList.contains('active')) {
     btn.classList.remove('active');
     btn.textContent = '📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)';
@@ -2731,7 +2720,6 @@ safeAddListener('btn-search-all-missing', () => {
     return;
   }
 
-  // Ha nem volt aktív ➔ BEKAPCSOLÁS
   if (myProfile.kell.length === 0) return showToast("Nincs bejelölt hiányzó tételed.");
   btn.classList.add('active');
   btn.textContent = '✕ Hiányzók listájának elrejtése';
@@ -2816,7 +2804,6 @@ function renderProximityPartners() {
     list = list.filter(u => u.distanceKm !== null && u.distanceKm <= maxDist);
   }
 
-  // Rendezés távolság szerint (legközelebbi legelöl)
   list.sort((a, b) => {
     if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
     if (a.distanceKm !== null) return -1;
@@ -3397,7 +3384,7 @@ function renderCompletionOdds() {
   oddsText.innerHTML = `A hiányzóidból <strong>${matchedMissing.length} / ${myMissing.length} db</strong> azonnal beszerezhető a közösségtől!`;
 }
 
-// VÁROSI HŐTÉRKÉP MOTOR (SZIGORÚAN JAVÍTOTT VÁROSTISZTÍTÁSSAL)
+// VÁROSI HŐTÉRKÉP MOTOR (GOLYÓÁLLÓ KERÜLET- ÉS VÁROSTISZTÍTÁSSAL)
 function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
@@ -3475,7 +3462,6 @@ function renderHeatmap() {
     }
   }
 
-  // JAVÍTVA: hoardingEl deklaráció és használat egyetlen, tiszta helyen
   const hoardingEl = document.getElementById('stats-hoarding-sticker');
   if (hoardingEl) {
     if (maxHoardNum) {
@@ -5069,7 +5055,7 @@ safeAddListener('btn-save-profile', () => {
   }
 
   const concatenatedCity = validLocs.map(l => {
-    if (l.districts && l.districts.length > 0) {
+    if (Array.isArray(l.districts) && l.districts.length > 0) {
       const romanDists = l.districts.sort((a, b) => a - b).map(d => ROMAN_NUMERALS[d] ? `${ROMAN_NUMERALS[d]}.` : `${d}.`).join(', ');
       return `${l.city} (${romanDists} ker.)`;
     }
