@@ -107,13 +107,21 @@
   <option value="Keszthely">
   <option value="Bicske">
   <option value="Balatonfüred">
+  <option value="Nagykőrös">
+  <option value="Lajosmizse">
+  <option value="Dabas">
+  <option value="Albertirsa">
+  <option value="Tiszakécske">
+  <option value="Kiskunmajsa">
+  <option value="Kiskőrös">
+  <option value="Solt">
+  <option value="Soltvadkert">
   <option value="Paks">
   <option value="Tiszaújváros">
   <option value="Veresegyház">
   <option value="Fót">
   <option value="Göd">
   <option value="Pomáz">
-  <option value="Dabas">
 </datalist>
 
 <div class="page">
@@ -423,11 +431,12 @@
           <button class="btn btn-primary" id="btn-search">Keresés</button>
         </div>
         
+        <!-- KÉTÁLLÁSÚ (ON/OFF) GOMB A HIÁNYZÓKHOZ -->
         <button class="btn btn-secondary" id="btn-search-all-missing" style="width:100%; margin-top:4px;">
           📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)
         </button>
 
-        <div id="search-results" style="margin-top:14px;"></div>
+        <div id="search-results" style="margin-top:14px; display:none;"></div>
       </div>
 
       <!-- 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (FÖLDRAJZI KÖZELSÉG SZERINT) -->
@@ -1055,6 +1064,29 @@
   </footer>
 </div>
 
+<!-- VISSZATÉRŐ FELHASZNÁLÓI DONABLY TÁMOGATÓI MODAL -->
+<div id="modal-donably-support" class="modal-overlay" style="z-index: 2600;">
+  <div class="modal-card" style="max-width:440px; text-align:center; border:2px solid var(--amber);">
+    <button class="modal-close" id="btn-close-donably-modal">✕</button>
+    <div style="font-size:2.2rem; margin-bottom:6px;">☕ 🦦</div>
+    <h3 style="margin:0 0 8px; color:var(--amber); font-size:1.25rem;">Segített az oldal a cserékben?</h3>
+    <p style="font-size:0.85rem; color:var(--sand); line-height:1.5; margin:0 0 14px;">
+      A Cserélj Okosan teljesen ingyenes és reklámmentes, a felhős adatbázis, az AI képfelismerés és a domain fenntartása azonban havi költségekkel jár.
+    </p>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 16px;">
+      Ha találtál már cseretársat az oldalon, és megteheted, <strong>egy kávé árával</strong> hatalmas segítséget nyújtasz a szerverek működtetésében!
+    </p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <a href="https://www.donably.com/cserebere" target="_blank" rel="noopener" class="btn btn-donably" id="btn-donably-donate-click" style="width:100%; padding:10px; font-size:0.95rem;">
+        ☕ Támogatom az oldalt a Donably-n
+      </a>
+      <button class="btn btn-secondary btn-sm" id="btn-donably-later" style="font-size:0.78rem;">
+        Talán később / Most nem
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ÚJ GYŰJTEMÉNY JAVASLATA MODAL -->
 <div id="modal-suggest-album" class="modal-overlay">
   <div class="modal-card" style="max-width:480px;">
@@ -1154,9 +1186,7 @@
       Válaszd ki a számodra legkényelmesebb beolvasási módot:
     </p>
 
-    <!-- 3 FUNKCIÓ EGYMÁS ALATT -->
     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-      
       <!-- 1. Fotó készítése azonnal kamerával -->
       <label class="scanner-method-card scanner-card-primary">
         <input type="file" id="scanner-camera-input" accept="image/*" capture="environment" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
@@ -1194,7 +1224,6 @@
           <span class="badge-beta">BÉTA</span>
         </div>
       </button>
-
     </div>
 
     <div id="scanner-loader" style="display:none; text-align:center; padding:12px; font-size:0.88rem; color:var(--amber); font-weight:600;">
