@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0D2E2C">
   
   <!-- PWA & Mobil Támogatás -->
@@ -16,8 +16,8 @@
   <!-- Közösségi Megosztási Meta Tagek -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://csereljokosan.hu/">
-  <meta property="og:title" content="Cserélj Okosan - Matricacsere & Gyűjtői Platform">
-  <meta property="og:description" content="Országos matricacsere, intelligens párosítás, valós idejű bolti készletradar és helyi találkozók a kedvenc albumaidhoz.">
+  <meta property="og:title" content="Cserélj Okosan - Lutra Matricacsere & Gyűjtői Platform">
+  <meta property="og:description" content="Országos matricacsere, intelligens párosítás, 3 fős körcserék, valós idejű bolti készletradar és helyi találkozók.">
   <meta property="og:image" content="https://csereljokosan.hu/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -46,6 +46,76 @@
 </head>
 <body>
 
+<!-- REJTETT CSAPDA-MEZŐK A BÖNGÉSZŐ AGRESSZÍV E-MAIL AUTOFILL-JE ELLEN -->
+<div style="position:absolute; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" aria-hidden="true">
+  <input type="text" name="prevent_autofill_user" tabindex="-1" autocomplete="off">
+  <input type="password" name="prevent_autofill_pass" tabindex="-1" autocomplete="off">
+</div>
+
+<!-- MAGYAR TELEPÜLÉSNÉVTÁR DATALIST (KÖTÖTT VÁLASZTÁS & AUTOCOMPLETE) -->
+<datalist id="hungarian-cities-list">
+  <option value="Budapest">
+  <option value="Debrecen">
+  <option value="Szeged">
+  <option value="Miskolc">
+  <option value="Pécs">
+  <option value="Győr">
+  <option value="Nyíregyháza">
+  <option value="Kecskemét">
+  <option value="Székesfehérvár">
+  <option value="Szombathely">
+  <option value="Szolnok">
+  <option value="Tatabánya">
+  <option value="Kaposvár">
+  <option value="Érd">
+  <option value="Veszprém">
+  <option value="Békéscsaba">
+  <option value="Zalaegerszeg">
+  <option value="Sopron">
+  <option value="Eger">
+  <option value="Nagykanizsa">
+  <option value="Dunaújváros">
+  <option value="Hódmezővásárhely">
+  <option value="Dunakeszi">
+  <option value="Cegléd">
+  <option value="Baja">
+  <option value="Salgótarján">
+  <option value="Ózd">
+  <option value="Vác">
+  <option value="Szigetszentmiklós">
+  <option value="Szekszárd">
+  <option value="Gödöllő">
+  <option value="Mosonmagyaróvár">
+  <option value="Pápa">
+  <option value="Gyula">
+  <option value="Hajdúböszörmény">
+  <option value="Kiskunfélegyháza">
+  <option value="Budaörs">
+  <option value="Esztergom">
+  <option value="Ajka">
+  <option value="Orosháza">
+  <option value="Szentes">
+  <option value="Kiskunhalas">
+  <option value="Kazincbarcika">
+  <option value="Jászberény">
+  <option value="Siófok">
+  <option value="Szentendre">
+  <option value="Mohács">
+  <option value="Gyöngyös">
+  <option value="Hatvan">
+  <option value="Oroszlány">
+  <option value="Keszthely">
+  <option value="Bicske">
+  <option value="Balatonfüred">
+  <option value="Paks">
+  <option value="Tiszaújváros">
+  <option value="Veresegyház">
+  <option value="Fót">
+  <option value="Göd">
+  <option value="Pomáz">
+  <option value="Dabas">
+</datalist>
+
 <div class="page">
   <!-- FELSŐ ÉRTESÍTÉSI SÁV -->
   <div id="top-notification-banner" class="announcement-banner" style="display:none;">
@@ -72,10 +142,10 @@
     </div>
   </header>
 
-  <!-- 1. HIERARCHIA ELEM: AKTÍV GYŰJTEMÉNY SÁV (Kezdőlapon rejtve, album megnyitásakor jelenik meg) -->
+  <!-- 1. HIERARCHIA ELEM: AKTÍV GYŰJTEMÉNY SÁV -->
   <div id="active-album-bar" class="active-album-banner" style="display:none;">
     <div style="display:flex; align-items:center; gap:12px;">
-      <img id="active-album-thumb" src="og-image.png" style="width:46px; height:46px; border-radius:6px; object-fit:cover; border:1px solid var(--amber);" alt="Borító">
+      <img id="active-album-thumb" src="og-image.png" style="width:46px; height:46px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító">
       <div>
         <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Aktív Gyűjtemény</span>
         <strong id="active-album-title" style="color:#FFF; font-size:1rem;">Lutra Album 2026</strong>
@@ -94,7 +164,7 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- 2. HIERARCHIA ELEM: GYŰJTEMÉNY MENÜ (Csak album megnyitásakor látszik) -->
+  <!-- 2. HIERARCHIA ELEM: GYŰJTEMÉNY MENÜ -->
   <nav class="primary-nav" id="main-primary-nav" style="display:none;">
     <div class="nav-dropdown-item">
       <button class="primary-tab active" data-cat="matricaim">
@@ -103,7 +173,7 @@
       <div class="dropdown-menu">
         <button class="dropdown-link active" data-view="matricaim">Tételek / Rács</button>
         <button class="dropdown-link" data-view="cserek">Párosítások</button>
-        <button class="dropdown-link" data-view="kereso">Kereső</button>
+        <button class="dropdown-link" data-view="kereso">Kereső & Távolság</button>
       </div>
     </div>
 
@@ -145,7 +215,7 @@
     <div class="sub-nav" id="subnav-matricaim">
       <button class="sub-tab active" data-view="matricaim">Tételek / Rács</button>
       <button class="sub-tab" data-view="cserek">Párosítások</button>
-      <button class="sub-tab" data-view="kereso">Kereső</button>
+      <button class="sub-tab" data-view="kereso">Kereső & Távolság</button>
     </div>
     <div class="sub-nav" id="subnav-cserebere" style="display:none;">
       <button class="sub-tab active" data-view="uzeneteim">
@@ -163,14 +233,14 @@
   </div>
 
   <main>
-    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB: 6 KÁRTYA + LENYITÓ + BEKÜLDÉS) -->
+    <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB) -->
     <section id="view-hub" class="view active">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
-        <h2>Gyűjtemények</h2>
+        <h2>Elérhető Gyűjtemények</h2>
       </div>
       <p class="view-intro">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
-      <div class="filter-group" style="margin-bottom: 16px;">
+      <div class="filter-group" style="margin-bottom: 12px;">
         <button class="filter-btn active" data-hub-filter="all">Kiemeltek</button>
         <button class="filter-btn" data-hub-filter="sticker">Matricaalbumok</button>
         <button class="filter-btn" data-hub-filter="card">Kártyák</button>
@@ -179,13 +249,23 @@
         <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
       </div>
 
-      <!-- Gyűjteménykártyák Rácsa (Alapból 6 legfontosabb) -->
+      <!-- Gyorskereső az albumokhoz (GOLYÓÁLLÓ AUTOFILL VÉDELEMMEL) -->
+      <div style="margin-bottom:16px;">
+        <input type="search" id="hub-search-input" class="input-field" 
+               placeholder="🔍 Keresés gyűjtemény címe, kiadója vagy éve szerint..." 
+               autocomplete="new-password" 
+               readonly 
+               onfocus="this.removeAttribute('readonly');" 
+               name="hub_search_no_fill">
+      </div>
+
+      <!-- Gyűjteménykártyák Rácsa -->
       <div id="hub-albums-grid" class="hub-grid"></div>
 
       <!-- Lenyitó gomb az összes gyűjteményhez -->
       <div style="text-align:center; margin:16px 0 20px;">
         <button class="btn btn-secondary" id="btn-toggle-all-hub-albums" style="font-size:0.85rem; padding:8px 18px;">
-          Összes gyűjtemény listázása (<span id="hub-total-albums-count">19</span> db) ▼
+          Összes gyűjtemény listázása (<span id="hub-total-albums-count">21</span> db) ▼
         </button>
       </div>
 
@@ -193,7 +273,7 @@
       <div class="card" style="border: 1.5px dashed var(--amber); background: rgba(13,46,44,0.45); text-align: center; padding: 18px 14px;">
         <h3 style="margin:0 0 6px; font-size:1.1rem; color:var(--sand);">Nem találod a saját albumodat a listában?</h3>
         <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
-          Küldd be az album vagy kártyasorozat nevét, és felvesszük a rendszerbe, hogy elkezdhesd a cserét!
+          Küldd be az album vagy kártyasorozat nevét, és felvesszük a rendszerbe!
         </p>
         <button class="btn btn-primary btn-sm" id="btn-open-suggest-album" style="font-size:0.85rem; padding:8px 16px;">
           + Új gyűjtemény javaslata / beküldése
@@ -201,13 +281,13 @@
       </div>
     </section>
 
-    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET (FIGURÁKNÁL KINDERTOJÁS ALAKKAL) -->
+    <!-- 1. MATRICÁIM: GYŰJTEMÉNY NÉZET -->
     <section id="view-matricaim" class="view">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2>Gyűjteményem</h2>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button class="btn btn-scanner-highlight" id="btn-open-scanner" style="font-size:0.8rem; padding:6px 14px;">
-            📷 Fotó beolvasása
+          <button class="btn btn-scanner-highlight btn-scanner-pulse" id="btn-open-scanner" style="font-size:0.85rem; padding:7px 16px;">
+            📷 Fotós / AR Számszkenner
           </button>
           <button class="btn btn-secondary" id="btn-toggle-batch" style="font-size:0.75rem; padding:5px 10px;">
             Tömeges bevitel
@@ -216,7 +296,7 @@
             Lenullázás
           </button>
           <button class="btn btn-fb" id="btn-copy-fb-post" style="font-size:0.75rem; padding:5px 12px;">
-            Csereposzt másolása Facebookra
+            Csereposzt Facebookra
           </button>
         </div>
       </div>
@@ -238,18 +318,19 @@
         </div>
       </div>
 
+      <!-- TÖMEGES BEVITEL (INTERVALLUMOKKAL: 1-12, 1-5*2) -->
       <div id="batch-input-box" class="batch-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <label style="font-size:0.85rem; font-weight:700; color:var(--amber); margin:0;">
-            Tömeges számbemásolás
+            Tömeges számbemásolás (Intervallumok is: pl. <code>1-12</code> vagy <code>1-5*2</code>)
           </label>
           <button id="btn-close-batch-box" style="background:none; border:none; color:var(--sand); font-size:1rem; cursor:pointer; padding:0 4px;">✕</button>
         </div>
         <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
-          Másold be a számokat (pl. <code>12, 12, 12, 45, 88</code> vagy <code>12*3, 45*2, 88</code>):
+          Másold be a számokat vagy tartományokat (pl. <code>1-12, 45*2, 88</code> vagy <code>1-5*2, 20-25</code>):
         </p>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
-          <input type="text" id="batch-input-text" class="input-field" placeholder="12*3, 45*2, 88">
+          <input type="search" id="batch-input-text" class="input-field" placeholder="1-12, 45*2, 88" autocomplete="chrome-off" autocorrect="off" autocapitalize="off" spellcheck="false" name="batch_input_q_secure">
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn btn-primary" id="btn-apply-batch-van" style="flex:1;">Mentés Duplákhoz (Van)</button>
@@ -326,21 +407,55 @@
       </div>
     </section>
 
-    <!-- 3. MATRICÁIM: KERESŐ NÉZET -->
+    <!-- 3. MATRICÁIM: KERESŐ & TÁVOLSÁGI MODUL (KETTÉBONTVA: TÉTELKERESŐ + KÖZELI PARTNEREK) -->
     <section id="view-kereso" class="view">
-      <h2>Tételkereső</h2>
-      <p class="view-intro">Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>12, 45</code>) vagy névre is.</p>
+      <h2>Tételkereső & Közeli Cserepartnerek</h2>
+      <p class="view-intro">Kereshetsz konkrét matricára vagy megtalálhatod a hozzád legközelebb élő gyűjtőtársakat.</p>
       
-      <div class="search-box">
-        <input type="text" id="search-input" class="input-field" placeholder="Pl. 42 vagy 30-38 vagy tigris">
-        <button class="btn btn-primary" id="btn-search">Keresés</button>
-      </div>
-      
-      <button class="btn btn-secondary" id="btn-search-all-missing" style="width:100%; margin-bottom:16px;">
-        Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)
-      </button>
+      <!-- 1. BLOKK: TÉTEL- ÉS MATRICAKERESŐ -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="margin-top:0; font-size:1.05rem; color:var(--amber);">🔍 1. Tételkeresés az albumban</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+          Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>1-12</code>) vagy névrészletre (pl. <code>tigris</code>):
+        </p>
+        <div class="search-box">
+          <input type="search" id="search-input" class="input-field" placeholder="Pl. 42 vagy 30-38 vagy 1-12 vagy tigris" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="item_search_q_secure">
+          <button class="btn btn-primary" id="btn-search">Keresés</button>
+        </div>
+        
+        <button class="btn btn-secondary" id="btn-search-all-missing" style="width:100%; margin-top:4px;">
+          📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)
+        </button>
 
-      <div id="search-results"></div>
+        <div id="search-results" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (FÖLDRAJZI KÖZELSÉG SZERINT) -->
+      <div class="card" style="border-left:4px solid var(--amber);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+          <h3 style="margin:0; font-size:1.05rem; color:var(--sand);">📍 2. Közeli cserepartnerek keresése (Távolság szerint)</h3>
+          <button class="btn btn-secondary btn-sm" id="btn-search-gps-locate" style="font-size:0.75rem; padding:4px 10px;">
+            📍 Saját helyzet bemérése (GPS)
+          </button>
+        </div>
+
+        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+          Keresd meg a fizikailag legközelebb lévő aktív gyűjtőtársakat légvonalbeli távolság alapján:
+        </p>
+
+        <div id="search-gps-status" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; display:none;"></div>
+
+        <div class="filter-group" id="search-radius-group" style="margin-bottom:12px;">
+          <button class="filter-btn active" data-radius="all">Országos (Mind)</button>
+          <button class="filter-btn" data-radius="5">5 km-en belül</button>
+          <button class="filter-btn" data-radius="10">10 km-en belül</button>
+          <button class="filter-btn" data-radius="25">25 km-en belül</button>
+          <button class="filter-btn" data-radius="50">50 km-en belül</button>
+          <button class="filter-btn" data-radius="city">Saját város</button>
+        </div>
+
+        <div id="proximity-partners-list"></div>
+      </div>
     </section>
 
     <!-- 4. BOLTI KÉSZLETRADAR NÉZET -->
@@ -356,7 +471,7 @@
         
         <div class="form-group">
           <label>Válaszd ki vagy írd be az üzletet:</label>
-          <input type="text" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot...">
+          <input type="search" id="radar-input-store" class="input-field" list="lidl-all-stores" placeholder="Kezdd el gépelni a várost vagy boltot..." autocomplete="off" autocorrect="off" spellcheck="false" name="radar_store_q_secure">
           <datalist id="lidl-all-stores"></datalist>
         </div>
 
@@ -378,7 +493,12 @@
         </div>
 
         <div class="form-group">
-          <label>Fotó a polcról/készletről (Opcionális):</label>
+          <label style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <span>Fotó a polcról/készletről (Opcionális):</span>
+            <span id="radar-photo-recommended-tag" style="color:var(--amber); font-weight:700; font-size:0.75rem;">
+              📸 Kapható tételnél ajánlott fotót csatolni!
+            </span>
+          </label>
           <input type="file" id="radar-photo-input" accept="image/*" class="input-field" style="padding:4px;">
           <div id="radar-photo-preview-box" style="display:none; margin-top:6px;">
             <img id="radar-photo-preview" style="max-height:90px; border-radius:6px; border:1px solid var(--amber);" alt="Fotó előnézet">
@@ -395,7 +515,7 @@
       </div>
 
       <div style="margin-bottom:12px;">
-        <input type="text" id="radar-filter-input" class="input-field" placeholder="Szűrés város vagy bolt szerint...">
+        <input type="search" id="radar-filter-input" class="input-field" placeholder="Szűrés város vagy bolt szerint..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="radar_filter_q_secure">
       </div>
 
       <div id="radar-reports-list">Készletjelentések betöltése...</div>
@@ -413,7 +533,7 @@
         <h3 style="margin-top:0; font-size:1.05rem;">Új cserealkalom meghirdetése</h3>
         <div class="form-group">
           <label>Település / Város:</label>
-          <input type="text" id="meetup-input-city" class="input-field" placeholder="Pl. Kecskemét vagy Budapest XI.">
+          <input type="text" id="meetup-input-city" class="input-field" list="hungarian-cities-list" placeholder="Pl. Kecskemét vagy Budapest">
         </div>
         <div class="form-group">
           <label>Időpont (mikor találkoztok?):</label>
@@ -425,7 +545,7 @@
         </div>
         <div class="form-group">
           <label>Részletek / Leírás / Facebook link:</label>
-          <textarea id="meetup-input-desc" class="input-field" rows="2" placeholder="Pl. Hozzátok a duplákat, sokan leszünk! Csatlakozz a FB eseményhez..."></textarea>
+          <textarea id="meetup-input-desc" class="input-field" rows="2" placeholder="Pl. Hozzátok a duplákat, sokan leszünk! Csatlakozz a FB eseményhez: https://..."></textarea>
         </div>
         <div class="form-group">
           <label>Plakát / Fotó (Opcionális):</label>
@@ -448,11 +568,17 @@
         <h2>Üzeneteim</h2>
         <button class="btn btn-secondary" id="btn-refresh-inbox" style="padding:4px 10px; font-size:0.75rem;">🔄 Frissítés</button>
       </div>
-      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat. A beszélgetés teljesen zárt és privát.</p>
+      <p class="view-intro">Itt láthatod a beérkező és elküldött csereajánlataidat gyűjtemények szerint.</p>
 
-      <div class="filter-group" style="margin-bottom: 14px;">
+      <div class="filter-group" style="margin-bottom: 10px;">
         <button class="filter-btn active" id="btn-msg-tab-inbox">Beérkező üzenetek</button>
         <button class="filter-btn" id="btn-msg-tab-sent">Elküldött üzenetek</button>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <select id="msg-album-filter-select" class="input-field" style="padding: 6px 10px; font-size: 0.85rem; font-weight: 600;">
+          <option value="all">📦 Minden gyűjtemény üzenetei</option>
+        </select>
       </div>
 
       <div id="messages-inbox-list">Bejelentkezés szükséges az üzenetek megtekintéséhez.</div>
@@ -466,11 +592,10 @@
       </div>
       <p class="view-intro" style="margin-bottom:10px;">Valós idejű közösségi adatok, méretkalkulációk és cserepiaci aktivitás.</p>
 
-      <!-- GYORSUGRÓ NAVIGÁCIÓS SÁV -->
       <div class="stats-quicknav-wrapper">
         <div class="quicknav-arrow-left" id="stats-quicknav-arrow-left" style="opacity:0;">◀</div>
         <div class="stats-quicknav" id="stats-quicknav-bar">
-          <button class="btn-stat-jump" data-target="stat-sec-pool">Kínálat</button>
+          <button class="btn-stat-jump" data-target="stat-sec-pool">Kínálat & Tagok</button>
           <button class="btn-stat-jump" data-target="stat-sec-favs" id="btn-jump-favs">Kedvencek</button>
           <button class="btn-stat-jump" data-target="stat-sec-fun">Méretek</button>
           <button class="btn-stat-jump" data-target="stat-sec-odds">Esélyek</button>
@@ -482,7 +607,6 @@
         <div class="quicknav-arrow" id="stats-quicknav-arrow">▶</div>
       </div>
 
-      <!-- 1. KÖZÖSSÉGI DUPLA KÍNÁLAT -->
       <div class="card stat-section-anchor" id="stat-sec-pool" style="text-align:center; padding:18px;">
         <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
           Közösségi Dupla Kínálat (<span id="stats-active-album-name">Aktív Gyűjtemény</span>)
@@ -494,14 +618,14 @@
           felesleges dupla tétel vár gazdára és cserére a közösségben!
         </p>
 
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px; border-top:1px solid rgba(243,238,223,0.1); padding-top:10px; font-size:0.8rem; color:var(--text-muted);">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px; border-top:1px solid rgba(243,238,223,0.1); padding-top:10px; font-size:0.8rem; color:var(--text-muted);">
+          <div>Regisztrált gyűjtők: <strong id="stats-users-count" style="color:var(--text-primary); display:block; font-size:1rem;">0 fő</strong></div>
           <div>Átlagos duplikátum: <strong id="stats-avg-dupes" style="color:var(--text-primary); display:block; font-size:1rem;">0 db/fő</strong></div>
-          <div>Átlagos albumtelítettség: <strong id="stats-avg-progress" style="color:var(--text-primary); display:block; font-size:1rem;">0%</strong></div>
+          <div>Átlagos telítettség: <strong id="stats-avg-progress" style="color:var(--text-primary); display:block; font-size:1rem;">0%</strong></div>
           <div>Leginkább halmozódó: <strong id="stats-hoarding-sticker" style="color:var(--amber); display:block; font-size:0.95rem;">Számítás...</strong></div>
         </div>
       </div>
 
-      <!-- 2. KÖZÖNSÉGKEDVENCEK (TOP 5) -->
       <div class="card stat-section-anchor" id="stat-sec-favs" style="border-left:4px solid var(--amber);">
         <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--amber);" id="stats-favorites-title">A Közösség Kedvenc Tételei (Top 5)</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
@@ -510,7 +634,6 @@
         <div id="stats-favorites-ranking" class="stats-ranking-list">Szavazatok számítása...</div>
       </div>
 
-      <!-- 3. MÉRETKALKULÁTOR -->
       <div class="card stat-section-anchor" id="stat-sec-fun" style="border-left:4px solid var(--amber);">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--amber);">Ha egymás mellé tennénk az összes tételt...</h3>
         <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:12px;">
@@ -529,7 +652,6 @@
         </div>
       </div>
 
-      <!-- 4. BEFEJEZÉSI ESÉLYKALKULÁTOR -->
       <div class="card stat-section-anchor" id="stat-sec-odds">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <h3 style="margin:0; font-size:1rem; color:var(--amber);">Befejezési Esélykalkulátor</h3>
@@ -543,7 +665,6 @@
         </p>
       </div>
 
-      <!-- 5. VÁROSI HŐTÉRKÉP -->
       <div class="card stat-section-anchor" id="stat-sec-map">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--amber);">Városi Hőtérkép: Hol izzik a csere?</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
@@ -569,7 +690,6 @@
         </button>
       </div>
 
-      <!-- 6. ALBUM-TELÍTETTSÉG -->
       <div class="card stat-section-anchor" id="stat-sec-dist">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">Hol tart az ország? (Közösségi telítettség)</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">A regisztrált gyűjtők haladása a gyűjtemény összegyűjtésében:</p>
@@ -584,7 +704,6 @@
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px;" id="dist-segments-grid"></div>
       </div>
 
-      <!-- 7. FEJEZETI NEHÉZSÉG -->
       <div class="card stat-section-anchor" id="stat-sec-diff">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--sand);">Fejezeti Nehézségi Index</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
@@ -595,7 +714,6 @@
         </div>
       </div>
 
-      <!-- 8. RITKASÁGOK -->
       <div class="card stat-section-anchor" id="stat-sec-rare">
         <h3 style="margin:0 0 4px; font-size:1.05rem; color:var(--amber);">Top 5 legkeresettebb tétel (Legritkábbak)</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Ezeket keresik a legtöbben az országban:</p>
@@ -604,10 +722,6 @@
         <h3 style="margin:14px 0 4px; font-size:1.05rem; color:var(--sand);">Top 5 leggyakoribb tétel</h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">Ezekből áll a legtöbb felesleges duplikátum:</p>
         <div id="stats-common-list" class="stats-ranking-list">Adatok számítása...</div>
-
-        <div style="margin-top:14px; border-top:1px solid rgba(243,238,223,0.1); padding-top:10px; font-size:0.85rem; color:var(--text-muted); text-align:center;">
-          Regisztrált cserepartnerek száma: <strong id="stats-users-count" style="color:var(--text-primary);">0</strong> fő
-        </div>
       </div>
     </section>
 
@@ -616,38 +730,61 @@
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <!-- FELSŐ DOBOZ: Gyűjteményi Privát Jegyzet -->
       <div class="card" style="margin-bottom:16px;">
         <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
           <span>Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="note-char-count">0/200</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="note-char-count">0/250</span>
         </h3>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 8px;">
           Ezt a jegyzetet <strong>kizárólag te látod</strong> ehhez a gyűjteményhez.
         </p>
-        <textarea id="prof-private-note" class="input-field" rows="3" maxlength="200" placeholder="Pl. #12 félretéve Marcinak; Postázás szerdán..."></textarea>
+        <textarea id="prof-private-note" class="input-field" rows="3" maxlength="250" placeholder="Pl. #12 félretéve Marcinak; Postázás szerdán..."></textarea>
         <div style="margin-top:8px; display:flex; justify-content:flex-end;">
           <button class="btn btn-secondary btn-sm" id="btn-save-note">Jegyzet mentése</button>
         </div>
       </div>
 
-      <!-- ALSÓ DOBOZ: Általános Profil Adatok -->
       <div class="card">
         <div class="form-group">
           <label for="prof-nev">Megjelenő név <strong style="color:var(--amber);">* (Kötelező)</strong></label>
           <input type="text" id="prof-nev" class="input-field" maxlength="25" placeholder="Pl. VidraPanni" required>
         </div>
-        <div class="form-group">
-          <label for="prof-telepules">Település <strong style="color:var(--amber);">* (Kötelező a helyi cserékhez)</strong></label>
-          <input type="text" id="prof-telepules" class="input-field" placeholder="Pl. Kecskemét" required>
+
+        <!-- DINAMIKUS TÖBB TELEPÜLÉS / INGÁZÁS KEZELŐ -->
+        <div class="form-group" style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-weight:700; color:var(--amber); margin:0;">
+              📍 Cserehelyszíneid & Települések (Ingázás támogatása) <strong style="color:var(--amber);">*</strong>
+            </label>
+            <button class="btn btn-secondary btn-sm" id="btn-geo-detect-profile" type="button" style="font-size:0.72rem; padding:3px 8px;">
+              📍 Helyzetem (GPS)
+            </button>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 10px;">
+            Válassz a listából vagy írd be szabadon a településedet (max. 5 helyszín, pl. lakóhely, munkahely, egyetem):
+          </p>
+
+          <div id="profile-locations-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+
+          <button class="btn btn-secondary btn-sm" id="btn-add-location" type="button" style="width:100%; font-size:0.8rem; padding:6px;">
+            + Másik település / Ingázási helyszín hozzáadása
+          </button>
+
+          <!-- BUDAPEST 23 KERÜLET VÁLASZTÓ CHIPEK -->
+          <div id="bp-districts-picker" style="display:none; margin-top:12px; padding-top:10px; border-top:1px dashed rgba(216,155,74,0.4);">
+            <label style="font-size:0.8rem; color:var(--sand); font-weight:700; display:block; margin-bottom:4px;">
+              Budapest érintett kerületei (Koppints rájuk a kijelöléshez):
+            </label>
+            <div id="bp-district-chips" style="display:flex; flex-wrap:wrap; gap:4px; max-height:140px; overflow-y:auto; padding:4px; background:rgba(0,0,0,0.3); border-radius:6px;"></div>
+          </div>
         </div>
+
         <div class="form-group">
           <label for="prof-email">Értesítési e-mail cím <strong style="color:var(--amber);">* (Kötelező)</strong></label>
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- TOP 3 KEDVENC TÉTEL -->
-        <div style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
+        <div id="prof-favorites-container" style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
           <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);" id="prof-favorites-title">Top 3 Kedvenc Tételed <strong style="color:var(--amber);">* (Kötelező)</strong></h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
             Jelöld meg a 3 legkedvesebb tételedet! Ezzel szavazol a Közönségkedvencre:
@@ -712,10 +849,21 @@
       </div>
     </section>
 
-    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET (SZERKESZTÉS + BEKÜLDÉSI VÁRÓLISTA) -->
+    <!-- 9. PROFIL & ADATOK: ADMINISZTRÁCIÓS NÉZET -->
     <section id="view-admin" class="view">
       <h2>Adminisztrátori Vezérlőpult</h2>
       <p class="view-intro">Gyűjtemények létrehozása, szerkesztése, közösségi javaslatok jóváhagyása és rendszerüzenetek kezelése.</p>
+
+      <!-- ADATBÁZIS KARBANTARTÁS: VISSZAMENŐLEGES TISZTÍTÁS -->
+      <div class="card" style="border-left: 4px solid var(--moss-soft); margin-bottom: 16px;">
+        <h3 style="margin-top:0; color:var(--moss-soft); font-size:1.1rem;">🧹 Adatbázis Karbantartás: Települések Visszamenőleges Tisztítása</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
+          Végigmegy az összes eddigi felhasználó profilján a Firestore-ban, és a régi, elgépelt vagy „Bp 11”, „Cegléd/Budapest” formátumú településeket automatikusan átkonvertálja tiszta 3. fázisú formátumra (Budapest kerületchipek + hivatalos városnevek).
+        </p>
+        <button class="btn btn-primary" id="btn-admin-migrate-locations" style="font-size:0.85rem; padding:8px 16px;">
+          Minden felhasználó településének tisztítása és migrálása most
+        </button>
+      </div>
 
       <!-- KÖZÖSSÉGI GYŰJTEMÉNY JAVASLATOK VÁRÓLISTÁJA -->
       <div class="card" id="admin-suggestions-card" style="border-left: 4px solid var(--gift-gold); margin-bottom: 16px;">
@@ -735,7 +883,7 @@
           </button>
         </div>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;" id="admin-album-form-desc">
-          Itt adhatsz hozzá új gyűjteményeket vagy módosíthatod a meglévőket. A mentés után azonnal megjelenik az összes látogatónál.
+          Itt adhatsz hozzá új gyűjteményeket vagy módosíthatod a meglévőket.
         </p>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
@@ -778,18 +926,23 @@
           <label>Borítókép / Indexkép feltöltése (Képfájl a gépről):</label>
           <input type="file" id="admin-album-cover-input" accept="image/*" class="input-field" style="padding:4px;">
           <div id="admin-album-cover-preview-box" style="display:none; margin-top:8px;">
-            <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; border:1px solid var(--amber);" alt="Borító előnézet">
+            <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító előnézet">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Egyedi tételkódok / tartományok (pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
-          <textarea id="admin-album-custom-items" class="input-field" rows="3" placeholder="pl. MEX 1-19, HUN 1-20, ENG 1-18, LE 1-5&#10;(Ha üresen hagyod, sima 1-től N-ig számozást kap)"></textarea>
+          <label>1. Egyedi tételkódok / jelölések (a csempékre kerül, pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
+          <textarea id="admin-album-custom-items" class="input-field" rows="2" placeholder="pl. MEX 1-19, HUN 1-20, LE 1-5&#10;(Ha üres, sima 1-től N-ig számozást kap)"></textarea>
         </div>
 
         <div class="form-group">
-          <label>Könyvlapozó oldalbeosztás (opcionális, ha be van kapcsolva a könyv nézet):</label>
-          <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;1. oldal — Mexikó: 1-19&#10;2. oldal — Magyarország: 20-39&#10;3. oldal — Döntősök (Panoráma): 40-41 [combo]"></textarea>
+          <label>2. Sorszámozott tételnevek (NEM kerül a csempére, csak lebegő infó és kedvencek, pl. <code>1: Garfield 1, 2: Garfield 2</code>):</label>
+          <textarea id="admin-album-custom-names" class="input-field" rows="3" placeholder="Példák (új sorban vagy egymás után):&#10;1: Garfield csoportkép   2: Garfield és Ubul   3: Ubul alszik..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Könyvlapozó oldalbeosztás (Matricaalbumokhoz, pl. <code>Bevezető: 1 – 4</code> vagy <code>Az Óceán: 5 – 28</code>):</label>
+          <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;Bevezető: 1 – 4&#10;Az Óceán: 5 – 28&#10;Döntősök: 29 – 30 [combo]"></textarea>
         </div>
 
         <div class="form-group" style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
@@ -803,6 +956,11 @@
           <label class="checkbox-label">
             <input type="checkbox" id="admin-album-is-retro">
             🕹️ Retro gyűjtemény (Kiemelt Retro jelvény a kártyán)
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="admin-album-has-favorites" checked>
+            Top 3 Kedvenc tétel szavazás engedélyezése ennél az albumnál (Profilban & Statisztikában)
           </label>
 
           <div style="margin: 8px 0;">
@@ -819,7 +977,7 @@
 
           <label class="checkbox-label" style="margin-top:6px;">
             <input type="checkbox" id="admin-album-has-chapters">
-            Könyv lapozó nézet engedélyezése (fejezetekkel)
+            Könyv lapozó nézet engedélyezése (Csak matricaalbumokhoz)
           </label>
         </div>
 
@@ -828,13 +986,13 @@
         </button>
       </div>
 
-      <!-- LÉTEZŐ GYŰJTEMÉNYEK KEZELÉSE & SZERKESZTÉSE LISTA -->
+      <!-- LÉTEZŐ GYŰJTEMÉNYEK LISTÁJA -->
       <div class="card" style="margin-bottom: 16px;">
         <h3 style="margin-top:0; font-size:1.1rem;">Rendszerben lévő gyűjtemények kezelése & Szerkesztése</h3>
         <div id="admin-albums-list">Gyűjtemények betöltése...</div>
       </div>
 
-      <!-- RENDSZERÜZENET KÜLDŐ -->
+      <!-- RENDSZERÜZENETEK -->
       <div class="card">
         <h3 style="margin-top:0;">Új rendszerüzenet kiküldése</h3>
         <div class="form-group">
@@ -886,7 +1044,6 @@
     </section>
   </main>
 
-  <!-- DONABLY SZEKCIÓ -->
   <footer class="support-footer">
     <p style="margin:0 0 6px; font-weight:700; font-size:1.05rem;">Tetszik az oldal és segített a cserében?</p>
     <p style="margin:0 0 14px; font-size:0.85rem; color:var(--sand);">
@@ -898,7 +1055,7 @@
   </footer>
 </div>
 
-<!-- ÚJ GYŰJTEMÉNY JAVASLATA (FELHASZNÁLÓI BEKÜLDŐ MODAL) -->
+<!-- ÚJ GYŰJTEMÉNY JAVASLATA MODAL -->
 <div id="modal-suggest-album" class="modal-overlay">
   <div class="modal-card" style="max-width:480px;">
     <button class="modal-close" id="btn-close-suggest-album">✕</button>
@@ -988,27 +1145,56 @@
   </div>
 </div>
 
-<!-- FOTÓBEOLVASÓ MODAL -->
+<!-- FOTÓBEOLVASÓ ÉS ÉLŐ AR SZKENNER MODAL (3-AS VERTIKÁLIS ELRENDEZÉSSEL) -->
 <div id="modal-scanner" class="modal-overlay">
-  <div class="modal-card" style="max-width:540px;">
+  <div class="modal-card" style="max-width:520px;">
     <button class="modal-close" id="btn-close-scanner">✕</button>
-    <h3 style="margin-top:0;">Fotós beolvasás</h3>
-    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
-      Fotózd le a listádat vagy a tételeket. Válaszd ki a kívánt beviteli módot:
+    <h3 style="margin-top:0; color:var(--amber);">📷 Fotós / AR Számszkenner</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 14px;">
+      Válaszd ki a számodra legkényelmesebb beolvasási módot:
     </p>
 
-    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
-      <label style="border:1.5px dashed var(--amber); border-radius:var(--radius-sm); padding:16px; text-align:center; position:relative; background:rgba(13,46,44,0.4); cursor:pointer; display:block;">
+    <!-- 3 FUNKCIÓ EGYMÁS ALATT -->
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+      
+      <!-- 1. Fotó készítése azonnal kamerával -->
+      <label class="scanner-method-card scanner-card-primary">
         <input type="file" id="scanner-camera-input" accept="image/*" capture="environment" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
-        <div style="font-size:1.6rem; margin-bottom:4px;">📷</div>
-        <strong>Fotó készítése azonnal kamerával</strong>
+        <div class="scanner-card-inner">
+          <span style="font-size:1.8rem;">📷</span>
+          <div>
+            <strong style="display:block; color:#FFF; font-size:0.95rem;">Fotó készítése azonnal kamerával</strong>
+            <span style="font-size:0.75rem; color:var(--sand);">Készíts fotót a matricák hátoldaláról vagy számlistádról</span>
+          </div>
+        </div>
       </label>
 
-      <label style="border:1px solid rgba(243,238,223,0.25); border-radius:var(--radius-sm); padding:12px; text-align:center; position:relative; background:rgba(0,0,0,0.2); cursor:pointer; display:block;">
+      <!-- 2. Kép kiválasztása a galériából -->
+      <label class="scanner-method-card scanner-card-secondary">
         <input type="file" id="scanner-file-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
-        <div style="font-size:1.3rem;">🖼️</div>
-        <strong>Kép kiválasztása a galériából</strong>
+        <div class="scanner-card-inner">
+          <span style="font-size:1.8rem;">🖼️</span>
+          <div>
+            <strong style="display:block; color:#FFF; font-size:0.95rem;">Kép kiválasztása a galériából</strong>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Már meglévő fotó vagy képernyőkép beolvasása</span>
+          </div>
+        </div>
       </label>
+
+      <!-- 3. AR szkenner (kiterjesztett valóság scan - béta) -->
+      <button type="button" id="btn-trigger-ar-viewfinder" class="scanner-method-card scanner-card-ar">
+        <div class="scanner-card-inner" style="width:100%; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:1.8rem;">✨</span>
+            <div style="text-align:left;">
+              <strong style="display:block; color:var(--amber); font-size:0.95rem;">AR szkenner (kiterjesztett valóság scan)</strong>
+              <span style="font-size:0.75rem; color:var(--sand);">Élő kereső, azonnali keret-HUD és rezgés</span>
+            </div>
+          </div>
+          <span class="badge-beta">BÉTA</span>
+        </div>
+      </button>
+
     </div>
 
     <div id="scanner-loader" style="display:none; text-align:center; padding:12px; font-size:0.88rem; color:var(--amber); font-weight:600;">
@@ -1023,7 +1209,7 @@
       <div id="scanner-tags-box" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; max-height:130px; overflow-y:auto; padding:8px; background:rgba(0,0,0,0.25); border-radius:var(--radius-sm);"></div>
 
       <div style="display:flex; gap:8px; margin-bottom:16px;">
-        <input type="number" id="scanner-manual-num" class="input-field" placeholder="Kimaradt tétel száma" min="1" max="1000">
+        <input type="number" id="scanner-manual-num" class="input-field" placeholder="Kimaradt tétel száma" min="1" max="2000">
         <button class="btn btn-secondary" id="btn-scanner-add-manual" style="width:auto; padding:8px 14px; white-space:nowrap;">+ Hozzáadás</button>
       </div>
 

@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 Teljes)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v3.5 - Teljes & Tisztított)
    ========================================================================= */
 
 :root {
@@ -88,7 +88,7 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* AKTÍV ALBUM SÁV (FEJLÉC ALATT) */
+/* AKTÍV ALBUM SÁV */
 .active-album-banner {
   background: rgba(20, 69, 63, 0.85);
   border: 1.5px solid var(--amber);
@@ -227,7 +227,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .matrica-cell.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; font-weight: 700; }
 .matrica-cell.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; font-weight: 700; }
 
-/* 🥚 KINDERTOJÁS / FIGURA KÜLÖNLEGES CSEMPÉK */
+/* KINDERTOJÁS / FIGURA KÜLÖNLEGES CSEMPÉK */
 .matrica-grid-figures {
   grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)) !important;
   gap: 8px !important;
@@ -273,6 +273,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .page-progress { font-size: 0.8rem; color: var(--amber); font-weight: 600; }
 .slots-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
 
+/* Slot formák */
 .slot {
   border: 2px dashed var(--slot-border); border-radius: 8px; background: rgba(13, 46, 44, 0.45);
   padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
@@ -280,6 +281,8 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .slot.orient-allo { width: 98px; height: 132px; }
 .slot.orient-fekvo { width: 132px; height: 98px; }
+.slot.orient-negyzet { width: 110px; height: 110px; }
+
 .slot .sticker-num { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-muted); }
 .slot .sticker-name { font-size: 0.72rem; font-weight: 500; margin: 2px 0; line-height: 1.15; max-height: 2.4em; overflow: hidden; }
 .slot .sticker-tag { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: rgba(0,0,0,0.25); }
@@ -316,8 +319,20 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .message-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .message-card.incoming { border-left: 4px solid var(--amber); }
 .message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.9; }
-.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; }
+.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; gap: 6px; }
 .message-body { background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; }
+
+.message-album-badge {
+  background: var(--amber) !important;
+  color: var(--water-deep) !important;
+  font-weight: 800 !important;
+  font-size: 0.75rem !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
 
 .radar-card, .meetup-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .badge-radar-van { background: var(--amber); color: var(--water-deep); font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
@@ -325,7 +340,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .radar-attached-img { max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid rgba(243,238,223,0.2); margin-top: 8px; display: block; object-fit: cover; cursor: pointer; }
 .meetup-time-badge { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 
-/* HUB KÁRTYÁK & FŐOLDAL (NAGYOBB KÉPEKKEL & RETRO JELVÉNNYEL) */
+/* HUB KÁRTYÁK & FŐOLDAL */
 .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .album-hub-card {
   background: var(--surface-card); border: 1px solid rgba(243, 238, 223, 0.12);
@@ -338,16 +353,21 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: linear-gradient(180deg, rgba(216, 155, 74, 0.15) 0%, rgba(20, 69, 63, 0.8) 100%);
 }
 
-/* Nagyobb, szebb borítóképek */
+/* Teljesen látható borítókép törtfehér háttérrel */
 .hub-card-thumb {
-  width: 100%; height: 175px; object-fit: cover; border-radius: var(--radius-sm);
-  margin-bottom: 10px; border: 1px solid rgba(243, 238, 223, 0.15); background: #081B1A;
+  width: 100%;
+  height: 185px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  border: 1px solid rgba(243, 238, 223, 0.25);
+  background: #F3EEDF;
+  padding: 4px;
 }
 
 .album-hub-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .album-type-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: rgba(216, 155, 74, 0.2); color: var(--amber); }
 
-/* 🕹️ Retro jelvény stílus */
 .album-type-badge.badge-retro {
   background: rgba(139, 94, 60, 0.45);
   color: var(--fur-brown-soft);
@@ -357,7 +377,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .album-hub-progress-track { background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
 .album-hub-progress-bar { background: var(--amber); height: 100%; border-radius: 999px; transition: width 0.4s ease; }
 
-/* 📥 KÖZÖSSÉGI VÁRÓLISTA KÁRTYÁK AZ ADMINBAN */
 .suggestion-item {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 209, 102, 0.3);
@@ -369,6 +388,36 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* PROFIL TELEPÜLÉS SOROK & BUDAPEST CHIPEK */
+.location-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.bp-chip {
+  background: var(--water-mid);
+  border: 1px solid rgba(243, 238, 223, 0.2);
+  color: var(--sand);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+.bp-chip:hover {
+  border-color: var(--amber);
+  color: #FFF;
+}
+.bp-chip.active {
+  background: var(--amber);
+  color: var(--water-deep);
+  border-color: var(--amber);
+  font-weight: 800;
 }
 
 /* LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
@@ -444,7 +493,21 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .btn-blue { background: var(--reserved-blue); color: #FFFFFF; }
 .btn-danger { background: var(--danger); color: #FFFFFF; }
 .btn-fb { background: #1877F2; color: #FFFFFF; }
-.btn-scanner-highlight { background: var(--amber); color: var(--water-deep); font-weight: 700; }
+
+/* ✨ KIEMELT PULZÁLÓ SZÁMSZKENNER GOMB */
+.btn-scanner-pulse {
+  background: linear-gradient(135deg, #FFD166 0%, #D89B4A 100%) !important;
+  color: #081B1A !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 14px rgba(216, 155, 74, 0.6) !important;
+  border: 1.5px solid #FFFFFF !important;
+  animation: pulseScanner 2.2s infinite;
+}
+@keyframes pulseScanner {
+  0% { transform: scale(1); box-shadow: 0 0 6px rgba(216, 155, 74, 0.4); }
+  50% { transform: scale(1.04); box-shadow: 0 0 16px rgba(255, 209, 102, 0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 6px rgba(216, 155, 74, 0.4); }
+}
 
 .search-box { display: flex; gap: 8px; margin-bottom: 12px; }
 .input-field {
@@ -463,6 +526,56 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; cursor: pointer; transition: background 0.2s ease;
 }
 .stats-ranking-item:hover { background: rgba(216, 155, 74, 0.15); }
+
+/* BEOLVASÓ MODAL 3-AS KÁRTYA STÍLUSAI */
+.scanner-method-card {
+  position: relative;
+  display: block;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(243, 238, 223, 0.2);
+  background: var(--water-mid);
+}
+.scanner-method-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+.scanner-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scanner-card-primary {
+  background: linear-gradient(135deg, rgba(216,155,74,0.25) 0%, rgba(20,69,63,0.85) 100%);
+  border: 1.5px solid var(--amber);
+}
+
+.scanner-card-secondary {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(243,238,223,0.2);
+}
+
+.scanner-card-ar {
+  background: linear-gradient(135deg, rgba(13,46,44,0.9) 0%, rgba(20,69,63,0.95) 100%);
+  border: 1.5px dashed var(--amber);
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.badge-beta {
+  background: var(--amber);
+  color: var(--water-deep);
+  font-weight: 800;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
 
 /* POPOVER ÉS MODALOK */
 .qty-popover {
