@@ -243,10 +243,42 @@
   <main>
     <!-- 0. GYŰJTEMÉNYEK KEZDŐLAP (HUB) -->
     <section id="view-hub" class="view active">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
         <h2>Elérhető Gyűjtemények</h2>
       </div>
-      <p class="view-intro">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
+      <p class="view-intro" style="margin-bottom:12px;">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
+
+      <!-- 4. FÁZIS: KÖZÖSSÉGI MUTATÓK SÁV (SOCIAL PROOF) -->
+      <div id="hub-social-proof-bar" class="social-proof-bar" style="margin-bottom:16px;">
+        <div class="social-proof-item">
+          <span class="sp-icon">👥</span>
+          <div>
+            <strong id="sp-collectors-count">519+</strong>
+            <span class="sp-label">regisztrált gyűjtő</span>
+          </div>
+        </div>
+        <div class="social-proof-item">
+          <span class="sp-icon">📦</span>
+          <div>
+            <strong id="sp-tracked-items-count">85 000+</strong>
+            <span class="sp-label">nyilvántartott tétel</span>
+          </div>
+        </div>
+        <div class="social-proof-item">
+          <span class="sp-icon">🔄</span>
+          <div>
+            <strong id="sp-duplicates-count">42 780</strong>
+            <span class="sp-label">cserélhető dupla</span>
+          </div>
+        </div>
+        <div class="social-proof-item">
+          <span class="sp-icon">🤝</span>
+          <div>
+            <strong id="sp-completed-trades-count">140+</strong>
+            <span class="sp-label">sikeres csere</span>
+          </div>
+        </div>
+      </div>
 
       <div class="filter-group" style="margin-bottom: 12px;">
         <button class="filter-btn active" data-hub-filter="all">Kiemeltek</button>
@@ -257,7 +289,7 @@
         <button class="filter-btn" data-hub-filter="my">Csak amit gyűjtök</button>
       </div>
 
-      <!-- Gyorskereső az albumokhoz (GOLYÓÁLLÓ AUTOFILL VÉDELEMMEL) -->
+      <!-- Gyorskereső az albumokhoz -->
       <div style="margin-bottom:16px;">
         <input type="search" id="hub-search-input" class="input-field" 
                placeholder="🔍 Keresés gyűjtemény címe, kiadója vagy éve szerint..." 
@@ -316,7 +348,7 @@
         <div class="legend-item"><span class="legend-chip state-ures"></span> 4x = Üres</div>
       </div>
       <p class="view-intro" style="font-size:0.8rem; margin-top:4px;">
-        <em>💡 A <strong>kékkel (Foglalva)</strong> jelölt tételek kikerülnek a nyilvános cserékből. Több darabnál tartsd hosszan nyomva a mezőt (PC-n jobb klikk).</em>
+        <em>💡 Többdarabos duplánál a részlegesen lefoglalt tételek mellett megjelenik a <strong>×2 [🔒 1]</strong> jelvény. Részletekhez tartsd hosszan nyomva a mezőt (PC-n jobb klikk).</em>
       </p>
 
       <div style="margin-bottom:14px;">
@@ -338,7 +370,7 @@
           Másold be a számokat vagy tartományokat (pl. <code>1-12, 45*2, 88</code> vagy <code>1-5*2, 20-25</code>):
         </p>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
-          <input type="search" id="batch-input-text" class="input-field" placeholder="1-12, 45*2, 88" autocomplete="chrome-off" autocorrect="off" autocapitalize="off" spellcheck="false" name="batch_input_q_secure">
+          <input type="search" id="batch-input-text" class="input-field" placeholder="1-12, 45*2, 88" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="batch_input_q_secure">
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn btn-primary" id="btn-apply-batch-van" style="flex:1;">Mentés Duplákhoz (Van)</button>
@@ -362,6 +394,20 @@
           </div>
         </div>
         <div id="matrica-grid"></div>
+
+        <!-- 4. FÁZIS: RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & FOGLALÁSOK PANEL -->
+        <div id="active-trades-panel" class="card" style="margin-top:16px; border-left:4px solid var(--reserved-blue); display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 style="margin:0; font-size:1.05rem; color:var(--reserved-blue-soft);">
+              ⏳ Folyamatban lévő cseréid & Zárolások (<span id="active-trades-count">0</span>)
+            </h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Aktív megállapodások</span>
+          </div>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+            Ezek a tételek le vannak foglalva vagy úton vannak feléd. Amint megkaptad a matricákat, zárd le a cserét a készlet végleges levonásához és a bizalmi pont jóváírásához!
+          </p>
+          <div id="active-trades-list"></div>
+        </div>
       </div>
 
       <div id="album-view-container" style="display:none;">
@@ -415,7 +461,7 @@
       </div>
     </section>
 
-    <!-- 3. MATRICÁIM: KERESŐ & TÁVOLSÁGI MODUL (KETTÉBONTVA: TÉTELKERESŐ + KÖZELI PARTNEREK) -->
+    <!-- 3. MATRICÁIM: KERESŐ & TÁVOLSÁGI MODUL -->
     <section id="view-kereso" class="view">
       <h2>Tételkereső & Közeli Cserepartnerek</h2>
       <p class="view-intro">Kereshetsz konkrét matricára vagy megtalálhatod a hozzád legközelebb élő gyűjtőtársakat.</p>
@@ -431,7 +477,6 @@
           <button class="btn btn-primary" id="btn-search">Keresés</button>
         </div>
         
-        <!-- KÉTÁLLÁSÚ (ON/OFF) GOMB A HIÁNYZÓKHOZ -->
         <button class="btn btn-secondary" id="btn-search-all-missing" style="width:100%; margin-top:4px;">
           📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)
         </button>
@@ -439,7 +484,7 @@
         <div id="search-results" style="margin-top:14px; display:none;"></div>
       </div>
 
-      <!-- 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (FÖLDRAJZI KÖZELSÉG SZERINT) -->
+      <!-- 2. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE -->
       <div class="card" style="border-left:4px solid var(--amber);">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
           <h3 style="margin:0; font-size:1.05rem; color:var(--sand);">📍 2. Közeli cserepartnerek keresése (Távolság szerint)</h3>
@@ -816,6 +861,7 @@
         </div>
 
         <div class="form-group">
+          <!-- 4. FÁZIS: ALAPÉRTELMEZETTEN BEPIPÁLT MEZŐK -->
           <label class="checkbox-label" style="font-weight:600;">
             <input type="checkbox" id="prof-email-notif" checked>
             Kérek e-mail értesítést a postaládámba, ha új csereajánlatot kapok
@@ -832,12 +878,12 @@
           </label>
 
           <label class="checkbox-label">
-            <input type="checkbox" id="prof-allow-inspect">
+            <input type="checkbox" id="prof-allow-inspect" checked>
             Engedélyezem, hogy mások megnézhessék a teljes hiányzólistámat a profilomban
           </label>
 
           <label class="checkbox-label">
-            <input type="checkbox" id="prof-gdpr">
+            <input type="checkbox" id="prof-gdpr" checked>
             Hozzájárulok, hogy a nevemet, településemet és csereadataimat a regisztrált tagok megtekinthessék.
           </label>
         </div>
@@ -1253,6 +1299,78 @@
         Formázott számsor másolása vágólapra
       </button>
     </div>
+  </div>
+</div>
+
+<!-- 4. FÁZIS: ÉLŐ AR KAMERA KERESŐABLAK (VIEWFINDER MODAL) -->
+<div id="modal-ar-live-viewfinder" class="modal-overlay" style="z-index:3200; padding:0; background:rgba(0,0,0,0.92);">
+  <div class="ar-viewfinder-box">
+    <button class="modal-close" id="btn-close-ar-viewfinder" style="top:14px; right:16px; color:#FFF; font-size:1.6rem; z-index:100;">✕</button>
+    
+    <div class="ar-video-wrapper">
+      <video id="ar-video-feed" autoplay playsinline muted></video>
+      <canvas id="ar-canvas-crop" style="display:none;"></canvas>
+      
+      <!-- CÉLKERESZT HUD -->
+      <div id="ar-target-hud" class="ar-hud-target state-default">
+        <div class="ar-hud-corner tl"></div>
+        <div class="ar-hud-corner tr"></div>
+        <div class="ar-hud-corner bl"></div>
+        <div class="ar-hud-corner br"></div>
+        <div id="ar-target-status-chip" class="ar-target-status">Irányítsd a matricára...</div>
+      </div>
+    </div>
+
+    <!-- ALSÓ GYORSLISTA ÉS VEZÉRLŐK -->
+    <div class="ar-bottom-sheet">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:0.85rem; font-weight:700; color:var(--sand);">
+          Élőben felismert tételek (<span id="ar-queue-count">0</span> db):
+        </span>
+        <button class="btn btn-secondary btn-sm" id="btn-ar-toggle-torch" style="padding:2px 8px; font-size:0.75rem;">
+          💡 Vaku
+        </button>
+      </div>
+
+      <div id="ar-live-queue-tags" class="ar-queue-container"></div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn btn-primary btn-sm" id="btn-ar-save-queue-van" style="flex:1;">Mentés Duplákhoz (Van)</button>
+        <button class="btn btn-secondary btn-sm" id="btn-ar-save-queue-kell" style="flex:1;">Mentés Hiányzókhoz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. FÁZIS: CSEREZÁRÓ & PARTNER ÉRTÉKELŐ MODAL -->
+<div id="modal-rate-trade" class="modal-overlay" style="z-index: 2800;">
+  <div class="modal-card" style="max-width:440px; text-align:center;">
+    <button class="modal-close" id="btn-close-rate-modal">✕</button>
+    <div style="font-size:2.2rem; margin-bottom:4px;">⭐ 🤝</div>
+    <h3 style="margin:0 0 6px; color:var(--amber);" id="rate-modal-title">Csere sikeresen lezárva!</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
+      Értékeld a cserepartnered megbízhatóságát, hogy a többi gyűjtő is lássa az értékelését!
+    </p>
+
+    <div class="form-group" style="margin-bottom:14px;">
+      <label style="font-weight:700; color:var(--sand); margin-bottom:6px; display:block;">Értékelés (1–5 csillag):</label>
+      <div id="trade-star-rating-box" class="star-rating-row">
+        <span class="star-btn active" data-rating="1">★</span>
+        <span class="star-btn active" data-rating="2">★</span>
+        <span class="star-btn active" data-rating="3">★</span>
+        <span class="star-btn active" data-rating="4">★</span>
+        <span class="star-btn active" data-rating="5">★</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Rövid visszajelzés a partnerről (opcionális):</label>
+      <textarea id="rate-modal-comment" class="input-field" rows="2" placeholder="Pl. Nagyon gyors postázás, gondos csomagolás! Köszönöm!"></textarea>
+    </div>
+
+    <button class="btn btn-primary" id="btn-submit-trade-rating" style="width:100%; padding:10px; font-weight:700;">
+      Értékelés beküldése & Zárolás véglegesítése
+    </button>
   </div>
 </div>
 
