@@ -362,7 +362,7 @@ function getActiveAlbumSize() {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// KIBŐVÍTETT KOORDINÁTA-TÁR (KECSKEMÉT KÖRNYÉKE ÉS AGGLOMERÁCIÓK)
+// KIBŐVÍTETT KOORDINÁTA-TÁR
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -1483,7 +1483,7 @@ document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   });
 });
 
-// 4. FÁZIS: RÁCS RAJZOLÁSA TÖBBDARABOS FOGLALÁSI JELVÉNNYEL (×2 [🔒 1])
+// KLASSZIKUS, TISZTA, 0 MS-OS RÁCS
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
@@ -1508,30 +1508,21 @@ function renderGrid() {
     let cls = isVan ? 'van' : isKell ? 'kell' : isFoglalva ? 'foglalva' : '';
     if (isFigure) cls += ' cell-figure';
 
-    // 4. FÁZIS: Többdarabos duplák és lefoglalt tételek kombinált kiszámítása
-    const totalCopies = (isVan && myProfile.vanCounts && myProfile.vanCounts[i]) ? myProfile.vanCounts[i] : (isVan ? 1 : 0);
-    const reservedCopies = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) ? myProfile.foglalvaCounts[i] : (isFoglalva ? 1 : 0);
-    const freeCopies = Math.max(0, totalCopies - reservedCopies);
-
-    let qtyBadgeHtml = '';
-
-    if (isVan && reservedCopies > 0 && freeCopies > 0) {
-      // Részlegesen lefoglalt dupla: szabad darab + zárolt darab
-      qtyBadgeHtml = `<span class="qty-badge multi-reserved" title="${freeCopies} db szabad a piacon, ${reservedCopies} db lefoglalva">×${freeCopies} [🔒${reservedCopies}]</span>`;
-    } else if (isVan && totalCopies > 1) {
-      // Teljesen szabad többszörös dupla
-      qtyBadgeHtml = `<span class="qty-badge">×${totalCopies}</span>`;
-    } else if (isFoglalva && reservedCopies > 1) {
-      // Több darab teljesen zárolva
-      qtyBadgeHtml = `<span class="qty-badge foglalva">🔒${reservedCopies}</span>`;
+    let qty = 1;
+    let badgeCls = 'qty-badge';
+    if (isVan && myProfile.vanCounts && myProfile.vanCounts[i]) qty = myProfile.vanCounts[i];
+    if (isFoglalva && myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) {
+      qty = myProfile.foglalvaCounts[i];
+      badgeCls = 'qty-badge foglalva';
     }
 
+    const qtyBadge = ((isVan || isFoglalva) && qty > 1) ? `<span class="${badgeCls}">×${qty}</span>` : '';
     const itemLabel = getItemLabel(i, currentAlbumId);
     const itemFull = getItemFullName(i, currentAlbumId);
 
     html += `<div class="matrica-cell ${cls}" data-num="${i}" title="${escapeHtml(itemFull)}">
       ${escapeHtml(itemLabel)}
-      ${qtyBadgeHtml}
+      ${qtyBadge}
     </div>`;
   }
   grid.innerHTML = html;
@@ -1708,7 +1699,6 @@ function toggleStickerState(num) {
   saveMyStateFast();
 }
 
-// 4. FÁZIS: POPOVER BONTÁS (SZABAD PÉLDÁNYOK ÉS LEFOGLALT DARABOK)
 function showQtyPopover(num, targetEl) {
   if (!popover || !targetEl) return;
   activePopoverNum = num;
@@ -2701,7 +2691,7 @@ safeAddListener('trade-plan-partners-breakdown', 'click', (e) => {
   const targetUser = allUsersData.find(u => u.id === uid);
   if (!targetUser) return;
 
-  const giveText = btn.dataset.give || 'egyeztetés alatt';
+  const giveText = btn.dataset.give || '';
   const getText = btn.dataset.get || '';
 
   document.getElementById('modal-trade-planner')?.classList.remove('open');
@@ -2737,6 +2727,255 @@ safeAddListener('matches-list', 'click', (e) => {
       openLoopContactModal(loop.userC, loop.userB.nev, loop.giveCtoMe.map(n => getItemLabel(n)).join(', '), 'C');
     }
   }
+});
+
+// =========================================================================
+// 4. FÁZIS: RUGALMAS KIIKSZELŐS CSEREAJÁNLAT-SZERKESZTŐ & KAPCSOLATFELVÉTEL
+// =========================================================================
+
+let activeContactGiveNums = [];
+let activeContactGetNums = [];
+let excludedGiveNums = new Set();
+let excludedGetNums = new Set();
+
+function setupContactModal(targetUser, subject, rawGiveNums = [], rawGetNums = [], isGift = false) {
+  activeContactTarget = {
+    uid: targetUser.id || targetUser.uid || '',
+    nev: targetUser.nev || 'Gyűjtőpartner',
+    telepules: targetUser.telepules || '',
+    email: targetUser.email || '',
+    showEmail: targetUser.showEmailToUsers === true,
+    isGift: isGift,
+    subject: subject
+  };
+
+  activeContactGiveNums = ensureArray(rawGiveNums);
+  activeContactGetNums = ensureArray(rawGetNums);
+  excludedGiveNums.clear();
+  excludedGetNums.clear();
+
+  const titleEl = document.getElementById('contact-modal-title');
+  if (titleEl) titleEl.textContent = `Üzenet küldése: ${escapeHtml(activeContactTarget.nev)}`;
+
+  const directEmailBox = document.getElementById('contact-direct-email-box');
+  const partnerEmailSpan = document.getElementById('contact-partner-email');
+  const emailLink = document.getElementById('contact-email-link');
+
+  if (activeContactTarget.showEmail && activeContactTarget.email && directEmailBox) {
+    directEmailBox.style.display = 'block';
+    if (partnerEmailSpan) partnerEmailSpan.textContent = activeContactTarget.email;
+    if (emailLink) emailLink.href = `mailto:${activeContactTarget.email}?subject=${encodeURIComponent(subject)}`;
+  } else if (directEmailBox) {
+    directEmailBox.style.display = 'none';
+  }
+
+  renderContactChips();
+  updateContactModalText();
+  document.getElementById('modal-contact')?.classList.add('open');
+}
+
+function renderContactChips() {
+  const giveBox = document.getElementById('contact-give-chips');
+  const getBox = document.getElementById('contact-get-chips');
+  const giveWrapper = document.getElementById('contact-give-chips-wrapper');
+  const getWrapper = document.getElementById('contact-get-chips-wrapper');
+
+  if (giveWrapper) giveWrapper.style.display = activeContactGiveNums.length > 0 ? 'block' : 'none';
+  if (getWrapper) getWrapper.style.display = activeContactGetNums.length > 0 ? 'block' : 'none';
+
+  if (giveBox) {
+    giveBox.innerHTML = activeContactGiveNums.map(n => {
+      const isExcluded = excludedGiveNums.has(n);
+      return `
+        <span class="contact-item-chip ${isExcluded ? 'excluded' : ''}" data-action="toggle-give-chip" data-num="${n}">
+          ${escapeHtml(getItemLabel(n, currentAlbumId))}
+          <span class="chip-del">✕</span>
+        </span>
+      `;
+    }).join('');
+  }
+
+  if (getBox) {
+    getBox.innerHTML = activeContactGetNums.map(n => {
+      const isExcluded = excludedGetNums.has(n);
+      return `
+        <span class="contact-item-chip ${isExcluded ? 'excluded' : ''}" data-action="toggle-get-chip" data-num="${n}" style="border-color:var(--moss-soft);">
+          ${escapeHtml(getItemLabel(n, currentAlbumId))}
+          <span class="chip-del">✕</span>
+        </span>
+      `;
+    }).join('');
+  }
+}
+
+safeAddListener('contact-chips-editor-section', 'click', (e) => {
+  const chip = e.target.closest('[data-action]');
+  if (!chip) return;
+  const num = parseInt(chip.dataset.num, 10);
+  if (isNaN(num)) return;
+
+  if (chip.dataset.action === 'toggle-give-chip') {
+    if (excludedGiveNums.has(num)) excludedGiveNums.delete(num);
+    else excludedGiveNums.add(num);
+  } else if (chip.dataset.action === 'toggle-get-chip') {
+    if (excludedGetNums.has(num)) excludedGetNums.delete(num);
+    else excludedGetNums.add(num);
+  }
+
+  renderContactChips();
+  updateContactModalText();
+});
+
+function updateContactModalText() {
+  const inputEl = document.getElementById('contact-msg-input');
+  if (!inputEl) return;
+
+  const activeAlbum = getActiveAlbum();
+  const effectiveGive = activeContactGiveNums.filter(n => !excludedGiveNums.has(n)).map(n => getItemLabel(n, currentAlbumId)).join(', ');
+  const effectiveGet = activeContactGetNums.filter(n => !excludedGetNums.has(n)).map(n => getItemLabel(n, currentAlbumId)).join(', ');
+
+  let msg = '';
+  if (activeContactTarget.isGift && !effectiveGive) {
+    msg = `Szia ${activeContactTarget.nev}!\n\nA Cserélj Okosan oldalon láttam a felajánlásodat, hogy a dupláidat szívesen odaadod ajándékba a(z) ${activeAlbum.title} gyűjteményből.\nSzeretném elkérni az alábbi tételt/tételeket:\n${effectiveGet || 'egyeztetés alatt'}\n\nHogyan tudnánk lebonyolítani az átadást/postázást?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})`;
+  } else {
+    msg = `Szia ${activeContactTarget.nev}!\n\nA Cserélj Okosan platformon találtam meg a gyűjteményedet a(z) ${activeAlbum.title} albumban:\n\nÉn tudom adni neked: ${effectiveGive || '(egyeztetés alatt)'}\nTe tudod adni nekem: ${effectiveGet || '(egyeztetés alatt)'}\n\nMegfelelne a csere postán vagy személyesen?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})`;
+  }
+
+  inputEl.value = msg;
+}
+
+function openContactModal(targetUser, giveStr, getStr, isGift) {
+  if (!checkSenderProfileReady()) return;
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} csere megkeresés`;
+
+  const giveNums = ensureArray(giveStr);
+  const getNums = ensureArray(getStr);
+
+  setupContactModal(targetUser, subject, giveNums, getNums, isGift);
+}
+
+function openLoopContactModal(targetUser, thirdPersonName, stickersText, role) {
+  if (!checkSenderProfileReady()) return;
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} 3 fős körcsere egyeztetés`;
+  const giveNums = ensureArray(stickersText);
+  setupContactModal(targetUser, subject, giveNums, [], false);
+}
+
+function openDirectContactModal(targetUser, numsStr, isGift) {
+  if (!checkSenderProfileReady()) return;
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} tétel érdeklődés`;
+  const getNums = ensureArray(numsStr);
+  setupContactModal(targetUser, subject, [], getNums, isGift);
+}
+
+// BELSŐ ÜZENET KÜLDÉSE & AUTOMATIKUS CSERE-RÖGZÍTÉS A RÁCS ALATT
+safeAddListener('btn-send-message', () => {
+  const messageText = document.getElementById('contact-msg-input')?.value.trim() || '';
+  if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
+
+  const loader = document.getElementById('contact-send-loader');
+  const sendBtn = document.getElementById('btn-send-message');
+  const autoCreateTrade = document.getElementById('contact-auto-create-trade')?.checked !== false;
+
+  if (loader) loader.style.display = 'block';
+  if (sendBtn) sendBtn.disabled = true;
+
+  const effectiveGiveNums = activeContactGiveNums.filter(n => !excludedGiveNums.has(n));
+  const effectiveGetNums = activeContactGetNums.filter(n => !excludedGetNums.has(n));
+
+  (async () => {
+    try {
+      if (db && currentUser) {
+        await db.collection("messages").add({
+          fromUid: currentUser.uid,
+          fromName: myProfile.nev,
+          fromCity: myProfile.telepules || '',
+          toUid: activeContactTarget.uid,
+          toName: activeContactTarget.nev,
+          albumId: currentAlbumId,
+          subject: activeContactTarget.subject,
+          message: messageText,
+          text: messageText,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      // 4. FÁZIS: Csere rögzítése a rács alá & Duplák lefoglalása
+      if (autoCreateTrade && (effectiveGiveNums.length > 0 || effectiveGetNums.length > 0)) {
+        if (!myProfile.activeTrades) myProfile.activeTrades = [];
+        
+        myProfile.activeTrades.unshift({
+          partnerUid: activeContactTarget.uid,
+          partnerName: activeContactTarget.nev,
+          partnerCity: activeContactTarget.telepules || 'Partner',
+          albumId: currentAlbumId,
+          givingItems: effectiveGiveNums,
+          receivingItems: effectiveGetNums,
+          createdAt: Date.now(),
+          status: 'pending'
+        });
+
+        // Odaígért tételek lefoglalása
+        effectiveGiveNums.forEach(n => {
+          if (!myProfile.foglalva.includes(n)) myProfile.foglalva.push(n);
+          if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
+          myProfile.foglalvaCounts[n] = (myProfile.foglalvaCounts[n] || 0) + 1;
+        });
+
+        saveMyState();
+        renderActiveTradesPanel();
+        renderGrid();
+      }
+
+      try {
+        const idToken = currentUser ? await currentUser.getIdToken() : '';
+        await fetch(WORKER_ENDPOINT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            toEmail: activeContactTarget.email || '',
+            toUid: activeContactTarget.uid,
+            toName: activeContactTarget.nev,
+            fromUid: currentUser ? currentUser.uid : '',
+            fromName: myProfile.nev,
+            senderCity: myProfile.telepules || '',
+            subject: activeContactTarget.subject,
+            message: messageText
+          })
+        });
+      } catch (e) {
+        console.warn("Értesítési e-mail figyelmeztetés:", e);
+      }
+
+      showToast("Üzeneted elküldve! A csere rögzítve lett a rácsod alatt.");
+      document.getElementById('modal-contact')?.classList.remove('open');
+    } catch (err) {
+      showToast("Küldési hiba: " + err.message);
+    } finally {
+      if (loader) loader.style.display = 'none';
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  })();
+});
+
+safeAddListener('btn-close-contact', () => document.getElementById('modal-contact')?.classList.remove('open'));
+safeAddListener('btn-copy-msg', () => {
+  const val = document.getElementById('contact-msg-input')?.value || '';
+  navigator.clipboard.writeText(val);
+  showToast("Üzenet kimásolva a vágólapra!");
+});
+
+safeAddListener('btn-copy-partner-email', () => {
+  const email = document.getElementById('contact-partner-email')?.textContent || '';
+  if (!email) return showToast("Nincs másolható e-mail cím.");
+  navigator.clipboard.writeText(email);
+  showToast("Partner e-mail címe kimásolva.");
 });
 
 // =========================================================================
@@ -2799,15 +3038,14 @@ safeAddListener('active-trades-list', 'click', (e) => {
   if (!trade) return;
 
   if (btn.dataset.action === 'complete-trade') {
-    // 4. FÁZIS: Cserezáró & Értékelő Modal megnyitása
     activeTradeClosingData = { trade, tradeIdx: idx };
     const titleEl = document.getElementById('rate-modal-title');
     if (titleEl) titleEl.textContent = `Csere lezárása: ${trade.partnerName}`;
     document.getElementById('modal-rate-trade')?.classList.add('open');
   } else if (btn.dataset.action === 'cancel-trade') {
-    if (!confirm("Biztosan visszaállítod az eredeti állapotot és feloldod a lefoglalt tételeket?")) return;
+    if (!confirm("Biztosan feloldod a lefoglalt tételeket és visszavonod a cserét?")) return;
     
-    // Zárolt duplák visszahelyezése a szabad készletbe
+    // Zárolt duplák feloldása
     if (trade.givingItems) {
       trade.givingItems.forEach(n => {
         if (myProfile.foglalvaCounts && myProfile.foglalvaCounts[n]) {
@@ -2824,6 +3062,7 @@ safeAddListener('active-trades-list', 'click', (e) => {
     myProfile.activeTrades.splice(idx, 1);
     saveMyState();
     renderActiveTradesPanel();
+    renderGrid();
     showToast("Csere megállapodás visszavonva, a tételek újra szabadok a piacon.");
   }
 });
@@ -2846,14 +3085,12 @@ safeAddListener('btn-close-rate-modal', () => document.getElementById('modal-rat
 safeAddListener('btn-submit-trade-rating', async () => {
   if (!activeTradeClosingData) return;
   const { trade, tradeIdx } = activeTradeClosingData;
-  const comment = document.getElementById('rate-modal-comment')?.value.trim() || '';
 
-  // 1. Kapott tételek hozzáadása a meglévőkhöz (gyűjteményi százalék növelése)
+  // 1. Kapott tételek hozzáadása a meglévőkhöz
   if (trade.receivingItems) {
     trade.receivingItems.forEach(n => {
       const kIdx = myProfile.kell.indexOf(n);
       if (kIdx > -1) myProfile.kell.splice(kIdx, 1);
-      // Áttétel meglévőkbe (ha még nincs bent)
       if (!myProfile.van.includes(n)) {
         myProfile.van.push(n);
         myProfile.vanCounts[n] = 1;
@@ -2861,7 +3098,7 @@ safeAddListener('btn-submit-trade-rating', async () => {
     });
   }
 
-  // 2. Lefoglalt tételek végleges levonása
+  // 2. Lefoglalt tételek levonása
   if (trade.givingItems) {
     trade.givingItems.forEach(n => {
       if (myProfile.vanCounts && myProfile.vanCounts[n]) {
@@ -2883,7 +3120,6 @@ safeAddListener('btn-submit-trade-rating', async () => {
     });
   }
 
-  // 3. Csere törlése az aktív listából & Bizalmi pont jóváírás a partnernek
   myProfile.activeTrades.splice(tradeIdx, 1);
   saveMyState();
 
@@ -2944,7 +3180,6 @@ safeAddListener('btn-search', () => {
   renderSearchResults(matchedNums.sort((a, b) => a - b), `Keresés: „${raw}”`);
 });
 
-// KÉTÁLLÁSÚ (ON/OFF) KAPCSOLÓ A HIÁNYZÓKHOZ
 safeAddListener('btn-search-all-missing', () => {
   const container = document.getElementById('search-results');
   const btn = document.getElementById('btn-search-all-missing');
@@ -3016,7 +3251,7 @@ safeAddListener('search-results', 'click', (e) => {
 });
 
 // =========================================================================
-// 2. BLOKK: KÖZELI CSEREPARTNEREK (25-ÖS LAPOZÁSSAL & INGÁZÓ TÁVOLSÁGGAL)
+// 2. BLOKK: KÖZELI CSEREPARTNEREK (25-ÖS LAPOZÁSSAL)
 // =========================================================================
 
 let proximityDisplayLimit = 25;
@@ -3108,7 +3343,7 @@ safeAddListener('proximity-partners-list', 'click', (e) => {
 });
 
 // =========================================================================
-// BOLTI KÉSZLETRADAR & TALÁLKOZÓK (4. FÁZIS: LIKE MOTORRAL)
+// BOLTI KÉSZLETRADAR & TALÁLKOZÓK (LIKE MOTORRAL)
 // =========================================================================
 
 safeAddListener('radar-photo-input', 'change', (e) => {
@@ -3213,7 +3448,6 @@ safeAddListener('btn-refresh-radar', () => {
   showToast("Radar lista frissítve.");
 });
 
-// 4. FÁZIS: RADAR LIKE / TETSZIK KEZELŐ
 async function toggleRadarReportLike(reportId) {
   if (!currentUser) return showToast("A kedveléshez előbb lépj be!");
   try {
@@ -3395,7 +3629,6 @@ safeAddListener('btn-refresh-meetups', () => {
   showToast("Találkozók frissítve.");
 });
 
-// 4. FÁZIS: TALÁLKOZÓ LIKE KEZELŐ
 async function toggleMeetupLike(meetupId) {
   if (!currentUser) return showToast("A kedveléshez előbb lépj be!");
   try {
@@ -3494,7 +3727,7 @@ function listenToMeetups() {
     }, err => console.warn("Meetups listener:", err));
 }
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 - 3. RÉSZ: STATISZTIKA, AR SZKENNER & BOOT)
+// Cserélj Okosan - app.js (v4.0 - 3. RÉSZ: STATISZTIKA, SZKENNER & BOOT)
 // =========================================================================
 
 // STATISZTIKA & HŐTÉRKÉP
@@ -3955,14 +4188,10 @@ safeAddListener('btn-refresh-stats', () => {
 });
 
 // =========================================================================
-// FOTÓBEOLVASÓ & 4. FÁZIS: ÉLŐ AR KAMERA VIEWFINDER MOTOR
+// FOTÓS BEOLVASÓ MODUL
 // =========================================================================
 
 let scannerRecognizedNums = [];
-let arCameraStream = null;
-let arScanLoopTimer = null;
-let arQueuedNums = new Set();
-let isTorchOn = false;
 
 safeAddListener('btn-open-scanner', () => document.getElementById('modal-scanner')?.classList.add('open'));
 function closeScannerModal() {
@@ -4004,147 +4233,8 @@ function handleImageFile(file) {
 safeAddListener('scanner-file-input', 'change', (e) => handleImageFile(e.target.files[0]));
 safeAddListener('scanner-camera-input', 'change', (e) => handleImageFile(e.target.files[0]));
 
-// 4. FÁZIS: ÉLŐ AR KAMERA VIEWFINDER INDÍTÁSA
-safeAddListener('btn-trigger-ar-viewfinder', async () => {
-  document.getElementById('modal-scanner')?.classList.remove('open');
-  const modal = document.getElementById('modal-ar-live-viewfinder');
-  const video = document.getElementById('ar-video-feed');
-  if (!modal || !video) return;
-
-  arQueuedNums.clear();
-  renderArQueue();
-  modal.classList.add('open');
-
-  try {
-    arCameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false
-    });
-    video.srcObject = arCameraStream;
-    startArLiveScanLoop();
-  } catch (err) {
-    showToast("Kamera hiba: " + err.message);
-    stopArLiveViewfinder();
-  }
-});
-
-function startArLiveScanLoop() {
-  const canvas = document.getElementById('ar-canvas-crop');
-  const video = document.getElementById('ar-video-feed');
-  const hudTarget = document.getElementById('ar-target-hud');
-  const statusChip = document.getElementById('ar-target-status-chip');
-  if (!canvas || !video || !hudTarget) return;
-
-  const ctx = canvas.getContext('2d');
-  canvas.width = 224;
-  canvas.height = 224;
-
-  clearInterval(arScanLoopTimer);
-  // Ritkított 3 fps (330 ms) ciklus a telefon kímélésére
-  arScanLoopTimer = setInterval(async () => {
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-
-    // Középső 224x224 kivágás
-    const vw = video.videoWidth;
-    const vh = video.videoHeight;
-    const sx = (vw - 224) / 2;
-    const sy = (vh - 224) / 2;
-
-    ctx.drawImage(video, sx, sy, 224, 224, 0, 0, 224, 224);
-    
-    // Szimulált felismerés HUD vizuális visszajelzéssel
-    const vanSet = new Set(ensureArray(myProfile.van));
-    const kellSet = new Set(ensureArray(myProfile.kell));
-    const fogSet = new Set(ensureArray(myProfile.foglalva));
-
-    // Célkereszt állapotfrissítés
-    hudTarget.className = 'ar-hud-target state-default';
-    if (statusChip) statusChip.textContent = "Keresés a célkeresztben...";
-  }, 330);
-}
-
-function stopArLiveViewfinder() {
-  clearInterval(arScanLoopTimer);
-  if (arCameraStream) {
-    arCameraStream.getTracks().forEach(track => track.stop());
-    arCameraStream = null;
-  }
-  document.getElementById('modal-ar-live-viewfinder')?.classList.remove('open');
-}
-
-safeAddListener('btn-close-ar-viewfinder', stopArLiveViewfinder);
-
-safeAddListener('btn-ar-toggle-torch', async () => {
-  if (!arCameraStream) return;
-  const track = arCameraStream.getVideoTracks()[0];
-  if (!track) return;
-  try {
-    isTorchOn = !isTorchOn;
-    await track.applyConstraints({ advanced: [{ torch: isTorchOn }] });
-    const btn = document.getElementById('btn-ar-toggle-torch');
-    if (btn) btn.textContent = isTorchOn ? '💡 Vaku (Be)' : '💡 Vaku (Ki)';
-  } catch (e) {
-    showToast("A készülék nem támogatja a vaku vezérlését.");
-  }
-});
-
-function renderArQueue() {
-  const container = document.getElementById('ar-live-queue-tags');
-  const countSpan = document.getElementById('ar-queue-count');
-  if (!container) return;
-
-  const nums = Array.from(arQueuedNums).sort((a, b) => a - b);
-  if (countSpan) countSpan.textContent = nums.length;
-
-  if (nums.length === 0) {
-    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.78rem;">Irányítsd a matricákra a felismeréshez...</span>';
-    return;
-  }
-
-  container.innerHTML = nums.map((n, idx) => `
-    <span style="background:var(--water-mid); padding:2px 8px; border-radius:999px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px; border:1px solid var(--amber); color:#FFF; white-space:nowrap;">
-      ${escapeHtml(getItemLabel(n))}
-      <span data-del-ar-idx="${idx}" style="cursor:pointer; color:var(--danger); font-weight:bold;">✕</span>
-    </span>
-  `).join('');
-}
-
-safeAddListener('ar-live-queue-tags', (e) => {
-  const delBtn = e.target.closest('[data-del-ar-idx]');
-  if (!delBtn) return;
-  const idx = parseInt(delBtn.dataset.delArIdx, 10);
-  const nums = Array.from(arQueuedNums).sort((a, b) => a - b);
-  if (nums[idx]) {
-    arQueuedNums.delete(nums[idx]);
-    renderArQueue();
-  }
-});
-
-safeAddListener('btn-ar-save-queue-van', () => {
-  if (arQueuedNums.size === 0) return showToast("Nincs menthető tétel a listában.");
-  arQueuedNums.forEach(num => {
-    if (!myProfile.van.includes(num)) myProfile.van.push(num);
-    const kIdx = myProfile.kell.indexOf(num);
-    if (kIdx > -1) myProfile.kell.splice(kIdx, 1);
-    myProfile.vanCounts[num] = (myProfile.vanCounts[num] || 0) + 1;
-  });
-  saveMyState();
-  const count = arQueuedNums.size;
-  stopArLiveViewfinder();
-  showToast(`${count} db tétel mentve a Duplákhoz.`);
-});
-
-safeAddListener('btn-ar-save-queue-kell', () => {
-  if (arQueuedNums.size === 0) return showToast("Nincs menthető tétel a listában.");
-  arQueuedNums.forEach(num => {
-    if (!myProfile.kell.includes(num)) myProfile.kell.push(num);
-    const vIdx = myProfile.van.indexOf(num);
-    if (vIdx > -1) { myProfile.van.splice(vIdx, 1); delete myProfile.vanCounts[num]; }
-  });
-  saveMyState();
-  const count = arQueuedNums.size;
-  stopArLiveViewfinder();
-  showToast(`${count} db tétel mentve a Hiányzókhoz.`);
+safeAddListener('btn-trigger-ar-viewfinder', () => {
+  showToast("✨ Az Élő AR Szkenner fejlesztés alatt. Használd a fenti azonnali kamera funkciót!");
 });
 
 async function processScannerImageWithProxy(base64Data) {
@@ -4282,143 +4372,7 @@ function checkSenderProfileReady() {
   return true;
 }
 
-function setupContactModal(targetUser, msg, subject) {
-  activeContactTarget = {
-    uid: targetUser.id || targetUser.uid || '',
-    nev: targetUser.nev || 'Gyűjtőpartner',
-    telepules: targetUser.telepules || '',
-    email: targetUser.email || '',
-    showEmail: targetUser.showEmailToUsers === true,
-    subject: subject
-  };
-
-  const titleEl = document.getElementById('contact-modal-title');
-  const inputEl = document.getElementById('contact-msg-input');
-  if (titleEl) titleEl.textContent = `Üzenet küldése: ${escapeHtml(activeContactTarget.nev)}`;
-  if (inputEl) inputEl.value = msg;
-
-  const directEmailBox = document.getElementById('contact-direct-email-box');
-  const partnerEmailSpan = document.getElementById('contact-partner-email');
-  const emailLink = document.getElementById('contact-email-link');
-
-  if (activeContactTarget.showEmail && activeContactTarget.email && directEmailBox) {
-    directEmailBox.style.display = 'block';
-    if (partnerEmailSpan) partnerEmailSpan.textContent = activeContactTarget.email;
-    if (emailLink) emailLink.href = `mailto:${activeContactTarget.email}?subject=${encodeURIComponent(subject)}`;
-  } else if (directEmailBox) {
-    directEmailBox.style.display = 'none';
-  }
-
-  document.getElementById('modal-contact')?.classList.add('open');
-}
-
-function openContactModal(targetUser, give, get, isGift) {
-  if (!checkSenderProfileReady()) return;
-  const activeAlbum = getActiveAlbum();
-  const subject = `${activeAlbum.title} csere megkeresés`;
-  const msg = isGift && !give ?
-    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan oldalon láttam a felajánlásodat, hogy a dupláidat szívesen odaadod ajándékba a(z) ${activeAlbum.title} gyűjteményből.\nSzeretném elkérni az alábbi tételt/tételeket:\n${get}\n\nHogyan tudnánk lebonyolítani az átadást/postázást?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})` :
-    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan platformon találtam meg a gyűjteményedet a(z) ${activeAlbum.title} albumban:\n\nÉn tudom adni neked: ${give}\nTe tudod adni nekem: ${get}\n\nMegfelelne a csere postán vagy személyesen?\n\nÜdvözlettel,\n${myProfile.nev} (${myProfile.telepules || ''})`;
-
-  setupContactModal(targetUser, msg, subject);
-}
-
-function openLoopContactModal(targetUser, thirdPersonName, stickersText, role) {
-  if (!checkSenderProfileReady()) return;
-  const activeAlbum = getActiveAlbum();
-  const subject = `${activeAlbum.title} 3 fős körcsere egyeztetés`;
-  const msg = role === 'B' ?
-    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan oldalon egy 3 fős körcsere lehetőséget találtam:\n1. Én adom neked: ${stickersText}\n2. Te adsz ${thirdPersonName}-nek tételt\n3. ${thirdPersonName} pedig ad nekem.\n\nMit szólsz, összehozzuk a körcserét?\n\nÜdvözlettel,\n${myProfile.nev}` :
-    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan oldalon egy 3 fős körcsere lehetőséget találtam, amiben te tudnád nekem adni: ${stickersText}, cserébe ${thirdPersonName} adna neked tételt.\n\nÉrdekelne a körcsere?\n\nÜdvözlettel,\n${myProfile.nev}`;
-
-  setupContactModal(targetUser, msg, subject);
-}
-
-function openDirectContactModal(targetUser, numsStr, isGift) {
-  if (!checkSenderProfileReady()) return;
-  const activeAlbum = getActiveAlbum();
-  const subject = `${activeAlbum.title} tétel érdeklődés`;
-  const msg = isGift ?
-    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan platformon láttam, hogy ajándékba felajánlod a dupláidat (${activeAlbum.title}). Szeretném elkérni az alábbiakat: ${numsStr}.\n\nHogyan tudnánk lebonyolítani?\n\nÜdvözlettel,\n${myProfile.nev}` :
-    `Szia ${targetUser.nev}!\n\nA Cserélj Okosan platformon láttam, hogy nálad megvannak az alábbi tételek (${activeAlbum.title}): ${numsStr}.\n\nSzeretnék érdeklődni, hogy tudnánk-e cserélni rájuk.\n\nÜdvözlettel,\n${myProfile.nev}`;
-
-  setupContactModal(targetUser, msg, subject);
-}
-
-safeAddListener('btn-send-message', () => {
-  const messageText = document.getElementById('contact-msg-input')?.value.trim() || '';
-  if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
-
-  const loader = document.getElementById('contact-send-loader');
-  const sendBtn = document.getElementById('btn-send-message');
-  if (loader) loader.style.display = 'block';
-  if (sendBtn) sendBtn.disabled = true;
-
-  (async () => {
-    try {
-      if (db && currentUser) {
-        await db.collection("messages").add({
-          fromUid: currentUser.uid,
-          fromName: myProfile.nev,
-          fromCity: myProfile.telepules || '',
-          toUid: activeContactTarget.uid,
-          toName: activeContactTarget.nev,
-          albumId: currentAlbumId,
-          subject: activeContactTarget.subject,
-          message: messageText,
-          text: messageText,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-
-      try {
-        const idToken = currentUser ? await currentUser.getIdToken() : '';
-        await fetch(WORKER_ENDPOINT_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`
-          },
-          body: JSON.stringify({
-            toEmail: activeContactTarget.email || '',
-            toUid: activeContactTarget.uid,
-            toName: activeContactTarget.nev,
-            fromUid: currentUser ? currentUser.uid : '',
-            fromName: myProfile.nev,
-            senderCity: myProfile.telepules || '',
-            subject: activeContactTarget.subject,
-            message: messageText
-          })
-        });
-      } catch (e) {
-        console.warn("Értesítési e-mail figyelmeztetés:", e);
-      }
-
-      showToast("Üzeneted sikeresen elküldve a partnernek!");
-      document.getElementById('modal-contact')?.classList.remove('open');
-    } catch (err) {
-      showToast("Küldési hiba: " + err.message);
-    } finally {
-      if (loader) loader.style.display = 'none';
-      if (sendBtn) sendBtn.disabled = false;
-    }
-  })();
-});
-
-safeAddListener('btn-close-contact', () => document.getElementById('modal-contact')?.classList.remove('open'));
-safeAddListener('btn-copy-msg', () => {
-  const val = document.getElementById('contact-msg-input')?.value || '';
-  navigator.clipboard.writeText(val);
-  showToast("Üzenet kimásolva a vágólapra!");
-});
-
-safeAddListener('btn-copy-partner-email', () => {
-  const email = document.getElementById('contact-partner-email')?.textContent || '';
-  if (!email) return showToast("Nincs másolható e-mail cím.");
-  navigator.clipboard.writeText(email);
-  showToast("Partner e-mail címe kimásolva.");
-});
-
+// BELSŐ ÜZENETEK ÉS ÉRTESÍTÉSEK
 safeAddListener('btn-msg-tab-inbox', () => {
   activeInboxTab = 'inbox';
   document.getElementById('btn-msg-tab-inbox')?.classList.add('active');
@@ -4551,7 +4505,7 @@ safeAddListener('messages-inbox-list', (e) => {
 
   if (btn.dataset.action === 'reply-message') {
     const targetUser = { id: btn.dataset.senderUid, nev: btn.dataset.senderName };
-    setupContactModal(targetUser, `Szia ${targetUser.nev}!\n\nKöszönöm a megkeresést. `, `Válasz: Csere`);
+    openContactModal(targetUser, '', '', false);
   } else if (btn.dataset.action === 'delete-message') {
     if (!confirm("Biztosan törölni szeretnéd ezt az üzenetet?")) return;
     (async () => {
@@ -4578,7 +4532,9 @@ function openUserProfileModal(uid) {
 
   const nameEl = document.getElementById('user-profile-modal-name');
   const cityEl = document.getElementById('user-profile-modal-city');
-  if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
+  const trustText = targetUser.trustScore > 0 ? `⭐ ${targetUser.trustScore} bizalmi pont` : '';
+
+  if (nameEl) nameEl.innerHTML = `Gyűjtő: ${escapeHtml(targetUser.nev || 'Névtelen')} ${trustText ? `<span style="color:var(--gift-gold); font-size:0.8rem; margin-left:8px;">${trustText}</span>` : ''}`;
   if (cityEl) cityEl.textContent = targetUser.telepules ? `Település: ${targetUser.telepules}` : 'Nincs megadva település';
 
   const favBox = document.getElementById('user-profile-favorites-box');
@@ -5759,7 +5715,7 @@ function listenToMyProfile(uid) {
         isGiftOffering: parsed.isGiftOffering,
         showEmailToUsers: parsed.showEmailToUsers,
         emailNotifications: parsed.emailNotifications !== false,
-        allowInspect: parsed.allowInspect !== false,
+        allowInspect: parsed.allowInspect,
         gdprAccepted: parsed.gdprAccepted !== false,
         trustScore: parsed.trustScore || 0,
         ratingsCount: parsed.ratingsCount || 0,

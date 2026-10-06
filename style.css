@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 - 4. FÁZIS TELJES)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0 - Végleges Stíluslap)
    ========================================================================= */
 
 :root {
@@ -292,18 +292,12 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .matrica-cell.cell-figure.kell { border-color: var(--fur-brown-soft) !important; }
 .matrica-cell.cell-figure.foglalva { border-color: var(--reserved-blue-soft) !important; }
 
-/* 4. FÁZIS: CSEMPESZÁMLÁLÓK & TÖBBDARABOS FOGLALÁSI JELVÉNYEK */
 .qty-badge {
   position: absolute; top: -4px; right: -4px; background: var(--amber); color: var(--water-deep);
   font-size: 0.65rem; font-weight: 800; padding: 1px 5px; border-radius: 999px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1px solid var(--water-deep); z-index: 5; pointer-events: none;
 }
 .qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
-.qty-badge.multi-reserved {
-  background: linear-gradient(90deg, var(--amber) 50%, var(--reserved-blue-soft) 50%);
-  color: #081B1A;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
 
 /* 4. FÁZIS: RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK KÁRTYÁK */
 .trade-manage-card {
@@ -458,6 +452,47 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .btn-like:hover {
   border-color: var(--amber);
   transform: scale(1.05);
+}
+
+/* 4. FÁZIS: KAPCSOLATFELVÉTELI INTERAKTÍV KIIKSZELŐ CHIPEK */
+.contact-item-chip {
+  background: var(--water-mid);
+  border: 1px solid rgba(243, 238, 223, 0.25);
+  color: var(--sand);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+.contact-item-chip:hover {
+  border-color: var(--danger);
+  color: #FFF;
+}
+.contact-item-chip .chip-del {
+  color: var(--danger);
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0.7;
+}
+.contact-item-chip:hover .chip-del {
+  opacity: 1;
+  transform: scale(1.15);
+}
+.contact-item-chip.excluded {
+  opacity: 0.35;
+  text-decoration: line-through;
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(243, 238, 223, 0.1);
+  color: var(--text-muted);
+}
+.contact-item-chip.excluded .chip-del {
+  display: none;
 }
 
 /* ALBUM LAPOZÓ NÉZET */

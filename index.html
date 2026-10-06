@@ -348,7 +348,7 @@
         <div class="legend-item"><span class="legend-chip state-ures"></span> 4x = Üres</div>
       </div>
       <p class="view-intro" style="font-size:0.8rem; margin-top:4px;">
-        <em>💡 Többdarabos duplánál a részlegesen lefoglalt tételek mellett megjelenik a <strong>×2 [🔒 1]</strong> jelvény. Részletekhez tartsd hosszan nyomva a mezőt (PC-n jobb klikk).</em>
+        <em>💡 A <strong>kékkel (Foglalva)</strong> jelölt tételek kikerülnek a nyilvános cserékből. Több darabnál tartsd hosszan nyomva a mezőt (PC-n jobb klikk).</em>
       </p>
 
       <div style="margin-bottom:14px;">
@@ -1374,7 +1374,7 @@
   </div>
 </div>
 
-<!-- KAPCSOLATFELVÉTELI MODAL -->
+<!-- KAPCSOLATFELVÉTELI MODAL (INTERAKTÍV KIIKSZELHETŐ TÉTELEKKEL) -->
 <div id="modal-contact" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-contact">✕</button>
@@ -1392,18 +1392,41 @@
       </div>
     </div>
 
+    <!-- ÚJ: KIIKSZELHETŐ TÉTELVÁLASZTÓ CHIPEK -->
+    <div id="contact-chips-editor-section" style="margin-bottom:12px; background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">
+        💡 <em>Koppints a számra, amit <strong>mégsem adnál oda vagy kérnél</strong> (áthúzódik és azonnal kikerül a szövegből):</em>
+      </div>
+      <div id="contact-give-chips-wrapper" style="margin-bottom:6px;">
+        <span style="font-size:0.75rem; color:var(--sand); font-weight:700; display:block; margin-bottom:3px;">Te adnád neki:</span>
+        <div id="contact-give-chips" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+      </div>
+      <div id="contact-get-chips-wrapper">
+        <span style="font-size:0.75rem; color:var(--moss-soft); font-weight:700; display:block; margin-bottom:3px;">Tőle kapnád:</span>
+        <div id="contact-get-chips" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+      </div>
+    </div>
+
     <div class="form-group">
-      <label>Belső üzenet a partnernek:</label>
+      <label>Belső üzenet a partnernek (automatikusan frissül a választás szerint):</label>
       <textarea id="contact-msg-input" class="input-field" rows="5" style="resize:vertical;"></textarea>
     </div>
 
+    <!-- 4. FÁZIS: AUTOMATIKUS CSERERÖGZÍTÉS & ZÁROLÁS JELÖLŐNÉGYZET -->
+    <div class="form-group">
+      <label class="checkbox-label" style="font-size:0.8rem; color:var(--sand); font-weight:600;">
+        <input type="checkbox" id="contact-auto-create-trade" checked>
+        Rögzítés folyamatban lévő csereként a rács alatt (Tételek zárolása a megegyezésig)
+      </label>
+    </div>
+
     <div id="contact-send-loader" style="display:none; text-align:center; padding:10px; font-size:0.88rem; color:var(--amber); font-weight:600;">
-      Üzenet küldése folyamatban...
+      Üzenet küldése és csere indítása folyamatban...
     </div>
 
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn btn-contact-green" id="btn-send-message" style="width:100%; padding:10px; font-weight:700;">
-        Üzenet elküldése
+        Üzenet elküldése & Csere indítása
       </button>
       <button class="btn btn-secondary" id="btn-copy-msg" style="width:100%; font-size:0.8rem;">
         Szöveg másolása vágólapra
