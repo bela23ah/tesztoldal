@@ -248,7 +248,7 @@
       </div>
       <p class="view-intro" style="margin-bottom:12px;">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
-      <!-- 4. FÁZIS: KÖZÖSSÉGI MUTATÓK SÁV (SOCIAL PROOF) -->
+      <!-- KÖZÖSSÉGI MUTATÓK SÁV (SOCIAL PROOF) -->
       <div id="hub-social-proof-bar" class="social-proof-bar" style="margin-bottom:16px;">
         <div class="social-proof-item">
           <span class="sp-icon">👥</span>
@@ -327,7 +327,7 @@
         <h2>Gyűjteményem</h2>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button class="btn btn-scanner-highlight btn-scanner-pulse" id="btn-open-scanner" style="font-size:0.85rem; padding:7px 16px;">
-            📷 Fotós / AR Számszkenner
+            📷 Fotós Számszkenner
           </button>
           <button class="btn btn-secondary" id="btn-toggle-batch" style="font-size:0.75rem; padding:5px 10px;">
             Tömeges bevitel
@@ -395,7 +395,7 @@
         </div>
         <div id="matrica-grid"></div>
 
-        <!-- 4. FÁZIS: RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & FOGLALÁSOK PANEL -->
+        <!-- RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & FOGLALÁSOK PANEL -->
         <div id="active-trades-panel" class="card" style="margin-top:16px; border-left:4px solid var(--reserved-blue); display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <h3 style="margin:0; font-size:1.05rem; color:var(--reserved-blue-soft);">
@@ -861,7 +861,6 @@
         </div>
 
         <div class="form-group">
-          <!-- 4. FÁZIS: ALAPÉRTELMEZETTEN BEPIPÁLT MEZŐK -->
           <label class="checkbox-label" style="font-weight:600;">
             <input type="checkbox" id="prof-email-notif" checked>
             Kérek e-mail értesítést a postaládámba, ha új csereajánlatot kapok
@@ -909,18 +908,41 @@
       <h2>Adminisztrátori Vezérlőpult</h2>
       <p class="view-intro">Gyűjtemények létrehozása, szerkesztése, közösségi javaslatok jóváhagyása és rendszerüzenetek kezelése.</p>
 
-      <!-- ADATBÁZIS KARBANTARTÁS: VISSZAMENŐLEGES TISZTÍTÁS -->
+      <!-- 1. 1-KATTINTÁSOS ADATBÁZIS INICIALIZÁLÁS (21 ALBUM + BOLTLISTÁK FIRESTORE-BA) -->
+      <div class="card" style="border-left: 4px solid var(--amber); margin-bottom: 16px;">
+        <h3 style="margin-top:0; color:var(--amber); font-size:1.1rem;">🚀 1-Kattintásos Adatbázis Inicializálás & Felhőbe Költöztetés</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
+          Feltölti az összes <strong>21 albumot</strong> és a <strong>4 áruházlánc boltjait (Lidl 221 bolt, Spar, Tesco, Penny)</strong> a Firestore adatbázisba, így a forráskód tiszta marad, és minden a felhőből frissül automatikusan.
+        </p>
+        <button class="btn btn-primary" id="btn-admin-seed-database" style="font-size:0.85rem; padding:8px 16px;">
+          Adatbázis inicializálása & Feltöltése Firestore-ba most
+        </button>
+      </div>
+
+      <!-- 2. TÖMMEGES JSON ALBUM IMPORTŐR (SCRAPELT ADATOKHOZ) -->
+      <div class="card" style="border-left: 4px solid var(--water-light); margin-bottom: 16px;">
+        <h3 style="margin-top:0; color:var(--sand); font-size:1.1rem;">📥 Tömeges JSON / CSV Album Importőr</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
+          Másold be ide a máshonnan leszívott vagy kimásolt album JSON formátumú adatait a gyors felvitelhez:
+        </p>
+        <textarea id="admin-album-json-import" class="input-field" rows="4" placeholder='{"id": "uj-album", "title": "Új Album Neve", "publisher": "Panini", "year": 2026, "totalItems": 200, "type": "sticker"}'></textarea>
+        <button class="btn btn-secondary btn-sm" id="btn-admin-import-json" style="margin-top:8px;">
+          JSON Adatok Beimportálása & Élesítése
+        </button>
+      </div>
+
+      <!-- 3. ADATBÁZIS KARBANTARTÁS: VISSZAMENŐLEGES TISZTÍTÁS -->
       <div class="card" style="border-left: 4px solid var(--moss-soft); margin-bottom: 16px;">
         <h3 style="margin-top:0; color:var(--moss-soft); font-size:1.1rem;">🧹 Adatbázis Karbantartás: Települések Visszamenőleges Tisztítása</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
-          Végigmegy az összes eddigi felhasználó profilján a Firestore-ban, és a régi, elgépelt vagy „Bp 11”, „Cegléd/Budapest” formátumú településeket automatikusan átkonvertálja tiszta 3. fázisú formátumra (Budapest kerületchipek + hivatalos városnevek).
+          Végigmegy az összes eddigi felhasználó profilján a Firestore-ban, és a régi, elgépelt vagy „Bp 11”, „Cegléd/Budapest” formátumú településeket automatikusan átkonvertálja tiszta 3. fázisú formátumra.
         </p>
         <button class="btn btn-primary" id="btn-admin-migrate-locations" style="font-size:0.85rem; padding:8px 16px;">
           Minden felhasználó településének tisztítása és migrálása most
         </button>
       </div>
 
-      <!-- KÖZÖSSÉGI GYŰJTEMÉNY JAVASLATOK VÁRÓLISTÁJA -->
+      <!-- 4. KÖZÖSSÉGI GYŰJTEMÉNY JAVASLATOK VÁRÓLISTÁJA -->
       <div class="card" id="admin-suggestions-card" style="border-left: 4px solid var(--gift-gold); margin-bottom: 16px;">
         <h3 style="margin-top:0; font-size:1.1rem; color:var(--gift-gold);">📥 Beküldött gyűjtemény-javaslatok (Várólista)</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
@@ -929,7 +951,7 @@
         <div id="admin-suggested-albums-list">Nincs függőben lévő javaslat.</div>
       </div>
 
-      <!-- ÚJ GYŰJTEMÉNY LÉTREHOZÁSA / MEGLÉVŐ SZERKESZTÉSE ŰRLAP -->
+      <!-- 5. ÚJ GYŰJTEMÉNY LÉTREHOZÁSA / MEGLÉVŐ SZERKESZTÉSE ŰRLAP -->
       <div class="card" id="admin-album-form-card" style="border-left: 4px solid var(--amber); margin-bottom: 16px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <h3 style="margin:0; font-size:1.15rem; color:var(--amber);" id="admin-album-form-title">Új gyűjtemény / album felvitele</h3>
@@ -978,7 +1000,7 @@
         </div>
 
         <div class="form-group">
-          <label>Borítókép / Indexkép feltöltése (Képfájl a gépről):</label>
+          <label>Borítókép / Indexkép feltöltése (Képfájl a gépről vagy saját /covers/ útvonal):</label>
           <input type="file" id="admin-album-cover-input" accept="image/*" class="input-field" style="padding:4px;">
           <div id="admin-album-cover-preview-box" style="display:none; margin-top:8px;">
             <img id="admin-album-cover-preview" style="max-height:120px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító előnézet">
@@ -1041,13 +1063,13 @@
         </button>
       </div>
 
-      <!-- LÉTEZŐ GYŰJTEMÉNYEK LISTÁJA -->
+      <!-- 6. LÉTEZŐ GYŰJTEMÉNYEK LISTÁJA -->
       <div class="card" style="margin-bottom: 16px;">
         <h3 style="margin-top:0; font-size:1.1rem;">Rendszerben lévő gyűjtemények kezelése & Szerkesztése</h3>
         <div id="admin-albums-list">Gyűjtemények betöltése...</div>
       </div>
 
-      <!-- RENDSZERÜZENETEK -->
+      <!-- 7. RENDSZERÜZENETEK -->
       <div class="card">
         <h3 style="margin-top:0;">Új rendszerüzenet kiküldése</h3>
         <div class="form-group">
@@ -1223,11 +1245,11 @@
   </div>
 </div>
 
-<!-- FOTÓBEOLVASÓ ÉS ÉLŐ AR SZKENNER MODAL (3-AS VERTIKÁLIS ELRENDEZÉSSEL) -->
+<!-- FOTÓBEOLVASÓ MODAL -->
 <div id="modal-scanner" class="modal-overlay">
   <div class="modal-card" style="max-width:520px;">
     <button class="modal-close" id="btn-close-scanner">✕</button>
-    <h3 style="margin-top:0; color:var(--amber);">📷 Fotós / AR Számszkenner</h3>
+    <h3 style="margin-top:0; color:var(--amber);">📷 Fotós Számszkenner</h3>
     <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 14px;">
       Válaszd ki a számodra legkényelmesebb beolvasási módot:
     </p>
@@ -1240,7 +1262,7 @@
           <span style="font-size:1.8rem;">📷</span>
           <div>
             <strong style="display:block; color:#FFF; font-size:0.95rem;">Fotó készítése azonnal kamerával</strong>
-            <span style="font-size:0.75rem; color:var(--sand);">Készíts fotót a matricák hátoldaláról vagy számlistádról</span>
+            <span style="font-size:0.75rem; color:var(--sand);">Készíts éles fotót a matricák hátoldaláról vagy számlistádról</span>
           </div>
         </div>
       </label>
@@ -1256,20 +1278,6 @@
           </div>
         </div>
       </label>
-
-      <!-- 3. AR szkenner (kiterjesztett valóság scan - béta) -->
-      <button type="button" id="btn-trigger-ar-viewfinder" class="scanner-method-card scanner-card-ar">
-        <div class="scanner-card-inner" style="width:100%; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:1.8rem;">✨</span>
-            <div style="text-align:left;">
-              <strong style="display:block; color:var(--amber); font-size:0.95rem;">AR szkenner (kiterjesztett valóság scan)</strong>
-              <span style="font-size:0.75rem; color:var(--sand);">Élő kereső, azonnali keret-HUD és rezgés</span>
-            </div>
-          </div>
-          <span class="badge-beta">BÉTA</span>
-        </div>
-      </button>
     </div>
 
     <div id="scanner-loader" style="display:none; text-align:center; padding:12px; font-size:0.88rem; color:var(--amber); font-weight:600;">
@@ -1302,47 +1310,7 @@
   </div>
 </div>
 
-<!-- 4. FÁZIS: ÉLŐ AR KAMERA KERESŐABLAK (VIEWFINDER MODAL) -->
-<div id="modal-ar-live-viewfinder" class="modal-overlay" style="z-index:3200; padding:0; background:rgba(0,0,0,0.92);">
-  <div class="ar-viewfinder-box">
-    <button class="modal-close" id="btn-close-ar-viewfinder" style="top:14px; right:16px; color:#FFF; font-size:1.6rem; z-index:100;">✕</button>
-    
-    <div class="ar-video-wrapper">
-      <video id="ar-video-feed" autoplay playsinline muted></video>
-      <canvas id="ar-canvas-crop" style="display:none;"></canvas>
-      
-      <!-- CÉLKERESZT HUD -->
-      <div id="ar-target-hud" class="ar-hud-target state-default">
-        <div class="ar-hud-corner tl"></div>
-        <div class="ar-hud-corner tr"></div>
-        <div class="ar-hud-corner bl"></div>
-        <div class="ar-hud-corner br"></div>
-        <div id="ar-target-status-chip" class="ar-target-status">Irányítsd a matricára...</div>
-      </div>
-    </div>
-
-    <!-- ALSÓ GYORSLISTA ÉS VEZÉRLŐK -->
-    <div class="ar-bottom-sheet">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-size:0.85rem; font-weight:700; color:var(--sand);">
-          Élőben felismert tételek (<span id="ar-queue-count">0</span> db):
-        </span>
-        <button class="btn btn-secondary btn-sm" id="btn-ar-toggle-torch" style="padding:2px 8px; font-size:0.75rem;">
-          💡 Vaku
-        </button>
-      </div>
-
-      <div id="ar-live-queue-tags" class="ar-queue-container"></div>
-
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button class="btn btn-primary btn-sm" id="btn-ar-save-queue-van" style="flex:1;">Mentés Duplákhoz (Van)</button>
-        <button class="btn btn-secondary btn-sm" id="btn-ar-save-queue-kell" style="flex:1;">Mentés Hiányzókhoz</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 4. FÁZIS: CSEREZÁRÓ & PARTNER ÉRTÉKELŐ MODAL -->
+<!-- CSEREZÁRÓ & PARTNER ÉRTÉKELŐ MODAL -->
 <div id="modal-rate-trade" class="modal-overlay" style="z-index: 2800;">
   <div class="modal-card" style="max-width:440px; text-align:center;">
     <button class="modal-close" id="btn-close-rate-modal">✕</button>
@@ -1392,7 +1360,7 @@
       </div>
     </div>
 
-    <!-- ÚJ: KIIKSZELHETŐ TÉTELVÁLASZTÓ CHIPEK -->
+    <!-- KIIKSZELHETŐ TÉTELVÁLASZTÓ CHIPEK -->
     <div id="contact-chips-editor-section" style="margin-bottom:12px; background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
       <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">
         💡 <em>Koppints a számra, amit <strong>mégsem adnál oda vagy kérnél</strong> (áthúzódik és azonnal kikerül a szövegből):</em>
@@ -1412,7 +1380,6 @@
       <textarea id="contact-msg-input" class="input-field" rows="5" style="resize:vertical;"></textarea>
     </div>
 
-    <!-- 4. FÁZIS: AUTOMATIKUS CSERERÖGZÍTÉS & ZÁROLÁS JELÖLŐNÉGYZET -->
     <div class="form-group">
       <label class="checkbox-label" style="font-size:0.8rem; color:var(--sand); font-weight:600;">
         <input type="checkbox" id="contact-auto-create-trade" checked>

@@ -1170,7 +1170,7 @@ function initFavoriteSelects() {
   });
 }
 
-// 4. FÁZIS: KÖZÖSSÉGI MUTATÓK (SOCIAL PROOF) FRISSÍTÉSE
+// KÖZÖSSÉGI MUTATÓK (SOCIAL PROOF) FRISSÍTÉSE
 function updateHubSocialProofMetrics() {
   const collectorsEl = document.getElementById('sp-collectors-count');
   const trackedEl = document.getElementById('sp-tracked-items-count');
@@ -2918,7 +2918,6 @@ safeAddListener('btn-send-message', () => {
           status: 'pending'
         });
 
-        // Odaígért tételek lefoglalása
         effectiveGiveNums.forEach(n => {
           if (!myProfile.foglalva.includes(n)) myProfile.foglalva.push(n);
           if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
@@ -3727,7 +3726,7 @@ function listenToMeetups() {
     }, err => console.warn("Meetups listener:", err));
 }
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0 - 3. RÉSZ: STATISZTIKA, SZKENNER & BOOT)
+// Cserélj Okosan - app.js (v4.0 - 3. RÉSZ: STATISZTIKA, IMPORT, ADMIN & BOOT)
 // =========================================================================
 
 // STATISZTIKA & HŐTÉRKÉP
@@ -4188,7 +4187,7 @@ safeAddListener('btn-refresh-stats', () => {
 });
 
 // =========================================================================
-// FOTÓS BEOLVASÓ MODUL
+// MEGBÍZHATÓ FOTÓS BEOLVASÓ MODUL
 // =========================================================================
 
 let scannerRecognizedNums = [];
@@ -4232,10 +4231,6 @@ function handleImageFile(file) {
 
 safeAddListener('scanner-file-input', 'change', (e) => handleImageFile(e.target.files[0]));
 safeAddListener('scanner-camera-input', 'change', (e) => handleImageFile(e.target.files[0]));
-
-safeAddListener('btn-trigger-ar-viewfinder', () => {
-  showToast("✨ Az Élő AR Szkenner fejlesztés alatt. Használd a fenti azonnali kamera funkciót!");
-});
 
 async function processScannerImageWithProxy(base64Data) {
   try {
@@ -4781,15 +4776,87 @@ safeAddListener('btn-add-location', () => {
 
 safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
-// ADMINISZTRÁCIÓ & VISSZAMENŐLEGES ADATBÁZIS-MIGRÁCIÓ
+// =========================================================================
+// ADMINISZTRÁCIÓ, MIGRÁCIÓ, JSON IMPORTŐR ÉS TÖMEGES E-MAIL BEKAPCSOLÓ
+// =========================================================================
+
 let adminAlbumCoverBase64 = '';
 
+// 1. 1-KATTINTÁSOS ADATBÁZIS INICIALIZÁLÁS (21 ALBUM & BOLTLISTÁK FELTÖLTÉSE FIRESTORE-BA)
+safeAddListener('btn-admin-seed-database', async () => {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
+  if (!confirm("Feltöltöd mind a 21 albumot és az összes boltlistát a Firestore adatbázisba?")) return;
+
+  const btn = document.getElementById('btn-admin-seed-database');
+  if (btn) { btn.disabled = true; btn.textContent = "Feltöltés folyamatban..."; }
+
+  try {
+    const batch = db.batch();
+
+    Object.values(ALBUMS_REGISTRY).forEach(album => {
+      const docRef = db.collection("albums").doc(album.id);
+      batch.set(docRef, {
+        ...album,
+        active: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+
+    Object.entries(STORE_DATABASES).forEach(([chainKey, storeList]) => {
+      const storeRef = db.collection("stores").doc(chainKey);
+      batch.set(storeRef, {
+        chain: chainKey,
+        stores: storeList,
+        count: storeList.length,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+
+    await batch.commit();
+    showToast("Sikeres inicializálás! Mind a 21 album és a boltlisták a Firestore-ban vannak.");
+  } catch (err) {
+    showToast("Hiba a feltöltés során: " + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Adatbázis inicializálása & Feltöltése Firestore-ba most"; }
+  }
+});
+
+// 2. TÖMMEGES JSON ALBUM IMPORTŐR
+safeAddListener('btn-admin-import-json', async () => {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
+  const rawJson = document.getElementById('admin-album-json-import')?.value.trim();
+  if (!rawJson) return showToast("Illessz be egy érvényes JSON szöveget!");
+
+  try {
+    const parsed = JSON.parse(rawJson);
+    const albumsToImport = Array.isArray(parsed) ? parsed : [parsed];
+
+    const batch = db.batch();
+    albumsToImport.forEach(album => {
+      if (!album.id || !album.title) throw new Error("Hiányzik az album 'id' vagy 'title' mezője!");
+      const docRef = db.collection("albums").doc(album.id);
+      batch.set(docRef, {
+        ...album,
+        active: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+
+    await batch.commit();
+    document.getElementById('admin-album-json-import').value = '';
+    showToast(`Sikeres importálás! ${albumsToImport.length} db album mentve a Firestore-ba.`);
+  } catch (err) {
+    showToast("JSON hiba: " + err.message);
+  }
+});
+
+// 3. VISSZAMENŐLEGES TELEPÜLÉSTISZTÍTÁS & TÖMEGES E-MAIL BEKAPCSOLÁS MINDENKINEK
 safeAddListener('btn-admin-migrate-locations', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  if (!confirm("Biztosan elindítod az összes felhasználó településének visszamenőleges tisztítását a Firestore-ban?")) return;
+  if (!confirm("Biztosan elindítod az összes felhasználó településének tisztítását és az E-MAIL ÉRTESÍTŐK TÖMEGES BEKAPCSOLÁSÁT a Firestore-ban?")) return;
 
   const btn = document.getElementById('btn-admin-migrate-locations');
-  if (btn) { btn.disabled = true; btn.textContent = "Tisztítás folyamatban..."; }
+  if (btn) { btn.disabled = true; btn.textContent = "Karbantartás folyamatban..."; }
 
   try {
     const snap = await db.collection("public_profiles").get();
@@ -4832,13 +4899,15 @@ safeAddListener('btn-admin-migrate-locations', async () => {
         batch.set(docRef, {
           locations: cleanLocations,
           telepules: prettyTelepules,
-          city: prettyTelepules
+          city: prettyTelepules,
+          emailNotifications: true // ✉️ TÖMEGES BEKAPCSOLÁS MINDENKINEK!
         }, { merge: true });
 
         const userRef = db.collection("users").doc(doc.id);
         batch.set(userRef, {
           locations: cleanLocations,
-          telepules: prettyTelepules
+          telepules: prettyTelepules,
+          emailNotifications: true // ✉️ TÖMEGES BEKAPCSOLÁS MINDENKINEK!
         }, { merge: true });
 
         updatedCount++;
@@ -4846,9 +4915,9 @@ safeAddListener('btn-admin-migrate-locations', async () => {
     });
 
     await batch.commit();
-    showToast(`Sikeres tisztítás! ${updatedCount} felhasználó profilja frissítve.`);
+    showToast(`Sikeres karbantartás! ${updatedCount} felhasználónál aktiválva az e-mail értesítő és megtisztítva a település.`);
   } catch (err) {
-    showToast("Hiba a tisztítás során: " + err.message);
+    showToast("Hiba a karbantartás során: " + err.message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = "Minden felhasználó településének tisztítása és migrálása most"; }
   }
@@ -4960,7 +5029,7 @@ safeAddListener('btn-admin-save-album', async () => {
 
   const customChaptersList = (type === 'sticker') ? parseChaptersText(customChaptersRaw, customItems) : [];
   const typeLabel = type === 'sticker' ? 'Matricaalbum' : type === 'card' ? 'Kártya' : 'Figura / Kinder';
-  const existingCover = ALBUMS_REGISTRY[id]?.coverUrl || 'og-image.png';
+  const existingCover = ALBUMS_REGISTRY[id]?.coverUrl || 'covers/' + id + '.webp';
 
   try {
     const payload = {
@@ -5184,7 +5253,7 @@ function listenToAlbums() {
         totalItems: data.totalItems || 100,
         type: data.type || 'sticker',
         typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
-        coverUrl: data.coverUrl || 'og-image.png',
+        coverUrl: data.coverUrl || 'covers/' + doc.id + '.webp',
         featured: data.featured === true,
         isRetro: data.isRetro === true || data.year < 2010,
         hasFavorites: data.hasFavorites !== false,
@@ -5715,7 +5784,7 @@ function listenToMyProfile(uid) {
         isGiftOffering: parsed.isGiftOffering,
         showEmailToUsers: parsed.showEmailToUsers,
         emailNotifications: parsed.emailNotifications !== false,
-        allowInspect: parsed.allowInspect,
+        allowInspect: parsed.allowInspect !== false,
         gdprAccepted: parsed.gdprAccepted !== false,
         trustScore: parsed.trustScore || 0,
         ratingsCount: parsed.ratingsCount || 0,
@@ -5833,16 +5902,17 @@ document.getElementById('modal-image-lightbox')?.addEventListener('click', () =>
   document.getElementById('modal-image-lightbox')?.classList.remove('open');
 });
 
-// TELJES RENDSZER INDÍTÁSA
+// TELJES RENDSZER INDÍTÁSA (v4.0 BOOT)
 try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
   renderHub();
   renderGrid();
+  renderActiveTradesPanel();
   initFavoriteSelects();
   initFirebase();
   listenToAlbums();
-  checkDonablyReturningPrompt(); // ☕ Donably támogatói ellenőrzés
+  checkDonablyReturningPrompt(); // ☕ Donably ellenőrzés
 } catch (err) {
   console.error("Indítási hiba:", err);
 }

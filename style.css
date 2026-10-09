@@ -88,7 +88,7 @@ header {
 }
 .profile-warning-banner a { color: var(--amber); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
-/* 4. FÁZIS: KÖZÖSSÉGI MUTATÓK (SOCIAL PROOF) SÁV */
+/* KÖZÖSSÉGI MUTATÓK (SOCIAL PROOF) SÁV */
 .social-proof-bar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -299,7 +299,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
 
-/* 4. FÁZIS: RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK KÁRTYÁK */
+/* RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK KÁRTYÁK */
 .trade-manage-card {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(43, 108, 176, 0.4);
@@ -325,7 +325,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-status-reserved { background: rgba(99, 179, 237, 0.2); color: var(--reserved-blue-soft); border: 1px solid var(--reserved-blue-soft); }
 .badge-status-completed { background: rgba(147, 179, 130, 0.2); color: var(--moss-soft); border: 1px solid var(--moss-soft); }
 
-/* 4. FÁZIS: CSILLAGOS ÉRTÉKELŐ SÁV */
+/* CSILLAGOS ÉRTÉKELŐ SÁV */
 .star-rating-row {
   display: flex;
   justify-content: center;
@@ -344,92 +344,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   text-shadow: 0 0 10px rgba(255, 209, 102, 0.6);
 }
 
-/* 4. FÁZIS: ÉLŐ KAMERA AR KERESŐABLAK */
-.ar-viewfinder-box {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #000;
-  overflow: hidden;
-}
-.ar-video-wrapper {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#ar-video-feed {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.ar-hud-target {
-  position: absolute;
-  width: 224px;
-  height: 224px;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
-  border-radius: var(--radius-md);
-  pointer-events: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.ar-hud-target.state-van {
-  border: 3px solid var(--moss-soft);
-  box-shadow: 0 0 20px rgba(147, 179, 130, 0.8);
-}
-.ar-hud-target.state-kell {
-  border: 3px solid var(--fur-brown-soft);
-  box-shadow: 0 0 20px rgba(201, 149, 104, 0.8);
-}
-.ar-hud-target.state-foglalva {
-  border: 3px solid var(--reserved-blue-soft);
-  box-shadow: 0 0 20px rgba(99, 179, 237, 0.8);
-}
-.ar-hud-corner {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 3px solid var(--amber);
-}
-.ar-hud-corner.tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
-.ar-hud-corner.tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
-.ar-hud-corner.bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
-.ar-hud-corner.br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
-
-.ar-target-status {
-  position: absolute;
-  bottom: -32px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: var(--text-primary);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 999px;
-  white-space: nowrap;
-  border: 1px solid var(--amber);
-}
-
-.ar-bottom-sheet {
-  background: rgba(8, 27, 26, 0.95);
-  backdrop-filter: blur(12px);
-  border-top: 1.5px solid var(--amber);
-  padding: 14px 16px 24px;
-  max-height: 200px;
-}
-.ar-queue-container {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 4px 0;
-  max-height: 70px;
-}
-
-/* 4. FÁZIS: TETSZIK (LIKE) GOMB */
+/* TETSZIK (LIKE) GOMB */
 .btn-like {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(243, 238, 223, 0.2);
@@ -454,7 +369,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   transform: scale(1.05);
 }
 
-/* 4. FÁZIS: KAPCSOLATFELVÉTELI INTERAKTÍV KIIKSZELŐ CHIPEK */
+/* KAPCSOLATFELVÉTELI INTERAKTÍV KIIKSZELŐ CHIPEK */
 .contact-item-chip {
   background: var(--water-mid);
   border: 1px solid rgba(243, 238, 223, 0.25);
@@ -768,7 +683,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .stats-ranking-item:hover { background: rgba(216, 155, 74, 0.15); }
 
-/* BEOLVASÓ MODAL 3-AS KÁRTYA STÍLUSAI */
+/* BEOLVASÓ MODAL KÁRTYA STÍLUSAI */
 .scanner-method-card {
   position: relative;
   display: block;
@@ -799,23 +714,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .scanner-card-secondary {
   background: rgba(0,0,0,0.25);
   border: 1px solid rgba(243,238,223,0.2);
-}
-
-.scanner-card-ar {
-  background: linear-gradient(135deg, rgba(13,46,44,0.9) 0%, rgba(20,69,63,0.95) 100%);
-  border: 1.5px dashed var(--amber);
-  width: 100%;
-  font-family: var(--font-body);
-}
-
-.badge-beta {
-  background: var(--amber);
-  color: var(--water-deep);
-  font-weight: 800;
-  font-size: 0.68rem;
-  padding: 2px 7px;
-  border-radius: 999px;
-  letter-spacing: 0.5px;
 }
 
 /* POPOVER ÉS MODALOK */
