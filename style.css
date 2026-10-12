@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0+ - Végleges Stíluslap)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0+ VÉGLEGES STÍLUSLAP)
    ========================================================================= */
 
 :root {
@@ -256,7 +256,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .stat-kell strong { color: var(--fur-brown-soft); }
 .stat-foglalva strong { color: var(--reserved-blue-soft); }
 
-/* RÁCSOS NÉZET (0 MS OPTIMISTIC UI) */
+/* RÁCSOS NÉZET */
 #matrica-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
@@ -292,12 +292,25 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .matrica-cell.cell-figure.kell { border-color: var(--fur-brown-soft) !important; }
 .matrica-cell.cell-figure.foglalva { border-color: var(--reserved-blue-soft) !important; }
 
+/* JELVÉNYEK ÉS LAKATOK A CSEMPÉN */
 .qty-badge {
   position: absolute; top: -4px; right: -4px; background: var(--amber); color: var(--water-deep);
   font-size: 0.65rem; font-weight: 800; padding: 1px 5px; border-radius: 999px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1px solid var(--water-deep); z-index: 5; pointer-events: none;
 }
 .qty-badge.foglalva { background: var(--reserved-blue-soft); color: #081B1A; }
+
+/* ZÁROLT / LAKAT JELVÉNY A BAL FELSŐ SAROKBAN */
+.qty-badge.locked-badge {
+  background: var(--reserved-blue) !important;
+  color: #FFFFFF !important;
+  border-color: var(--reserved-blue-soft) !important;
+  top: -4px;
+  right: auto;
+  left: -4px;
+  font-size: 0.65rem;
+  padding: 1px 4px;
+}
 
 /* RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK KÁRTYÁK */
 .trade-manage-card {
@@ -324,6 +337,15 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-status-waiting { background: rgba(255, 209, 102, 0.2); color: var(--gift-gold); border: 1px solid var(--gift-gold); }
 .badge-status-reserved { background: rgba(99, 179, 237, 0.2); color: var(--reserved-blue-soft); border: 1px solid var(--reserved-blue-soft); }
 .badge-status-completed { background: rgba(147, 179, 130, 0.2); color: var(--moss-soft); border: 1px solid var(--moss-soft); }
+
+/* ARCHÍVUM LENYITHATÓ RÉSZ */
+.archived-trades-details summary::-webkit-details-marker {
+  display: none;
+}
+.archived-trades-details[open] summary {
+  margin-bottom: 6px;
+  color: var(--sand);
+}
 
 /* CSILLAGOS ÉRTÉKELŐ SÁV */
 .star-rating-row {
@@ -762,23 +784,55 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   color: var(--water-deep); padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
   display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
 }
-/* Zárolt / Lakat jelvény a duplák mellett */
-.qty-badge.locked-badge {
-  background: var(--reserved-blue) !important;
-  color: #FFFFFF !important;
-  border-color: var(--reserved-blue-soft) !important;
-  top: -4px;
-  right: auto;
-  left: -4px; /* A bal felső sarokba kerül, hogy ne takarja a zöld darabszámot! */
-  font-size: 0.65rem;
-  padding: 1px 4px;
-}
 
-/* Lezárt cserék lenyitható szakasza */
-.archived-trades-details summary::-webkit-details-marker {
+/* =========================================================================
+   ÚJ FUNKCIÓK SPECIFIKUS STÍLUSAI
+   ========================================================================= */
+
+/* Harmonika Kereső dobozok (<details>) */
+.search-accordion {
+  background: var(--surface-card);
+  border: 1px solid rgba(243, 238, 223, 0.15);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.search-accordion[open] {
+  border-color: var(--amber);
+}
+.search-acc-summary {
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--sand);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.15);
+}
+.search-acc-summary::-webkit-details-marker {
   display: none;
 }
-.archived-trades-details[open] summary {
-  margin-bottom: 6px;
-  color: var(--sand);
+.search-accordion[open] .acc-chevron {
+  transform: rotate(180deg);
+}
+.acc-chevron {
+  transition: transform 0.2s ease;
+  font-size: 0.8rem;
+  color: var(--amber);
+}
+.search-acc-body {
+  padding: 14px;
+}
+
+/* Értékelés vélemény buborék az adatlapon */
+.review-bubble {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(243, 238, 223, 0.1);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  line-height: 1.4;
 }

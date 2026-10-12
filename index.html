@@ -260,7 +260,7 @@
       </div>
       <p class="view-intro" style="margin-bottom:12px;">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
-      <!-- KÖZÖSSÉGI MUTATÓK SÁV (SOCIAL PROOF - 733+ GYŰJTŐVEL) -->
+      <!-- KÖZÖSSÉGI MUTATÓK SÁV (733+ GYŰJTŐVEL) -->
       <div id="hub-social-proof-bar" class="social-proof-bar" style="margin-bottom:16px;">
         <div class="social-proof-item">
           <span class="sp-icon">👥</span>
@@ -357,10 +357,10 @@
         <div class="legend-item"><span class="legend-chip state-van"></span> 1x = <strong>Dupla (Van)</strong></div>
         <div class="legend-item"><span class="legend-chip state-kell"></span> 2x = <strong>Hiányzik (Kell)</strong></div>
         <div class="legend-item"><span class="legend-chip state-foglalva"></span> 3x = <strong>Foglalva (Félretéve)</strong></div>
-        <div class="legend-item"><span class="legend-chip state-ures"></span> 4x = Üres</div>
+        <div class="legend-item"><span class="legend-chip state-ures"></span> 4x = Üres / Megvan</div>
       </div>
       <p class="view-intro" style="font-size:0.8rem; margin-top:4px;">
-        <em>💡 A <strong>kékkel (Foglalva)</strong> jelölt tételek kikerülnek a nyilvános cserékből. Több darabnál tartsd hosszan nyomva a mezőt (PC-n jobb klikk).</em>
+        <em>💡 Több darabnál jobb klikk (mobilon hosszú nyomás) a darabszám beállításához. Ha elindítasz egy cserét, a lefoglalt darabszám bal felül egy kis lakatot (🔒) kap!</em>
       </p>
 
       <div style="margin-bottom:14px;">
@@ -407,7 +407,7 @@
         </div>
         <div id="matrica-grid"></div>
 
-        <!-- RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & FOGLALÁSOK PANEL -->
+        <!-- RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & ARCHÍVUM PANEL -->
         <div id="active-trades-panel" class="card" style="margin-top:16px; border-left:4px solid var(--reserved-blue); display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <h3 style="margin:0; font-size:1.05rem; color:var(--reserved-blue-soft);">
@@ -473,69 +473,91 @@
       </div>
     </section>
 
-    <!-- 3. MATRICÁIM: KERESŐ & TÁVOLSÁGI & TELEPÜLÉSKERESŐ MODUL -->
+    <!-- 3. MATRICÁIM: KERESŐ & TÁVOLSÁGI & TELEPÜLÉSKERESŐ MODUL (HARMONIKÁK) -->
     <section id="view-kereso" class="view">
-      <h2>Tételkereső & Közeli Cserepartnerek</h2>
-      <p class="view-intro">Kereshetsz konkrét matricára, szűrhetsz adott településre, vagy megkeresheted a fizikailag legközelebb élő partnereket.</p>
+      <h2>Tételkereső & Cserepartnerek</h2>
+      <p class="view-intro">Kattints a fejezetek fejlécére a lenyitáshoz vagy összecsukáshoz:</p>
       
-      <!-- 1. BLOKK: TÉTEL- ÉS MATRICAKERESŐ -->
-      <div class="card" style="margin-bottom:16px;">
-        <h3 style="margin-top:0; font-size:1.05rem; color:var(--amber);">🔍 1. Tételkeresés az albumban</h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-          Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>1-12</code>) vagy névrészletre (pl. <code>tigris</code>):
-        </p>
-        <div class="search-box">
-          <input type="search" id="search-input" class="input-field" placeholder="Pl. 42 vagy 30-38 vagy 1-12 vagy tigris" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="item_search_q_secure">
-          <button class="btn btn-primary" id="btn-search">Keresés</button>
+      <!-- 1. BLOKK: TÉTELKERESÉS (LENYITHATÓ & ENTER GOMB) -->
+      <details class="search-accordion" open id="search-acc-items">
+        <summary class="search-acc-summary">
+          <span>🔍 1. Tételkeresés az albumban (szám vagy név)</span>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="search-acc-body">
+          <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+            Kereshetsz számra (<code>42</code>, <code>30-38</code>, <code>1-12</code>) vagy névre (pl. <code>tigris</code>). Nyomj Entert a kereséshez:
+          </p>
+          <div class="search-box">
+            <input type="search" id="search-input" class="input-field" placeholder="Pl. 42 vagy tigris (Enter)..." autocomplete="off">
+            <button class="btn btn-primary" id="btn-search">Keresés</button>
+          </div>
+          
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+            <button class="btn btn-secondary btn-sm" id="btn-search-all-missing" style="flex:1;">
+              📋 Kiknél van a legtöbb hiányzóm?
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-close-item-search" style="display:none; color:var(--danger); border-color:var(--danger);">
+              ✕ Találati lista bezárása
+            </button>
+          </div>
+
+          <div id="search-results" style="margin-top:14px; display:none;"></div>
         </div>
-        
-        <button class="btn btn-secondary" id="btn-search-all-missing" style="width:100%; margin-top:4px;">
-          📋 Kiknél van a legtöbb hiányzóm? (Összes hiányzó keresése)
-        </button>
+      </details>
 
-        <div id="search-results" style="margin-top:14px; display:none;"></div>
-      </div>
-
-      <!-- 2. BLOKK: KÖZVETLEN KERESÉS TELEPÜLÉS SZERINT (A SAJÁT VÁROS ÁTÁLLÍTÁSA NÉLKÜL) -->
-      <div class="card" style="margin-bottom:16px; border-left:4px solid var(--water-light);">
-        <h3 style="margin-top:0; font-size:1.05rem; color:var(--sand);">🏙️ 2. Keresés konkrét település szerint</h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-          Tudod, hogy egy barátod vagy rokonod ott lakik, vagy arra jársz? Keress rá a városra anélkül, hogy át kellene írnod a saját profilodat:
-        </p>
-        <div style="display:flex; gap:8px;">
-          <input type="search" id="search-by-city-input" class="input-field" list="hungarian-cities-list" placeholder="Írd be a település nevét (pl. Nagykőrös, Szeged, Cegléd)..." autocomplete="off">
-          <button class="btn btn-primary" id="btn-search-by-city" style="white-space:nowrap;">Szűrés</button>
-          <button class="btn btn-secondary" id="btn-clear-city-search" style="display:none;" title="Szűrés törlése">✕</button>
+      <!-- 2. BLOKK: KERESÉS TELEPÜLÉS SZERINT (LENYITHATÓ & SAJÁT TALÁLATI DOBOZ) -->
+      <details class="search-accordion" open id="search-acc-city" style="margin-top:12px;">
+        <summary class="search-acc-summary">
+          <span>🏙️ 2. Keresés konkrét település szerint</span>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="search-acc-body">
+          <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
+            Keress rá rokonok vagy ismerősök városára anélkül, hogy át kellene írnod a saját profilodat. Nyomj Entert:
+          </p>
+          <div style="display:flex; gap:8px;">
+            <input type="search" id="search-by-city-input" class="input-field" list="hungarian-cities-list" placeholder="Írd be a települést (pl. Nagykőrös, Szeged)..." autocomplete="off">
+            <button class="btn btn-primary" id="btn-search-by-city" style="white-space:nowrap;">Szűrés</button>
+            <button class="btn btn-secondary" id="btn-clear-city-search" style="display:none;" title="Szűrés törlése">✕</button>
+          </div>
+          
+          <!-- A településkereső SAJÁT találati doboza -->
+          <div id="city-search-results-box" style="margin-top:12px; display:none;">
+            <div id="city-search-status" style="font-size:0.82rem; color:var(--amber); margin-bottom:8px; font-weight:600;"></div>
+            <div id="city-search-partners-list"></div>
+          </div>
         </div>
-        <div id="city-search-status" style="font-size:0.78rem; color:var(--amber); margin-top:6px; display:none;"></div>
-      </div>
+      </details>
 
-      <!-- 3. BLOKK: KÖZELI CSEREPARTNEREK KERESŐJE (GPS ÉS TÁVOLSÁG ALAPJÁN) -->
-      <div class="card" style="border-left:4px solid var(--amber);">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-          <h3 style="margin:0; font-size:1.05rem; color:var(--sand);">📍 3. Közeli cserepartnerek távolság szerint (GPS)</h3>
-          <button class="btn btn-secondary btn-sm" id="btn-search-gps-locate" style="font-size:0.75rem; padding:4px 10px;">
-            📍 Saját helyzet bemérése (GPS)
-          </button>
+      <!-- 3. BLOKK: KÖZELI CSEREPARTNEREK TÁVOLSÁG SZERINT (LENYITHATÓ) -->
+      <details class="search-accordion" open id="search-acc-gps" style="margin-top:12px;">
+        <summary class="search-acc-summary">
+          <span>📍 3. Közeli cserepartnerek távolság szerint (GPS)</span>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="search-acc-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+            <span style="font-size:0.78rem; color:var(--text-muted);">Légvonalbeli GPS távolság alapján:</span>
+            <button class="btn btn-secondary btn-sm" id="btn-search-gps-locate" style="font-size:0.75rem; padding:4px 10px;">
+              📍 Saját helyzet bemérése
+            </button>
+          </div>
+
+          <div id="search-gps-status" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; display:none;"></div>
+
+          <div class="filter-group" id="search-radius-group" style="margin-bottom:12px;">
+            <button class="filter-btn active" data-radius="all">Országos (Mind)</button>
+            <button class="filter-btn" data-radius="5">5 km-en belül</button>
+            <button class="filter-btn" data-radius="10">10 km-en belül</button>
+            <button class="filter-btn" data-radius="25">25 km-en belül</button>
+            <button class="filter-btn" data-radius="50">50 km-en belül</button>
+            <button class="filter-btn" data-radius="city">Saját város</button>
+          </div>
+
+          <div id="proximity-partners-list"></div>
         </div>
-
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-          Keresd meg a hozzád legközelebb eső aktív gyűjtőtársakat légvonalbeli távolság alapján:
-        </p>
-
-        <div id="search-gps-status" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; display:none;"></div>
-
-        <div class="filter-group" id="search-radius-group" style="margin-bottom:12px;">
-          <button class="filter-btn active" data-radius="all">Országos (Mind)</button>
-          <button class="filter-btn" data-radius="5">5 km-en belül</button>
-          <button class="filter-btn" data-radius="10">10 km-en belül</button>
-          <button class="filter-btn" data-radius="25">25 km-en belül</button>
-          <button class="filter-btn" data-radius="50">50 km-en belül</button>
-          <button class="filter-btn" data-radius="city">Saját város</button>
-        </div>
-
-        <div id="proximity-partners-list"></div>
-      </div>
+      </details>
     </section>
 
     <!-- 4. BOLTI KÉSZLETRADAR NÉZET -->
@@ -1464,12 +1486,23 @@
   </div>
 </div>
 
-<!-- GYŰJTŐTELJES ADATLAP MODAL -->
+<!-- GYŰJTŐ ADATLAP MODAL (ÉRTÉKELÉSEKKEL ÉS CSEREINDÍTÓVAL) -->
 <div id="modal-user-profile" class="modal-overlay">
-  <div class="modal-card" style="max-width:500px;">
+  <div class="modal-card" style="max-width:520px;">
     <button class="modal-close" id="btn-close-user-profile">✕</button>
-    <h3 id="user-profile-modal-name" style="margin-top:0;">Gyűjtő adatlapja</h3>
-    <p id="user-profile-modal-city" style="font-size:0.85rem; color:var(--text-muted); margin:0 0 8px;"></p>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; flex-wrap:wrap; gap:6px;">
+      <h3 id="user-profile-modal-name" style="margin:0;">Gyűjtő adatlapja</h3>
+      <span id="user-profile-rating-badge" style="font-size:0.85rem; font-weight:800; color:var(--gift-gold);"></span>
+    </div>
+    <p id="user-profile-modal-city" style="font-size:0.85rem; color:var(--text-muted); margin:0 0 10px;"></p>
+
+    <!-- LENYÍLHATÓ ÉRTÉKELÉSEK ÉS VÉLEMÉNYEK BLOKK -->
+    <details id="user-profile-reviews-details" style="margin-bottom:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-sm); padding:6px 10px; display:none;">
+      <summary style="font-size:0.8rem; color:var(--amber); cursor:pointer; font-weight:700;">
+        💬 Vélemények és értékelések megtekintése (<span id="user-profile-reviews-count">0</span>)
+      </summary>
+      <div id="user-profile-reviews-list" style="margin-top:8px; display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto;"></div>
+    </details>
     
     <div id="user-profile-favorites-box" style="display:none; background:rgba(216,155,74,0.15); border:1px solid rgba(216,155,74,0.4); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:12px; font-size:0.82rem;">
       <strong>Kedvencei:</strong> <span id="user-profile-favorites-text" style="color:var(--sand);"></span>
@@ -1477,15 +1510,18 @@
 
     <div style="margin-bottom:12px;">
       <h4 style="margin:0 0 4px; font-size:0.9rem; color:var(--fur-brown-soft);">Neki hiányzó tételek:</h4>
-      <div id="user-profile-missing-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;"></div>
+      <div id="user-profile-missing-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6; max-height:100px; overflow-y:auto;"></div>
     </div>
 
     <div style="margin-bottom:14px;">
       <h4 style="margin:0 0 4px; font-size:0.9rem; color:var(--moss-soft);">Nála lévő duplikátumok:</h4>
-      <div id="user-profile-van-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6;"></div>
+      <div id="user-profile-van-tags" style="font-size:0.85rem; background:rgba(0,0,0,0.25); padding:8px; border-radius:var(--radius-sm); line-height:1.6; max-height:100px; overflow-y:auto;"></div>
     </div>
 
-    <div style="display:flex; justify-content:flex-end;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(243,238,223,0.12); padding-top:12px;">
+      <button class="btn btn-contact-green btn-sm" id="btn-user-profile-contact" style="flex:1;">
+        🤝 Kapcsolatfelvétel ezzel a gyűjtővel
+      </button>
       <button class="btn btn-secondary btn-sm" id="btn-close-user-profile-2">Bezárás</button>
     </div>
   </div>
