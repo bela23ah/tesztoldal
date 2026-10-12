@@ -762,3 +762,23 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   color: var(--water-deep); padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
   display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
 }
+/* Zárolt / Lakat jelvény a duplák mellett */
+.qty-badge.locked-badge {
+  background: var(--reserved-blue) !important;
+  color: #FFFFFF !important;
+  border-color: var(--reserved-blue-soft) !important;
+  top: -4px;
+  right: auto;
+  left: -4px; /* A bal felső sarokba kerül, hogy ne takarja a zöld darabszámot! */
+  font-size: 0.65rem;
+  padding: 1px 4px;
+}
+
+/* Lezárt cserék lenyitható szakasza */
+.archived-trades-details summary::-webkit-details-marker {
+  display: none;
+}
+.archived-trades-details[open] summary {
+  margin-bottom: 6px;
+  color: var(--sand);
+}

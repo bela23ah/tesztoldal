@@ -1,5 +1,6 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0+ - 1. RÉSZ: MOTOR & RÁCS)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.0+ VÉGLEGES KIADÁS)
+// 1. RÉSZ: ADATBÁZIS, MOTOR, 4-ÁLLAPOTÚ KATTINTÁS & RÁCSKEZELÉS
 // =========================================================================
 
 let ALBUMS_REGISTRY = {
@@ -443,7 +444,7 @@ const CITY_COORDINATES = {
   "nagykanizsa": { lat: 46.4535, lng: 16.9910, x: 21.0, y: 70.0 }
 };
 
-// BOLTI KÉSZLETRADAR ADATBÁZIS (221 LIDL ÁRUHÁZ)
+// 221 LIDL BOLTLISTA ÉS ÁRUHÁZLÁNCOK
 const STORE_DATABASES = {
   "lidl": [
     "Agárd – Akácfa utca 2.", "Ajka – Hársfa utca 1/A", "Aszód – Pesti út 14-16.",
@@ -538,7 +539,7 @@ const STORE_DATABASES = {
   ]
 };
 
-// Haversine formula távolsághoz (km)
+// Haversine távolságszámítás (km)
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
   const R = 6371;
@@ -693,7 +694,7 @@ function isLocalCityMatch(locA, locB) {
   return citiesA.some(cA => citiesB.includes(cA));
 }
 
-// 1. TÉTELKÓD (A csempére)
+// 1. TÉTELKÓD
 function getItemLabel(num, albumId = currentAlbumId) {
   const album = ALBUMS_REGISTRY[albumId];
   if (album && album.customItems && album.customItems[num - 1]) {
@@ -703,7 +704,7 @@ function getItemLabel(num, albumId = currentAlbumId) {
   return `#${num}`;
 }
 
-// 2. TELJES TÉTELNÉV (Lebegő tooltipben és kedvenceknél)
+// 2. TELJES TÉTELNÉV
 function getItemFullName(num, albumId = currentAlbumId) {
   if (albumId === 'lidl-lutra-2026') {
     return STICKER_NAMES[num] ? `#${num} ${STICKER_NAMES[num]}` : `#${num}`;
@@ -858,7 +859,7 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// ⚡ JAVÍTOTT ensureArray() - Tisztítja a # jeleket és stringeket
+// ⚡ JAVÍTOTT ensureArray()
 function ensureArray(val) {
   if (!val) return [];
   const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
@@ -1178,7 +1179,7 @@ function initFavoriteSelects() {
   });
 }
 
-// KÖZÖSSÉGI MUTATÓK (SOCIAL PROOF) FRISSÍTÉSE (733+ ALAPPAL)
+// KÖZÖSSÉGI MUTATÓK (733+ GYŰJTŐVEL)
 function updateHubSocialProofMetrics() {
   const collectorsEl = document.getElementById('sp-collectors-count');
   const trackedEl = document.getElementById('sp-tracked-items-count');
@@ -1312,7 +1313,7 @@ safeAddListener('hub-albums-grid', (e) => {
   selectAlbum(albumId);
 });
 
-// KÖZÖSSÉGI ÚJ GYŰJTEMÉNY JAVASLAT BEKÜLDÉSE (MODAL)
+// KÖZÖSSÉGI ÚJ GYŰJTEMÉNY JAVASLAT BEKÜLDÉSE
 safeAddListener('btn-open-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.add('open'));
 safeAddListener('btn-close-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
 safeAddListener('btn-close-suggest-album-2', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
@@ -1491,7 +1492,9 @@ document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   });
 });
 
-// KLASSZIKUS, TISZTA, 0 MS-OS RÁCS
+// =========================================================================
+// RÁCS RENDERELÉS: SZABAD DUPLA + 🔒 LAKAT JELVÉNY ZÁROLÁSKOR
+// =========================================================================
 function renderGrid() {
   const grid = document.getElementById('matrica-grid');
   if (!grid) return;
@@ -1507,34 +1510,41 @@ function renderGrid() {
   for (let i = 1; i <= totalSize; i++) {
     const isVan = vanSet.has(i);
     const isKell = kellSet.has(i);
-    const isFoglalva = foglalvaSet.has(i);
+    const isFog = foglalvaSet.has(i);
 
     if (currentFilter === 'van' && !isVan) continue;
     if (currentFilter === 'kell' && !isKell) continue;
-    if (currentFilter === 'foglalva' && !isFoglalva) continue;
+    if (currentFilter === 'foglalva' && !isFog) continue;
 
-    let cls = isVan ? 'van' : isKell ? 'kell' : isFoglalva ? 'foglalva' : '';
+    let cls = isVan ? 'van' : isKell ? 'kell' : isFog ? 'foglalva' : '';
     if (isFigure) cls += ' cell-figure';
 
-    let qty = 1;
-    let badgeCls = 'qty-badge';
-    if (isVan && myProfile.vanCounts && myProfile.vanCounts[i]) qty = myProfile.vanCounts[i];
-    if (isFoglalva && myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) {
-      qty = myProfile.foglalvaCounts[i];
-      badgeCls = 'qty-badge foglalva';
+    let badgesHtml = '';
+    const vQty = (isVan && myProfile.vanCounts && myProfile.vanCounts[i]) ? myProfile.vanCounts[i] : 1;
+    const fQty = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) ? myProfile.foglalvaCounts[i] : 0;
+
+    // Szabad duplák száma (zöld badge)
+    if (isVan && vQty > 1) {
+      badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
+    }
+    // Zárolt tételek száma (kék lakat badge a bal felső sarokban)
+    if (isVan && fQty > 0) {
+      badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
+    }
+    // Csak zárolt tétel (kék cella)
+    if (isFog && fQty > 1) {
+      badgesHtml += `<span class="qty-badge foglalva">×${fQty}</span>`;
     }
 
-    const qtyBadge = ((isVan || isFoglalva) && qty > 1) ? `<span class="${badgeCls}">×${qty}</span>` : '';
     const itemLabel = getItemLabel(i, currentAlbumId);
     const itemFull = getItemFullName(i, currentAlbumId);
 
     html += `<div class="matrica-cell ${cls}" data-num="${i}" title="${escapeHtml(itemFull)}">
       ${escapeHtml(itemLabel)}
-      ${qtyBadge}
+      ${badgesHtml}
     </div>`;
   }
   grid.innerHTML = html;
-
   updateBadgeCounts();
 }
 
@@ -1657,70 +1667,91 @@ function renderAlbumChapter() {
 
 let activePopoverNum = null;
 const popover = document.getElementById('qty-popover');
-let lastToggleTimestamp = 0;
-let lastToggledStickerNum = null;
 
-// ⚡ 0 MS-OS JAVÍTOTT KATTINTÁSKEZELŐ (RÁCS ÉS ALBUM NÉZET EGYÜTTESSÉGE)
+// =========================================================================
+// ⚡ 0 MS-OS KÖZVETLEN 4-ÁLLAPOTÚ CIKLUS (BERAGADÁS ÉS VILLÓDZÁSMENTES)
+// =========================================================================
 function toggleStickerState(num) {
-  const now = Date.now();
-  if (num === lastToggledStickerNum && now - lastToggleTimestamp < 150) return;
-  lastToggleTimestamp = now;
-  lastToggledStickerNum = num;
-
   hideQtyPopover();
-  const vanIdx = myProfile.van.indexOf(num);
-  const kellIdx = myProfile.kell.indexOf(num);
-  const fogIdx = myProfile.foglalva.indexOf(num);
+
+  const isVan = myProfile.van.includes(num);
+  const isKell = myProfile.kell.includes(num);
+  const isFog = myProfile.foglalva.includes(num);
 
   let newState = '';
 
-  if (vanIdx > -1) {
-    myProfile.van.splice(vanIdx, 1);
-    delete myProfile.vanCounts[num];
-    myProfile.kell.push(num);
-    newState = 'kell';
-  } else if (kellIdx > -1) {
-    myProfile.kell.splice(kellIdx, 1);
-    myProfile.foglalva.push(num);
-    if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
-    myProfile.foglalvaCounts[num] = 1;
-    newState = 'foglalva';
-  } else if (fogIdx > -1) {
-    myProfile.foglalva.splice(fogIdx, 1);
-    if (myProfile.foglalvaCounts) delete myProfile.foglalvaCounts[num];
-    newState = '';
-  } else {
+  // 1. Alapból ➔ DUPLA (Zöld)
+  if (!isVan && !isKell && !isFog) {
     myProfile.van.push(num);
     myProfile.vanCounts[num] = 1;
     newState = 'van';
   }
+  // 2. Duplából ➔ HIÁNYZIK (Barna)
+  else if (isVan) {
+    const idx = myProfile.van.indexOf(num);
+    if (idx > -1) myProfile.van.splice(idx, 1);
+    delete myProfile.vanCounts[num];
+    myProfile.kell.push(num);
+    newState = 'kell';
+  }
+  // 3. Hiányzóból ➔ FOGLALT (Kék)
+  else if (isKell) {
+    const idx = myProfile.kell.indexOf(num);
+    if (idx > -1) myProfile.kell.splice(idx, 1);
+    myProfile.foglalva.push(num);
+    if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
+    myProfile.foglalvaCounts[num] = 1;
+    newState = 'foglalva';
+  }
+  // 4. Foglaltból ➔ ALAP / ÜRES (Megvan az albumban)
+  else if (isFog) {
+    const idx = myProfile.foglalva.indexOf(num);
+    if (idx > -1) myProfile.foglalva.splice(idx, 1);
+    if (myProfile.foglalvaCounts) delete myProfile.foglalvaCounts[num];
+    newState = '';
+  }
 
-  // 1. Rácsos csempe közvetlen DOM manipulációja
+  // Azonnali helyi DOM manipuláció a rácsban és az albumnézetben
+  updateSingleCellDOM(num, newState);
+  updateBadgeCounts();
+  saveMyStateFast();
+}
+
+function updateSingleCellDOM(num, state) {
   const cell = document.querySelector(`.matrica-cell[data-num="${num}"]`);
   if (cell) {
     cell.classList.remove('van', 'kell', 'foglalva');
-    if (newState) cell.classList.add(newState);
-    const existingBadge = cell.querySelector('.qty-badge');
-    if (existingBadge) existingBadge.remove();
+    if (state) cell.classList.add(state);
+    
+    const badges = cell.querySelectorAll('.qty-badge');
+    badges.forEach(b => b.remove());
+
+    let badgesHtml = '';
+    const vQty = (state === 'van' && myProfile.vanCounts?.[num]) ? myProfile.vanCounts[num] : 0;
+    const fQty = (myProfile.foglalvaCounts?.[num]) ? myProfile.foglalvaCounts[num] : 0;
+
+    if (vQty > 1) {
+      badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
+    }
+    if (fQty > 0 && state === 'van') {
+      badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
+    } else if (fQty > 1 && state === 'foglalva') {
+      badgesHtml += `<span class="qty-badge foglalva">×${fQty}</span>`;
+    }
+    cell.insertAdjacentHTML('beforeend', badgesHtml);
   }
 
-  // 2. Album nézet slot elemeinek közvetlen frissítése (hogy ne ragadjon be)
   const albumSlots = document.querySelectorAll(`[data-num="${num}"]`);
   albumSlots.forEach(el => {
     if (el.classList.contains('slot') || el.classList.contains('combo-half')) {
       el.classList.remove('van', 'kell', 'foglalva');
-      if (newState) el.classList.add(newState);
-      const tagEl = el.querySelector('.sticker-tag');
-      if (tagEl) {
-        tagEl.textContent = newState === 'van' ? 'Dupla' : newState === 'kell' ? 'Hiányzik' : newState === 'foglalva' ? 'Foglalt' : 'Üres';
+      if (state) el.classList.add(state);
+      const tag = el.querySelector('.sticker-tag');
+      if (tag) {
+        tag.textContent = state === 'van' ? 'Dupla' : state === 'kell' ? 'Hiányzik' : state === 'foglalva' ? 'Foglalt' : 'Üres';
       }
-      const existingBadge = el.querySelector('.qty-badge');
-      if (existingBadge) existingBadge.remove();
     }
   });
-
-  updateBadgeCounts();
-  saveMyStateFast();
 }
 
 function showQtyPopover(num, targetEl) {
@@ -1768,12 +1799,16 @@ function hideQtyPopover() {
   activePopoverNum = null;
 }
 
+// =========================================================================
+// ÉRINTÉS ÉS KATTINTÁSKEZELŐ (JOBB KLIKK / HOSSZÚ NYOMÁS = POPOVER)
+// =========================================================================
 function attachStickerInteraction(container) {
   if (!container) return;
+  let touchStartPos = { x: 0, y: 0 };
+  let isLongPressTriggered = false;
   let longPressTimer = null;
-  let isLongPress = false;
-  let touchMoved = false;
 
+  // Jobb klikk (PC)
   container.addEventListener('contextmenu', (e) => {
     const target = e.target.closest('[data-num]');
     if (target) {
@@ -1782,34 +1817,41 @@ function attachStickerInteraction(container) {
     }
   });
 
+  // Hosszú nyomás (Mobil)
   container.addEventListener('touchstart', (e) => {
     const target = e.target.closest('[data-num]');
     if (!target) return;
-    isLongPress = false;
-    touchMoved = false;
+    touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    isLongPressTriggered = false;
+
     clearTimeout(longPressTimer);
     longPressTimer = setTimeout(() => {
-      if (!touchMoved) {
-        isLongPress = true;
-        showQtyPopover(parseInt(target.dataset.num, 10), target);
-      }
+      isLongPressTriggered = true;
+      if ("vibrate" in navigator) navigator.vibrate(35);
+      showQtyPopover(parseInt(target.dataset.num, 10), target);
     }, 450);
   }, { passive: true });
 
-  container.addEventListener('touchmove', () => {
-    touchMoved = true;
-    clearTimeout(longPressTimer);
+  container.addEventListener('touchmove', (e) => {
+    const moveX = Math.abs(e.touches[0].clientX - touchStartPos.x);
+    const moveY = Math.abs(e.touches[0].clientY - touchStartPos.y);
+    if (moveX > 10 || moveY > 10) {
+      clearTimeout(longPressTimer);
+    }
   }, { passive: true });
 
-  container.addEventListener('touchend', () => {
+  container.addEventListener('touchend', (e) => {
     clearTimeout(longPressTimer);
-    if (isLongPress) isLongPress = false;
+    if (isLongPressTriggered) {
+      e.preventDefault();
+      return;
+    }
   });
 
+  // Bal kattintás / Mobil gyors koppintás ➔ 0 ms azonnali váltás
   container.addEventListener('click', (e) => {
-    if (isLongPress || touchMoved) {
-      isLongPress = false;
-      touchMoved = false;
+    if (isLongPressTriggered) {
+      isLongPressTriggered = false;
       return;
     }
     const target = e.target.closest('[data-num]');
@@ -1819,7 +1861,6 @@ function attachStickerInteraction(container) {
   });
 }
 
-// LUTRA KETTŐS MENTÉS (DUAL-SYNC) .set({ merge: true }) VÉDELEMMEL
 function syncLutraDualSave(albumId) {
   if (!currentUser || !db) return;
   const isLutra = (albumId === 'lidl-lutra-2026');
@@ -2086,7 +2127,8 @@ safeAddListener('btn-album-next', () => {
   if (currentChapterIndex < chapters.length - 1) { currentChapterIndex++; renderAlbumChapter(); }
 });
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0+ - 2. RÉSZ: ROUTER, CSEREMENEDZSMENT & LIKE MOTOR)
+// 2. RÉSZ: ROUTER, TÁVOLSÁGMÉRŐ, CSOPORTOS CSERETERVEZŐ,
+// ZÁROLÁS & ARCHÍVUM, ÉS A KIIKSZELŐS KAPCSOLATFELVÉTEL
 // =========================================================================
 
 // AUTOMATIKUS LINKFELISMERŐ
@@ -2210,7 +2252,7 @@ function updateCserebereBadge() {
   badge.style.display = (hasUnread || hasMeetup) ? 'inline-block' : 'none';
 }
 
-// GPS ÉS TÁVOLSÁGI HELYZET LEKÉRÉSE
+// GPS ÉS TÁVOLSÁG MEGHATÁROZÁSA
 function getUserCoordinates(userObj) {
   if (userObj.geo && typeof userObj.geo.lat === 'number') {
     return userObj.geo;
@@ -2271,7 +2313,7 @@ function requestGpsLocation(callback) {
       myProfile.geo = myGpsCoords;
       localStorage.setItem('cserelj_gps_coords', JSON.stringify(myGpsCoords));
       if (statusEl) {
-        statusEl.innerHTML = '<span style="color:var(--moss-soft);">✓ Helyzet sikeresen bemérve! A távolsági szűrők aktívak.</span>';
+        statusEl.innerHTML = '<span style="color:var(--moss-soft);">✓ Helyzet sikeresen bemérve! Távolsági szűrők aktívak.</span>';
       }
       showToast("GPS koordináták rögzítve!");
       renderMatches();
@@ -2369,7 +2411,7 @@ function computeLoopMatches() {
   return loops;
 }
 
-// PÁROSÍTÁSOK LISTÁZÁSA
+// PÁROSÍTÁSOK MEGJELENÍTÉSE
 function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
@@ -2385,7 +2427,7 @@ function renderMatches() {
         <div class="card" style="text-align:center; padding:20px;">
           <h3 style="margin:0 0 6px;">Nincs elérhető 3 fős körcsere</h3>
           <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-            Ahogy több gyűjtő rögzíti a dupláit ehhez az albumhoz, a rendszer automatikusan felajánlja a 3 fős kombinációkat!
+            Ahogy több gyűjtő rögzíti a dupláit, a rendszer automatikusan felajánlja a 3 fős kombinációkat!
           </p>
         </div>`;
       return;
@@ -2611,7 +2653,7 @@ function renderTradePlannerModal() {
       <div class="card" style="border:1.5px solid var(--danger); background:rgba(232,90,79,0.12);">
         <h4 style="margin:0 0 6px; color:#FFC0BA; font-size:0.95rem;">Ütköző tételek (${conflicts.length} db)</h4>
         <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-          Ezeket a tételeket többen is kérik, mint amennyi duplád van:
+          Ezeket a tételeket többen kérik, mint amennyi duplád van:
         </p>
         ${conflicts.map(c => {
           const currentWinnerUid = tradePlanManualOverrides[c.num] || [...c.demandList].sort((a, b) => {
@@ -2753,7 +2795,7 @@ safeAddListener('matches-list', 'click', (e) => {
 });
 
 // =========================================================================
-// RUGALMAS KIIKSZELŐS CSEREAJÁNLAT-SZERKESZTŐ & KAPCSOLATFELVÉTEL
+// KIIKSZELŐS KAPCSOLATFELVÉTELI RENDSZER
 // =========================================================================
 
 let activeContactGiveNums = [];
@@ -2894,7 +2936,7 @@ function openDirectContactModal(targetUser, numsArray, isGift) {
   setupContactModal(targetUser, subject, [], getNums, isGift);
 }
 
-// BELSŐ ÜZENET KÜLDÉSE & AUTOMATIKUS CSERE-RÖGZÍTÉS A RÁCS ALATT
+// BELSŐ ÜZENET KÜLDÉSE ÉS CSERE ZÁROLÁSA
 safeAddListener('btn-send-message', () => {
   const messageText = document.getElementById('contact-msg-input')?.value.trim() || '';
   if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
@@ -3001,7 +3043,7 @@ safeAddListener('btn-copy-partner-email', () => {
 });
 
 // =========================================================================
-// RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & ZÁROLÁSOK VEZÉRLŐPANEL
+// RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & LENYITHATÓ ARCHÍVUM
 // =========================================================================
 
 let activeTradeClosingData = null;
@@ -3013,43 +3055,79 @@ function renderActiveTradesPanel() {
 
   if (!panel || !list) return;
 
-  const trades = myProfile.activeTrades || [];
-  if (countSpan) countSpan.textContent = trades.length;
+  const allTrades = myProfile.activeTrades || [];
+  const pendingTrades = allTrades.filter(t => t.status !== 'completed');
+  const completedTrades = allTrades.filter(t => t.status === 'completed');
 
-  if (trades.length === 0) {
+  if (countSpan) countSpan.textContent = pendingTrades.length;
+
+  if (pendingTrades.length === 0 && completedTrades.length === 0) {
     panel.style.display = 'none';
     list.innerHTML = '';
     return;
   }
 
   panel.style.display = 'block';
-  list.innerHTML = trades.map((t, idx) => `
-    <div class="trade-manage-card" data-trade-idx="${idx}">
-      <div class="trade-manage-header">
-        <div>
-          <strong style="color:#FFF; font-size:0.95rem;">${escapeHtml(t.partnerName || 'Cserepartner')}</strong>
-          <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">(${escapeHtml(t.partnerCity || 'Partner')})</span>
+
+  let html = '';
+
+  // 1. Folyamatban lévő cserék kártyái
+  if (pendingTrades.length > 0) {
+    html += pendingTrades.map((t) => {
+      const originalIdx = allTrades.indexOf(t);
+      return `
+        <div class="trade-manage-card" data-trade-idx="${originalIdx}">
+          <div class="trade-manage-header">
+            <div>
+              <strong style="color:#FFF; font-size:0.95rem;">${escapeHtml(t.partnerName || 'Cserepartner')}</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">(${escapeHtml(t.partnerCity || 'Partner')})</span>
+            </div>
+            <span class="badge-trade-status badge-status-reserved">🔒 Zárolva / Úton</span>
+          </div>
+
+          <div style="font-size:0.8rem; line-height:1.5; margin:6px 0; background:rgba(0,0,0,0.2); padding:8px; border-radius:var(--radius-sm);">
+            <p style="margin:2px 0;"><strong>Te adod (Lefoglalva):</strong> ${t.givingItems && t.givingItems.length ? t.givingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Nincs lefoglalt tétel)</em>'}</p>
+            <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle várod:</strong> ${t.receivingItems && t.receivingItems.length ? t.receivingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Ajándék felajánlás)</em>'}</p>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:6px;">
+            <button class="btn btn-contact-green btn-sm" data-action="complete-trade" data-trade-idx="${originalIdx}">
+              ✓ Megérkezett / Csere lezárása
+            </button>
+            <button class="btn btn-secondary btn-sm" data-action="cancel-trade" data-trade-idx="${originalIdx}" style="color:var(--danger); border-color:var(--danger);">
+              ✕ Megállapodás visszavonása
+            </button>
+          </div>
         </div>
-        <span class="badge-trade-status ${t.status === 'completed' ? 'badge-status-completed' : 'badge-status-reserved'}">
-          ${t.status === 'completed' ? '✓ Lezárva' : '🔒 Zárolva / Folyamatban'}
-        </span>
-      </div>
+      `;
+    }).join('');
+  } else {
+    html += '<p style="font-size:0.82rem; color:var(--sand); margin:4px 0 10px;">Jelenleg nincs folyamatban lévő, aktív megállapodásod.</p>';
+  }
 
-      <div style="font-size:0.8rem; line-height:1.5; margin:6px 0; background:rgba(0,0,0,0.2); padding:8px; border-radius:var(--radius-sm);">
-        <p style="margin:2px 0;"><strong>Te adod neki (Lefoglalva):</strong> ${t.givingItems && t.givingItems.length ? t.givingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Nincs lefoglalt tétel)</em>'}</p>
-        <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle várod (Úton hozzád):</strong> ${t.receivingItems && t.receivingItems.length ? t.receivingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Ajándék felajánlás)</em>'}</p>
-      </div>
+  // 2. Összecsukható Archívum a már lezárt cseréknek
+  if (completedTrades.length > 0) {
+    html += `
+      <details class="archived-trades-details" style="margin-top:12px; border-top:1px dashed rgba(243,238,223,0.15); padding-top:8px;">
+        <summary style="font-size:0.8rem; color:var(--amber); cursor:pointer; font-weight:700; user-select:none;">
+          ▶ Korábbi sikeres cseréid (${completedTrades.length} db lezárva)
+        </summary>
+        <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+          ${completedTrades.map(t => `
+            <div style="background:rgba(0,0,0,0.25); padding:6px 10px; border-radius:var(--radius-sm); font-size:0.76rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="color:var(--text-primary);">${escapeHtml(t.partnerName)}</strong> (${escapeHtml(t.partnerCity || '')})
+                <br>Átadva: ${t.givingItems?.map(n => getItemLabel(n)).join(', ') || '-'} ➔ Kapva: ${t.receivingItems?.map(n => getItemLabel(n)).join(', ') || '-'}
+              </div>
+              <span style="color:var(--moss-soft); font-weight:700;">✓ Teljesítve</span>
+            </div>
+          `).join('')}
+        </div>
+      </details>
+    `;
+  }
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:6px;">
-        <button class="btn btn-contact-green btn-sm" data-action="complete-trade" data-trade-idx="${idx}">
-          ✓ Megérkezett / Csere lezárása
-        </button>
-        <button class="btn btn-secondary btn-sm" data-action="cancel-trade" data-trade-idx="${idx}" style="color:var(--danger); border-color:var(--danger);">
-          ✕ Megállapodás visszavonása
-        </button>
-      </div>
-    </div>
-  `).join('');
+  list.innerHTML = html;
 }
 
 safeAddListener('active-trades-list', 'click', (e) => {
@@ -3085,7 +3163,7 @@ safeAddListener('active-trades-list', 'click', (e) => {
     saveMyState();
     renderActiveTradesPanel();
     renderGrid();
-    showToast("Csere megállapodás visszavonva, a tételek újra szabadok a piacon.");
+    showToast("Csere megállapodás visszavonva, tételek újra szabadok.");
   }
 });
 
@@ -3108,7 +3186,7 @@ safeAddListener('btn-submit-trade-rating', async () => {
   if (!activeTradeClosingData) return;
   const { trade, tradeIdx } = activeTradeClosingData;
 
-  // 1. Kapott tételek hozzáadása
+  // 1. Kapott tételek beemelése
   if (trade.receivingItems) {
     trade.receivingItems.forEach(n => {
       const kIdx = myProfile.kell.indexOf(n);
@@ -3120,7 +3198,7 @@ safeAddListener('btn-submit-trade-rating', async () => {
     });
   }
 
-  // 2. Lefoglalt tételek levonása
+  // 2. Lefoglalt tételek végleges levonása
   if (trade.givingItems) {
     trade.givingItems.forEach(n => {
       if (myProfile.vanCounts && myProfile.vanCounts[n]) {
@@ -3142,7 +3220,8 @@ safeAddListener('btn-submit-trade-rating', async () => {
     });
   }
 
-  myProfile.activeTrades.splice(tradeIdx, 1);
+  // Státusz átállítása lezártra (így átkerül az Archívumba)
+  myProfile.activeTrades[tradeIdx].status = 'completed';
   saveMyState();
 
   if (currentUser && db && trade.partnerUid) {
@@ -3160,11 +3239,11 @@ safeAddListener('btn-submit-trade-rating', async () => {
   activeTradeClosingData = null;
   renderActiveTradesPanel();
   renderGrid();
-  showToast("Csere sikeresen lezárva! Az albumod frissült, a partner megkapta az értékelést.");
+  showToast("Csere sikeresen lezárva és archiválva!");
 });
 
 // =========================================================================
-// 1. BLOKK: TÉTELKERESŐ (KÉTÁLLÁSÚ ON/OFF GOMBBAL)
+// 1. BLOKK: TÉTELKERESŐ
 // =========================================================================
 
 safeAddListener('btn-search', () => {
@@ -3273,7 +3352,7 @@ safeAddListener('search-results', 'click', (e) => {
 });
 
 // =========================================================================
-// 2. BLOKK: KERESÉS TELEPÜLÉS SZERINT (PROFIL MÓDOSÍTÁSA NÉLKÜL)
+// 2. BLOKK: TELEPÜLÉSSZŰRŐ (PROFIL ÁTÍRÁSA NÉLKÜL)
 // =========================================================================
 
 safeAddListener('btn-search-by-city', () => {
@@ -3312,7 +3391,7 @@ safeAddListener('btn-clear-city-search', () => {
 });
 
 // =========================================================================
-// 3. BLOKK: KÖZELI CSEREPARTNEREK (25-ÖS LAPOZÁSSAL & TELEPÜLÉSSZŰRŐVEL)
+// 3. BLOKK: KÖZELI CSEREPARTNEREK (25-ÖS LAPOZÁSSAL)
 // =========================================================================
 
 let proximityDisplayLimit = 25;
@@ -3333,7 +3412,6 @@ function renderProximityPartners() {
       return { ...u, distanceKm, isSameCity, totalDupes };
     });
 
-  // Ha van aktív konkrét településszűrő
   if (selectedCityFilter) {
     list = list.filter(u => isLocalCityMatch(u.locations || u.telepules, selectedCityFilter));
   } else if (selectedSearchRadius === 'city') {
@@ -3407,7 +3485,7 @@ safeAddListener('proximity-partners-list', 'click', (e) => {
 });
 
 // =========================================================================
-// BOLTI KÉSZLETRADAR & TALÁLKOZÓK (LIKE MOTORRAL)
+// BOLTI KÉSZLETRADAR & TALÁLKOZÓK
 // =========================================================================
 
 safeAddListener('radar-photo-input', 'change', (e) => {
@@ -3791,7 +3869,8 @@ function listenToMeetups() {
     }, err => console.warn("Meetups listener:", err));
 }
 // =========================================================================
-// Cserélj Okosan - app.js (v4.0+ - 3. RÉSZ: STATISZTIKA, AI OCR, ADMIN & BOOT)
+// 3. RÉSZ: STATISZTIKA & HŐTÉRKÉP, AI OCR KÉPELEMZŐ, PROFILKEZELŐ,
+// TÖMEGES E-MAIL BEKAPCSOLÁS ÉS A RENDSZERINDÍTÓ BOOT LOGIKA
 // =========================================================================
 
 // STATISZTIKA & HŐTÉRKÉP
@@ -3985,7 +4064,7 @@ function renderCompletionOdds() {
   oddsText.innerHTML = `A hiányzóidból <strong>${matchedMissing.length} / ${myMissing.length} db</strong> azonnal beszerezhető a közösségtől!`;
 }
 
-// VÁROSI HŐTÉRKÉP MOTOR
+// VÁROSI HŐTÉRKÉP MOTOR (733+ GYŰJTŐVEL)
 function renderHeatmap() {
   const cityStats = {};
   let totalPoolCount = 0;
@@ -6061,7 +6140,9 @@ document.getElementById('modal-image-lightbox')?.addEventListener('click', () =>
   document.getElementById('modal-image-lightbox')?.classList.remove('open');
 });
 
+// =========================================================================
 // TELJES RENDSZER INDÍTÁSA (v4.0+ BOOT)
+// =========================================================================
 try {
   attachStickerInteraction(document.getElementById('matrica-grid'));
   attachStickerInteraction(document.getElementById('album-chapter-content'));
