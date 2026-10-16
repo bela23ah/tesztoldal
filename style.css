@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.0+ VÉGLEGES STÍLUSLAP)
+   Cserélj Okosan (csereljokosan.hu) - style.css (5. FÁZIS VÉGLEGES KIADÁS)
    ========================================================================= */
 
 :root {
@@ -497,22 +497,124 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-gift { background: var(--gift-gold); color: var(--water-deep); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .badge-ratio { background: rgba(216, 155, 74, 0.2); color: var(--amber); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
 
-.message-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
-.message-card.incoming { border-left: 4px solid var(--amber); }
-.message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.95; }
-.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; gap: 6px; }
-.message-body { background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; }
+/* =========================================================================
+   MESSENGER-STÍLUSÚ CSEVEGŐSZÁLAK (THREADED CHAT)
+   ========================================================================= */
+.chat-messenger-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 12px;
+  background: var(--surface-card);
+  border: 1px solid rgba(243, 238, 223, 0.15);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-height: 480px;
+  max-height: 72vh;
+}
+@media (max-width: 640px) {
+  .chat-messenger-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+}
 
-.message-album-badge {
-  background: var(--amber) !important;
-  color: var(--water-deep) !important;
-  font-weight: 800 !important;
-  font-size: 0.75rem !important;
-  padding: 3px 8px !important;
-  border-radius: 999px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 4px !important;
+.chat-threads-sidebar {
+  background: rgba(0, 0, 0, 0.25);
+  border-right: 1px solid rgba(243, 238, 223, 0.12);
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.chat-threads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chat-thread-item {
+  background: var(--water-mid);
+  border: 1px solid rgba(243, 238, 223, 0.1);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chat-thread-item:hover, .chat-thread-item.active {
+  background: rgba(216, 155, 74, 0.2);
+  border-color: var(--amber);
+}
+.chat-thread-item.has-unread {
+  border-left: 3px solid var(--amber);
+}
+
+.chat-conversation-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(13, 46, 44, 0.4);
+  position: relative;
+}
+
+.chat-thread-header {
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(243, 238, 223, 0.12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-messages-body {
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+/* Chat buborékok */
+.chat-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  position: relative;
+  word-break: break-word;
+}
+/* Partner üzenete (bal oldal, sötét türkiz) */
+.chat-bubble.incoming {
+  align-self: flex-start;
+  background: var(--water-mid);
+  color: var(--text-primary);
+  border: 1px solid rgba(243, 238, 223, 0.15);
+  border-bottom-left-radius: 2px;
+}
+/* Saját elküldött üzenet (jobb oldal, meleg arany tónus) */
+.chat-bubble.outgoing {
+  align-self: flex-end;
+  background: linear-gradient(135deg, rgba(216,155,74,0.3) 0%, rgba(107,138,90,0.35) 100%);
+  color: #FFF;
+  border: 1px solid rgba(216, 155, 74, 0.4);
+  border-bottom-right-radius: 2px;
+}
+.chat-bubble-meta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.chat-reply-bar {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 1px solid rgba(243, 238, 223, 0.12);
+  display: flex;
+  gap: 8px;
 }
 
 /* =========================================================================
@@ -526,17 +628,47 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   gap: 3px;
   user-select: none;
 }
-/* 1 pipa: kézbesítve (szürke / sand) */
 .msg-status-pipa.msg-delivered {
   color: var(--sand);
   opacity: 0.85;
 }
-/* 2 pipa: elolvasva (élénk arany / zöld) */
 .msg-status-pipa.msg-read-double {
   color: var(--gift-gold);
   font-weight: 900;
   letter-spacing: -1px;
   text-shadow: 0 0 6px rgba(255, 209, 102, 0.4);
+}
+
+/* =========================================================================
+   LEAFLET.JS VEKTORTÉRKÉP STÍLUSOK
+   ========================================================================= */
+.leaflet-container {
+  background: #081B1A !important;
+  font-family: var(--font-body) !important;
+}
+.leaflet-popup-content-wrapper {
+  background: rgba(13, 46, 44, 0.95) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--amber) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7) !important;
+  padding: 4px;
+}
+.leaflet-popup-tip {
+  background: #0D2E2C !important;
+}
+.leaflet-popup-content {
+  margin: 8px 10px !important;
+  line-height: 1.4 !important;
+}
+.leaflet-bar a {
+  background-color: var(--water-mid) !important;
+  color: var(--sand) !important;
+  border-bottom: 1px solid rgba(243, 238, 223, 0.2) !important;
+}
+.leaflet-bar a:hover {
+  background-color: var(--amber) !important;
+  color: var(--water-deep) !important;
 }
 
 .radar-card, .meetup-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
@@ -648,35 +780,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .quicknav-arrow-left { left: 0; padding: 6px 14px 6px 4px; }
 .quicknav-arrow { right: 0; padding: 6px 4px 6px 14px; }
 .stat-section-anchor { scroll-margin-top: 100px; }
-
-/* HŐTÉRKÉP */
-.map-heatmap-container {
-  position: relative; width: 100%; background: radial-gradient(circle at center, #14453F 0%, #081B1A 90%);
-  border-radius: var(--radius-md); border: 1px solid rgba(216, 155, 74, 0.3); overflow: hidden; padding: 8px; margin-bottom: 12px;
-}
-.hungary-svg-map { width: 100%; height: auto; max-height: 420px; display: block; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
-.map-outline { fill: rgba(20, 69, 63, 0.75); stroke: var(--amber); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
-.map-river { fill: none; stroke: rgba(99, 179, 237, 0.4); stroke-width: 2; stroke-dasharray: 4, 3; }
-.map-lake { fill: #3182CE; stroke: #63B3ED; stroke-width: 1.5; }
-#heatmap-overlay-pins { position: absolute; inset: 0; pointer-events: none; }
-.heat-pin {
-  position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; cursor: pointer; pointer-events: auto; transition: transform 0.25s ease; user-select: none;
-}
-.heat-pin:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 20; }
-.heat-pin.fire { background: radial-gradient(circle, #FF453A 0%, #E85A4F 100%); box-shadow: 0 0 14px rgba(232, 90, 79, 1); border: 2px solid #FFFFFF; color: #FFF; font-size: 0.72rem; font-weight: 800; animation: pulseHeat 1.8s infinite; }
-.heat-pin.warm { background: radial-gradient(circle, #FFD166 0%, #D89B4A 100%); box-shadow: 0 0 10px rgba(216, 155, 74, 0.85); border: 1.5px solid #FFFFFF; color: #081B1A; font-size: 0.68rem; font-weight: 800; }
-.heat-pin.cool { background: var(--water-light); box-shadow: 0 0 6px rgba(243, 238, 223, 0.4); border: 1.2px solid rgba(243, 238, 223, 0.6); color: var(--sand); font-size: 0.62rem; font-weight: 700; }
-.heat-chip-fire { background: var(--danger); color: #FFF; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
-.heat-chip-warm { background: var(--amber); color: var(--water-deep); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
-.heat-chip-cool { background: var(--water-light); color: var(--sand); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
-@keyframes pulseHeat { 0% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); } 50% { box-shadow: 0 0 16px rgba(232, 90, 79, 1); } 100% { box-shadow: 0 0 4px rgba(232, 90, 79, 0.6); } }
-
-.segment-card { background: rgba(0, 0, 0, 0.25); padding: 10px 8px; border-radius: var(--radius-sm); text-align: center; }
-.difficulty-bar-row { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; }
-.difficulty-bar-header { display: flex; justify-content: space-between; color: var(--sand); }
-.difficulty-bar-track { background: rgba(0,0,0,0.3); height: 8px; border-radius: 999px; overflow: hidden; }
-.difficulty-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
 
 /* GOMBOK ÉS MEZŐK */
 .btn {
