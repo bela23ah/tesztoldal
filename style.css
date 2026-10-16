@@ -173,12 +173,11 @@ header {
   justify-content: center; gap: 4px;
 }
 .primary-tab.active { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
-.primary-tab.tab-highlight-radar { border-color: rgba(216, 155, 74, 0.4); }
 .dropdown-arrow { font-size: 0.65rem; opacity: 0.7; }
 
 /* ASZTALI LEBEGŐ DROPDOWN MENÜ */
 .dropdown-menu {
-  position: absolute; top: 100%; left: 0; min-width: 185px; background: #081B1A;
+  position: absolute; top: 100%; left: 0; min-width: 195px; background: #081B1A;
   border: 1.5px solid var(--amber); border-radius: var(--radius-sm);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); padding: 6px; display: none;
   flex-direction: column; gap: 4px; z-index: 1000; margin-top: 2px;
@@ -500,7 +499,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 .message-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
 .message-card.incoming { border-left: 4px solid var(--amber); }
-.message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.9; }
+.message-card.outgoing { border-left: 4px solid var(--water-light); opacity: 0.95; }
 .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; gap: 6px; }
 .message-body { background: rgba(0,0,0,0.25); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; }
 
@@ -514,6 +513,30 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   display: inline-flex !important;
   align-items: center !important;
   gap: 4px !important;
+}
+
+/* =========================================================================
+   MESSENGER-STÍLUSÚ PIPÁK (READ RECEIPTS)
+   ========================================================================= */
+.msg-status-pipa {
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  user-select: none;
+}
+/* 1 pipa: kézbesítve (szürke / sand) */
+.msg-status-pipa.msg-delivered {
+  color: var(--sand);
+  opacity: 0.85;
+}
+/* 2 pipa: elolvasva (élénk arany / zöld) */
+.msg-status-pipa.msg-read-double {
+  color: var(--gift-gold);
+  font-weight: 900;
+  letter-spacing: -1px;
+  text-shadow: 0 0 6px rgba(255, 209, 102, 0.4);
 }
 
 .radar-card, .meetup-card { background: var(--water-mid); border: 1px solid rgba(243,238,223,0.15); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
@@ -786,10 +809,8 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 
 /* =========================================================================
-   ÚJ FUNKCIÓK SPECIFIKUS STÍLUSAI
+   KERESŐ HARMONIKÁK (<details>)
    ========================================================================= */
-
-/* Harmonika Kereső dobozok (<details>) */
 .search-accordion {
   background: var(--surface-card);
   border: 1px solid rgba(243, 238, 223, 0.15);
@@ -835,4 +856,85 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   border-radius: var(--radius-sm);
   font-size: 0.76rem;
   line-height: 1.4;
+}
+
+/* =========================================================================
+   ADMINISZTRÁCIÓS HARMONIKÁK ÉS ABC SÁV
+   ========================================================================= */
+.admin-accordion {
+  background: var(--surface-card);
+  border: 1px solid rgba(243, 238, 223, 0.15);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.admin-accordion[open] {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+}
+.admin-acc-summary {
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #FFF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.2);
+}
+.admin-acc-summary::-webkit-details-marker {
+  display: none;
+}
+.admin-accordion[open] .acc-chevron {
+  transform: rotate(180deg);
+}
+.admin-acc-body {
+  padding: 14px;
+}
+
+/* ABC Gyorsugró sáv az Adminban */
+.admin-abc-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(216, 155, 74, 0.25);
+}
+.admin-abc-btn {
+  background: transparent;
+  border: 1px solid rgba(243, 238, 223, 0.15);
+  color: var(--sand);
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.admin-abc-btn:hover, .admin-abc-btn.active {
+  background: var(--amber);
+  color: var(--water-deep);
+  border-color: var(--amber);
+}
+
+/* Kezdőbetűs csoportosítás elválasztó fejléc */
+.admin-album-group-header {
+  background: linear-gradient(90deg, rgba(216,155,74,0.3) 0%, rgba(0,0,0,0) 100%);
+  color: var(--amber);
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  margin: 14px 0 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 3px solid var(--amber);
 }

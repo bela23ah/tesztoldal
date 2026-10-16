@@ -1,9 +1,10 @@
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v4.0+ VÉGLEGES KIADÁS)
-// 1. RÉSZ: ADATBÁZIS, MOTOR, 4-ÁLLAPOTÚ KATTINTÁS, DINAMIKUS LAKAT & RÁCS
+// 1. RÉSZ: BŐVÍTETT ALBUMKÖNYVTÁR, 4-ÁLLAPOTÚ KATTINTÁS & DINAMIKUS LAKAT
 // =========================================================================
 
 let ALBUMS_REGISTRY = {
+  // --- ALAP ÉS KIEMELT GYŰJTEMÉNYEK ---
   "lidl-lutra-2026": {
     id: "lidl-lutra-2026",
     title: "Lutra Album",
@@ -22,7 +23,7 @@ let ALBUMS_REGISTRY = {
   },
   "garfield-mentsuk-meg-a-bolygot-2026": {
     id: "garfield-mentsuk-meg-a-bolygot-2026",
-    title: "Garfield - Mentsük meg a bolygót!",
+    title: "Garfield - Mentsük meg a bolygót 2026",
     subtitle: "Spar matricagyűjtemény",
     publisher: "Spar",
     year: 2026,
@@ -35,6 +36,54 @@ let ALBUMS_REGISTRY = {
     radarType: "spar",
     hasChapters: false,
     hasFavorites: true
+  },
+  "panini-fifa-world-cup-2026": {
+    id: "panini-fifa-world-cup-2026",
+    title: "FIFA World Cup 2026",
+    subtitle: "Hivatalos VB matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 1345,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F6e6fdbf7-9a10-4a50-8337-f54e867ba053.jpg&w=3840&q=75",
+    featured: true,
+    hasRadar: true,
+    radarType: "retail_general",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "fifa-world-cup-2026-adrenalyn-xl": {
+    id: "fifa-world-cup-2026-adrenalyn-xl",
+    title: "FIFA World Cup 2026 – Adrenalyn XL",
+    subtitle: "Hivatalos VB kártyagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 630,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ffifa-world-cup-2026-adrenalyn-xl.webp&w=3840&q=75",
+    featured: true,
+    hasRadar: true,
+    radarType: "retail_general",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "topps-match-attax-uefa-champions-league-2025-26": {
+    id: "topps-match-attax-uefa-champions-league-2025-26",
+    title: "Topps Match Attax UEFA Champions League 2025/26",
+    subtitle: "Hivatalos BL kártyák",
+    publisher: "Topps",
+    year: 2025,
+    totalItems: 743,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F0e1d4a44-674c-4dbf-8165-d1848067514f.jpg&w=3840&q=75",
+    featured: true,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
   },
   "toy-story-5": {
     id: "toy-story-5",
@@ -62,70 +111,104 @@ let ALBUMS_REGISTRY = {
     type: "sticker",
     typeLabel: "Matricaalbum",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F3a6ea592-5bb6-411f-88ef-d4bcd2f31823.jpg&w=3840&q=75",
-    featured: true,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "fifa-club-world-cup-2025": {
-    id: "fifa-club-world-cup-2025",
-    title: "FIFA Club World Cup 2025 – Adrenalyn XL",
-    subtitle: "Hivatalos FIFA kártyák",
-    publisher: "Panini",
-    year: 2025,
-    totalItems: 387,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F91b669c0-41bc-4c83-a24d-36c3504e5b16.png&w=3840&q=75",
-    featured: true,
-    hasRadar: true,
-    radarType: "retail_general",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "panini-fifa-world-cup-2026": {
-    id: "panini-fifa-world-cup-2026",
-    title: "FIFA World Cup 2026",
-    subtitle: "Hivatalos VB matricagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 1345,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F6e6fdbf7-9a10-4a50-8337-f54e867ba053.jpg&w=3840&q=75",
-    featured: true,
-    hasRadar: true,
-    radarType: "retail_general",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "stranger-things-adventure-2026": {
-    id: "stranger-things-adventure-2026",
-    title: "Stranger Things - One last strange adventure",
-    subtitle: "Matricagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 211,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F1251cfb7-1e8c-4ec1-b908-ec680b16b9ec.jpg&w=3840&q=75",
     featured: false,
     hasRadar: false,
     radarType: "none",
     hasChapters: false,
     hasFavorites: true
   },
-  "stranger-things-this-is-our-story": {
-    id: "stranger-things-this-is-our-story",
-    title: "Stranger Things - This is our story",
-    subtitle: "Kártyakollekció",
-    publisher: "Panini / Netflix",
+
+  // --- KÁRTYAGYŰJTEMÉNYEK (TOPPS, PANINI, F1) ---
+  "topps-match-attax-extra-2025-2026": {
+    id: "topps-match-attax-extra-2025-2026",
+    title: "Topps Match Attax Extra 2025/2026",
+    subtitle: "Foci kártyagyűjtemény",
+    publisher: "Topps",
     year: 2025,
-    totalItems: 195,
+    totalItems: 420,
     type: "card",
     typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F95876896-c91c-4a6d-9f5f-1c931898f912.webp&w=3840&q=75",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F4931c9a8-6cbd-4396-90f5-b8815b0e04b5.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "topps-flagship-premier-league-2026-27": {
+    id: "topps-flagship-premier-league-2026-27",
+    title: "Topps Flagship Premier League 2026/27",
+    subtitle: "Angol bajnokság kártyák",
+    publisher: "Topps",
+    year: 2026,
+    totalItems: 734,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ftopps-premier-league-202627-flagship-edition.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "topps-turbo-attax-official-formula-1-2026": {
+    id: "topps-turbo-attax-official-formula-1-2026",
+    title: "Topps Turbo Attax Official Formula 1 2026",
+    subtitle: "Hivatalos F1 kártyák",
+    publisher: "Topps",
+    year: 2026,
+    totalItems: 353,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fda69f746-d909-4691-b14a-a73ebfcf530a.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "fifa-club-world-cup-2025": {
+    id: "fifa-club-world-cup-2025",
+    title: "FIFA Club World Cup 2025 – Adrenalyn XL",
+    subtitle: "Klubvilágbajnokság kártyák",
+    publisher: "Panini",
+    year: 2025,
+    totalItems: 387,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F91b669c0-41bc-4c83-a24d-36c3504e5b16.png&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "fifa-365-2027-adrenalyn-xl": {
+    id: "fifa-365-2027-adrenalyn-xl",
+    title: "FIFA 365 2027 – Adrenalyn XL",
+    subtitle: "Hivatalos FIFA kártyakollekció",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 555,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F8bd6b2fc-57db-48dd-b66d-82302537172c.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "fifa-365-2026-adrenalyn-xl": {
+    id: "fifa-365-2026-adrenalyn-xl",
+    title: "FIFA 365 2026 – Adrenalyn XL",
+    subtitle: "Panini focikártyák",
+    publisher: "Panini",
+    year: 2025,
+    totalItems: 452,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fbcb13313-afad-4ac7-ae1c-5906c7ea5358.webp&w=3840&q=75",
     featured: false,
     hasRadar: false,
     radarType: "none",
@@ -148,6 +231,22 @@ let ALBUMS_REGISTRY = {
     hasChapters: false,
     hasFavorites: false
   },
+  "uefa-euro-2024-sticker": {
+    id: "uefa-euro-2024-sticker",
+    title: "UEFA Euro 2024 Matricaalbum",
+    subtitle: "Hivatalos EB matricák",
+    publisher: "Topps",
+    year: 2024,
+    totalItems: 707,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F104edc70-6403-4fcc-a279-d2c5b6dd569d.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
   "dragon-ball-daima-2026": {
     id: "dragon-ball-daima-2026",
     title: "Dragon Ball Daima 2026",
@@ -163,6 +262,305 @@ let ALBUMS_REGISTRY = {
     radarType: "none",
     hasChapters: false,
     hasFavorites: false
+  },
+  "star-wars-az-ero-hatalma": {
+    id: "star-wars-az-ero-hatalma",
+    title: "Star Wars: Az Erő Hatalma",
+    subtitle: "Kártyakollekció",
+    publisher: "Egyéb",
+    year: 2026,
+    totalItems: 72,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fe0b0d0ed-c744-4bd1-bb6d-e83713ee0e76.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+
+  // --- RETRO SPAR GYŰJTEMÉNYEK (GARFIELD, MANIÁK) ---
+  "garfield-magyarorszag": {
+    id: "garfield-magyarorszag",
+    title: "Garfield - Magyarország",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2026,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F07287733-3f12-45b3-9cee-a56ec03a111c.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "garfield-allati-rekordok-2": {
+    id: "garfield-allati-rekordok-2",
+    title: "Garfield - Állati rekordok 2",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2025,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fcc29ba2f-339e-404e-8587-0d86be878648.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "hol-vagy-kajla": {
+    id: "hol-vagy-kajla",
+    title: "Hol vagy Kajla?",
+    subtitle: "Kajla matricás album",
+    publisher: "Spar",
+    year: 2019,
+    totalItems: 241,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F7a884f66-115c-4254-94e3-ef98f8795aa3.png&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "meses-szakacskonyv-es-matricagyujto-album": {
+    id: "meses-szakacskonyv-es-matricagyujto-album",
+    title: "Mesés szakácskönyv és matricagyűjtő",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2018,
+    totalItems: 232,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F239b26c4-db79-42c4-8a3f-5cc24c3edce3.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "garfield-rejtelymania": {
+    id: "garfield-rejtelymania",
+    title: "Garfield - Rejtélymánia",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2017,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F95348744-3d51-4303-9205-4eca8ff48655.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+  "allati-rekordok": {
+    id: "allati-rekordok",
+    title: "Állati rekordok",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2016,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F7eb6eef5-5f6f-4144-9a82-db387ace1bd2.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+  "garfield-hegymania": {
+    id: "garfield-hegymania",
+    title: "Garfield - Hegymánia",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2014,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fc83548f4-48e2-4c31-a642-9a3663c547ef.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+  "szigetmania": {
+    id: "szigetmania",
+    title: "Szigetmánia",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2014,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F0e64fd31-5ea7-410c-ad6a-712d827d6a67.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+  "garfield-oceanmania": {
+    id: "garfield-oceanmania",
+    title: "Garfield - Óceánmánia",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2013,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fb9b544e9-fea3-4ad4-952b-2bd7b55fb863.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+  "garfield-szafarimania": {
+    id: "garfield-szafarimania",
+    title: "Garfield - Szafarimánia",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2012,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F7e261272-5e86-4ee7-9122-39a68d033ae7.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+  "garfield-dzsungel-mania": {
+    id: "garfield-dzsungel-mania",
+    title: "Garfield - Dzsungelmánia",
+    subtitle: "Spar matricagyűjtemény",
+    publisher: "Spar",
+    year: 2011,
+    totalItems: 200,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F660fbb5a-24fe-4987-9f86-b07c73e46d8a.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: true,
+    radarType: "spar",
+    hasChapters: false,
+    hasFavorites: true,
+    isRetro: true
+  },
+
+  // --- SOROZATOK, ANIMÁCIÓK ÉS JÁTÉKOK ---
+  "stranger-things-adventure-2026": {
+    id: "stranger-things-adventure-2026",
+    title: "Stranger Things - One last strange adventure",
+    subtitle: "Matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 211,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F1251cfb7-1e8c-4ec1-b908-ec680b16b9ec.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "stranger-things-this-is-our-story": {
+    id: "stranger-things-this-is-our-story",
+    title: "Stranger Things - This is our story",
+    subtitle: "Kártyakollekció",
+    publisher: "Panini / Netflix",
+    year: 2025,
+    totalItems: 235,
+    type: "card",
+    typeLabel: "Kártya",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F95876896-c91c-4a6d-9f5f-1c931898f912.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: false
+  },
+  "super-mario-it-s-a-me-mario": {
+    id: "super-mario-it-s-a-me-mario",
+    title: "Super Mario - It's-a me, Mario!",
+    subtitle: "Nintendo matricagyűjtemény",
+    publisher: "Panini",
+    year: 2026,
+    totalItems: 180,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F571f40ae-b90d-4bdd-85ea-6bca1cea22b1.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "super-mario-play-time": {
+    id: "super-mario-play-time",
+    title: "Super Mario - Play Time",
+    subtitle: "Panini matricák",
+    publisher: "Panini",
+    year: 2023,
+    totalItems: 304,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fa78d1751-5e02-4740-a960-360bc2408505.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "lego-ninjago-dragons-rising": {
+    id: "lego-ninjago-dragons-rising",
+    title: "Lego Ninjago - Dragons Rising",
+    subtitle: "Lego matricák",
+    publisher: "Egyéb",
+    year: 2025,
+    totalItems: 212,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fce4d3f5d-3b8d-4210-9bb5-70d5bb3fdd99.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "hot-wheels-2026": {
+    id: "hot-wheels-2026",
+    title: "Hot Wheels 2026",
+    subtitle: "Kisautós matricagyűjtemény",
+    publisher: "Egyéb",
+    year: 2026,
+    totalItems: 386,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fhot-wheels-2026-logo.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
   },
   "stitch-good-vibes": {
     id: "stitch-good-vibes",
@@ -180,13 +578,13 @@ let ALBUMS_REGISTRY = {
     hasChapters: false,
     hasFavorites: false
   },
-  "moomin-2026": {
-    id: "moomin-2026",
-    title: "Moomin",
-    subtitle: "Múmin kártyagyűjtemény",
+  "moomin-the-creative-world-of-moomin": {
+    id: "moomin-the-creative-world-of-moomin",
+    title: "Moomin - The Creative World",
+    subtitle: "Múmin kártyák",
     publisher: "Panini",
     year: 2026,
-    totalItems: 221,
+    totalItems: 225,
     type: "card",
     typeLabel: "Kártya",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ffb512de7-c3df-41ac-9949-87dbc2f80727.jpg&w=3840&q=75",
@@ -212,6 +610,56 @@ let ALBUMS_REGISTRY = {
     hasChapters: false,
     hasFavorites: true
   },
+  "disney-100-ev-varazslat": {
+    id: "disney-100-ev-varazslat",
+    title: "Disney 100 év varázslat",
+    subtitle: "Jubileumi album",
+    publisher: "Spar",
+    year: 2023,
+    totalItems: 144,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F499e8d3d-b153-4712-8ff8-9f16ac8877a3.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
+  "harry-potter-varazslatos-baratsagok": {
+    id: "harry-potter-varazslatos-baratsagok",
+    title: "Harry Potter Varázslatos Barátságok",
+    subtitle: "Matricagyűjtemény",
+    publisher: "Spar",
+    year: 2022,
+    totalItems: 120,
+    type: "sticker",
+    typeLabel: "Matricaalbum",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F67e264a6-2a98-46b8-9219-7baa7294a952.jpg&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
+
+  // --- KINDER ÉS FIGURÁK ---
+  "one-piece-kinder": {
+    id: "one-piece-kinder",
+    title: "One Piece Kinder Joy",
+    subtitle: "Anime figuragyűjtemény",
+    publisher: "Kinder",
+    year: 2026,
+    totalItems: 25,
+    type: "figure",
+    typeLabel: "Figura / Kinder",
+    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdc648487-9950-4179-a2f8-4a96cf8a7283.webp&w=3840&q=75",
+    featured: false,
+    hasRadar: false,
+    radarType: "none",
+    hasChapters: false,
+    hasFavorites: true
+  },
   "minecraft-kinder-joy": {
     id: "minecraft-kinder-joy",
     title: "Minecraft Kinder Joy",
@@ -222,22 +670,6 @@ let ALBUMS_REGISTRY = {
     type: "figure",
     typeLabel: "Figura / Kinder",
     coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fe6ed94a7-8dd0-4a50-90de-8b92a592c06d.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "one-piece-kinder": {
-    id: "one-piece-kinder",
-    title: "One Piece Kinder Joy",
-    subtitle: "Anime figuragyűjtemény",
-    publisher: "Kinder",
-    year: 2026,
-    totalItems: 24,
-    type: "figure",
-    typeLabel: "Figura / Kinder",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdc648487-9950-4179-a2f8-4a96cf8a7283.webp&w=3840&q=75",
     featured: false,
     hasRadar: false,
     radarType: "none",
@@ -275,70 +707,6 @@ let ALBUMS_REGISTRY = {
     radarType: "none",
     hasChapters: false,
     hasFavorites: true
-  },
-  "disney-100-ev-varazslat": {
-    id: "disney-100-ev-varazslat",
-    title: "Disney 100 év varázslat",
-    subtitle: "Jubileumi matricaalbum",
-    publisher: "Spar",
-    year: 2023,
-    totalItems: 144,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F499e8d3d-b153-4712-8ff8-9f16ac8877a3.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "harry-potter-varazslatos-baratsagok": {
-    id: "harry-potter-varazslatos-baratsagok",
-    title: "Harry Potter Varázslatos Barátságok",
-    subtitle: "Matricagyűjtemény",
-    publisher: "Spar",
-    year: 2022,
-    totalItems: 120,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F67e264a6-2a98-46b8-9219-7baa7294a952.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "fifa-365-2021-2022": {
-    id: "fifa-365-2021-2022",
-    title: "FIFA 365 2021–2022 – Adrenalyn XL",
-    subtitle: "Kártyagyűjtemény",
-    publisher: "Panini",
-    year: 2022,
-    totalItems: 956,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F92806979-dbbc-4fa1-b909-d05093f7f088.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "fifa-365-2020-2021": {
-    id: "fifa-365-2020-2021",
-    title: "FIFA 365 2020–2021 – Adrenalyn XL",
-    subtitle: "Kártyagyűjtemény",
-    publisher: "Panini",
-    year: 2020,
-    totalItems: 735,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F9fb4e3ce-478b-4753-a194-251aedb5e676.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false
   }
 };
 
@@ -347,7 +715,7 @@ let currentHubFilter = "all";
 let showAllHubAlbums = false;
 let editingAlbumId = null;
 let saveDebounceTimer = null;
-let lastLocalEditTimestamp = 0; // 🛡️ Védelem a Firestore visszaszinkronos felülírása ellen
+let lastLocalEditTimestamp = 0; // 🛡️ Védelem a Firestore visszaszinkron ellen
 
 // GPS, TÁVOLSÁGI & TELEPÜLÉS ÁLLAPOTOK
 let myGpsCoords = safeJsonParse('cserelj_gps_coords', null);
@@ -371,7 +739,7 @@ function getAlbumDisplayTitle(albumId) {
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
 const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
 
-// KIBŐVÍTETT KOORDINÁTA-TÁR
+// KOORDINÁTA-TÁR
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -856,7 +1224,6 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// ⚡ JAVÍTOTT ensureArray()
 function ensureArray(val) {
   if (!val) return [];
   const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
@@ -1240,7 +1607,7 @@ function renderHub() {
     if (currentHubFilter === 'sticker') return album.type === 'sticker';
     if (currentHubFilter === 'card') return album.type === 'card';
     if (currentHubFilter === 'figure') return album.type === 'figure';
-    if (currentHubFilter === 'retro') return album.year < 2010 || album.isRetro === true;
+    if (currentHubFilter === 'retro') return album.year < 2018 || album.isRetro === true;
     if (currentHubFilter === 'my') {
       const myCount = ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length;
       return myCount > 0;
@@ -1268,7 +1635,7 @@ function renderHub() {
 
   container.innerHTML = displayList.map(album => {
     const isFeatured = album.featured === true || album.id === 'lidl-lutra-2026';
-    const isRetro = album.year < 2010 || album.isRetro === true;
+    const isRetro = album.year < 2018 || album.isRetro === true;
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
     const collectedCount = albumVan.length;
     const pct = Math.min(100, Math.round((collectedCount / album.totalItems) * 100));
@@ -1324,6 +1691,7 @@ safeAddListener('hub-albums-grid', (e) => {
   selectAlbum(albumId);
 });
 
+// KÖZÖSSÉGI ÚJ GYŰJTEMÉNY JAVASLAT BEKÜLDÉSE
 safeAddListener('btn-open-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.add('open'));
 safeAddListener('btn-close-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
 safeAddListener('btn-close-suggest-album-2', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
@@ -1406,16 +1774,6 @@ function selectAlbum(albumId) {
   const mobileNav = document.getElementById('mobile-subnav-bar');
   if (primaryNav) primaryNav.style.display = 'grid';
   if (mobileNav) mobileNav.style.display = 'block';
-
-  const radarNav = document.getElementById('nav-item-radar');
-  const radarTitle = document.getElementById('nav-radar-title');
-  const radarHeaderTitle = document.getElementById('radar-view-header-title');
-  if (radarNav) {
-    radarNav.style.display = (activeAlbum.hasRadar && activeAlbum.radarType !== 'none') ? 'block' : 'none';
-    const label = albumId === 'lidl-lutra-2026' ? 'Albumradar' : 'Készletjelentő';
-    if (radarTitle) radarTitle.textContent = label;
-    if (radarHeaderTitle) radarHeaderTitle.textContent = `Közösségi ${label}`;
-  }
 
   updateRadarStoreDatalist();
 
@@ -1517,7 +1875,7 @@ function renderGrid() {
   const kellSet = new Set(ensureArray(myProfile.kell));
   const foglalvaSet = new Set(ensureArray(myProfile.foglalva));
 
-  // Dinamikusan csak az aktív, lezáratlan cserékből olvasunk lakatot!
+  // Dinamikusan csak az aktív cserékből olvasunk lakatot!
   const activeLocks = getActiveLockedCounts(currentAlbumId);
 
   for (let i = 1; i <= totalSize; i++) {
@@ -1685,7 +2043,7 @@ let activePopoverNum = null;
 const popover = document.getElementById('qty-popover');
 
 // =========================================================================
-// ⚡ 0 MS-OS KÖZVETLEN 4-ÁLLAPOTÚ CIKLUS (BERAGADÁS ÉS VILLÓDZÁSMENTES)
+// ⚡ 0 MS-OS 4-ÁLLAPOTÚ CIKLUS (BERAGADÁS ÉS VILLÓDZÁSMENTES)
 // =========================================================================
 function toggleStickerState(num) {
   hideQtyPopover();
@@ -1727,7 +2085,6 @@ function toggleStickerState(num) {
     newState = '';
   }
 
-  // Azonnali helyi DOM manipuláció (0 ms reakcióidő)
   updateSingleCellDOM(num, newState);
   updateBadgeCounts();
   saveMyStateFast();
@@ -1828,7 +2185,7 @@ function attachStickerInteraction(container) {
   let isLongPressTriggered = false;
   let longPressTimer = null;
 
-  // Jobb klikk (PC) ➔ Darabszám Popover
+  // Jobb klikk (PC)
   container.addEventListener('contextmenu', (e) => {
     const target = e.target.closest('[data-num]');
     if (target) {
@@ -1837,7 +2194,7 @@ function attachStickerInteraction(container) {
     }
   });
 
-  // Hosszú nyomás (Mobil) ➔ Darabszám Popover
+  // Hosszú nyomás (Mobil)
   container.addEventListener('touchstart', (e) => {
     const target = e.target.closest('[data-num]');
     if (!target) return;
@@ -1868,7 +2225,7 @@ function attachStickerInteraction(container) {
     }
   });
 
-  // Bal kattintás / Mobil gyors érintés ➔ 0 ms azonnali állapotváltás
+  // Bal kattintás / Mobil gyors érintés ➔ 0 ms azonnali váltás
   container.addEventListener('click', (e) => {
     if (isLongPressTriggered) {
       isLongPressTriggered = false;
@@ -1923,7 +2280,7 @@ function syncLutraDualSave(albumId) {
 
 function saveMyStateFast() {
   const albumId = currentAlbumId;
-  lastLocalEditTimestamp = Date.now(); // 🛡️ Rögzítjük az utolsó szerkesztési időt
+  lastLocalEditTimestamp = Date.now(); // 🛡️ Rögzítjük az utolsó helyi kattintást
 
   localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
   localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
@@ -2148,8 +2505,8 @@ safeAddListener('btn-album-next', () => {
   if (currentChapterIndex < chapters.length - 1) { currentChapterIndex++; renderAlbumChapter(); }
 });
 // =========================================================================
-// 2. RÉSZ: ROUTER, HARMONIKA KERESŐK, CSOPORTOS CSERETERVEZŐ,
-// ZÁROLÁS & ARCHÍVUM, ÉS A KIIKSZELŐS KAPCSOLATFELVÉTEL
+// 2. RÉSZ: ROUTER, TÁVOLSÁGMÉRŐ, HARMONIKA KERESŐK,
+// ZÁROLÁS & ARCHÍVUM, ÉS A KIIKSZELŐS KAPCSOLATFELVÉTEL (PIPÁKKAL)
 // =========================================================================
 
 // AUTOMATIKUS LINKFELISMERŐ
@@ -2168,16 +2525,18 @@ function switchCategory(catName) {
 
   const subnavMatricaim = document.getElementById('subnav-matricaim');
   const subnavCserebere = document.getElementById('subnav-cserebere');
+  const subnavRadar = document.getElementById('subnav-radar');
   const subnavProfil = document.getElementById('subnav-profil');
 
   if (subnavMatricaim) subnavMatricaim.style.display = catName === 'matricaim' ? 'flex' : 'none';
   if (subnavCserebere) subnavCserebere.style.display = catName === 'cserebere' ? 'flex' : 'none';
+  if (subnavRadar) subnavRadar.style.display = catName === 'radar' ? 'flex' : 'none';
   if (subnavProfil) subnavProfil.style.display = catName === 'profil' ? 'flex' : 'none';
 
   if (catName === 'hub') switchView('hub');
-  else if (catName === 'radar') switchView('radar');
   else if (catName === 'matricaim') switchView('matricaim');
-  else if (catName === 'cserebere') switchView('uzeneteim');
+  else if (catName === 'cserebere') switchView('cserek');
+  else if (catName === 'radar') switchView('statisztika');
   else if (catName === 'profil') switchView('profil');
 }
 
@@ -2191,17 +2550,19 @@ function switchView(viewName) {
 
   let parentCat = 'matricaim';
   if (viewName === 'hub') parentCat = 'hub';
-  else if (viewName === 'radar') parentCat = 'radar';
-  else if (viewName === 'uzeneteim' || viewName === 'meetups') parentCat = 'cserebere';
-  else if (viewName === 'profil' || viewName === 'statisztika' || viewName === 'admin') parentCat = 'profil';
+  else if (viewName === 'cserek' || viewName === 'kereso' || viewName === 'uzeneteim') parentCat = 'cserebere';
+  else if (viewName === 'statisztika' || viewName === 'radar' || viewName === 'meetups') parentCat = 'radar';
+  else if (viewName === 'profil' || viewName === 'admin') parentCat = 'profil';
 
   document.querySelectorAll('.primary-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === parentCat));
 
   const subnavMatricaim = document.getElementById('subnav-matricaim');
   const subnavCserebere = document.getElementById('subnav-cserebere');
+  const subnavRadar = document.getElementById('subnav-radar');
   const subnavProfil = document.getElementById('subnav-profil');
   if (subnavMatricaim) subnavMatricaim.style.display = parentCat === 'matricaim' ? 'flex' : 'none';
   if (subnavCserebere) subnavCserebere.style.display = parentCat === 'cserebere' ? 'flex' : 'none';
+  if (subnavRadar) subnavRadar.style.display = parentCat === 'radar' ? 'flex' : 'none';
   if (subnavProfil) subnavProfil.style.display = parentCat === 'profil' ? 'flex' : 'none';
 
   if (viewName === 'hub') renderHub();
@@ -2250,7 +2611,10 @@ function switchView(viewName) {
 }
 
 document.querySelectorAll('.primary-tab').forEach(t => {
-  t.addEventListener('click', () => switchCategory(t.dataset.cat));
+  t.addEventListener('click', () => {
+    if (t.dataset.view) switchView(t.dataset.view);
+    else switchCategory(t.dataset.cat);
+  });
 });
 
 document.querySelectorAll('.sub-tab').forEach(t => {
@@ -2265,12 +2629,8 @@ function updateCserebereBadge() {
   const badge = document.getElementById('cserebere-badge');
   if (!badge) return;
   const unreadMsgBadge = document.getElementById('unread-msg-badge');
-  const meetupBadge = document.getElementById('meetup-badge');
-
   const hasUnread = unreadMsgBadge && unreadMsgBadge.style.display !== 'none' && !unreadMsgBadge.classList.contains('read');
-  const hasMeetup = meetupBadge && meetupBadge.style.display !== 'none';
-
-  badge.style.display = (hasUnread || hasMeetup) ? 'inline-block' : 'none';
+  badge.style.display = hasUnread ? 'inline-block' : 'none';
 }
 
 // GPS ÉS TÁVOLSÁG MEGHATÁROZÁSA
@@ -2432,7 +2792,6 @@ function computeLoopMatches() {
   return loops;
 }
 
-// PÁROSÍTÁSOK MEGJELENÍTÉSE
 function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
@@ -2959,7 +3318,7 @@ function openDirectContactModal(targetUser, numsArray, isGift) {
   setupContactModal(targetUser, subject, [], getNums, isGift);
 }
 
-// BELSŐ ÜZENET KÜLDÉSE ÉS CSERE ZÁROLÁSA
+// BELSŐ ÜZENET KÜLDÉSE (MESSENGER-PIPÁVAL & CSERE ZÁROLÁSÁVAL)
 safeAddListener('btn-send-message', () => {
   const messageText = document.getElementById('contact-msg-input')?.value.trim() || '';
   if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
@@ -2977,6 +3336,9 @@ safeAddListener('btn-send-message', () => {
   (async () => {
     try {
       if (db && currentUser) {
+        // Generálunk egy egyedi csevegőszál azonosítót a későbbi Messenger nézethez
+        const threadId = [currentUser.uid, activeContactTarget.uid].sort().join('_') + '_' + currentAlbumId;
+
         await db.collection("messages").add({
           fromUid: currentUser.uid,
           fromName: myProfile.nev,
@@ -2984,9 +3346,12 @@ safeAddListener('btn-send-message', () => {
           toUid: activeContactTarget.uid,
           toName: activeContactTarget.nev,
           albumId: currentAlbumId,
+          threadId: threadId,
           subject: activeContactTarget.subject,
           message: messageText,
           text: messageText,
+          read: false, // 1 pipa: kézbesítve (még nem nyitotta meg a címzett)
+          readAt: null,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }
@@ -3040,7 +3405,7 @@ safeAddListener('btn-send-message', () => {
         console.warn("Értesítési e-mail figyelmeztetés:", e);
       }
 
-      showToast("Üzeneted elküldve! A csere rögzítve lett a rácsod alatt.");
+      showToast("Üzeneted elküldve (✓ Kézbesítve)! A csere rögzítve lett a rácsod alatt.");
       document.getElementById('modal-contact')?.classList.remove('open');
     } catch (err) {
       showToast("Küldési hiba: " + err.message);
@@ -3113,7 +3478,7 @@ function renderActiveTradesPanel() {
             <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle várod:</strong> ${t.receivingItems && t.receivingItems.length ? t.receivingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Ajándék felajánlás)</em>'}</p>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:gap; gap:6px;">
             <button class="btn btn-contact-green btn-sm" data-action="complete-trade" data-trade-idx="${originalIdx}">
               ✓ Megérkezett / Csere lezárása
             </button>
@@ -3248,7 +3613,7 @@ safeAddListener('btn-submit-trade-rating', async () => {
   myProfile.activeTrades[tradeIdx].status = 'completed';
   saveMyState();
 
-  // Értékelés felhős rögzítése
+  // Értékelés felhős rögzítése a partner profiljában
   if (currentUser && db && trade.partnerUid) {
     try {
       await db.collection("public_profiles").doc(trade.partnerUid).collection("reviews").add({
@@ -3979,13 +4344,12 @@ function listenToMeetups() {
         mBadgeM.style.display = 'inline-block';
       }
 
-      updateCserebereBadge();
       renderMeetups();
     }, err => console.warn("Meetups listener:", err));
 }
 // =========================================================================
 // 3. RÉSZ: STATISZTIKA & HŐTÉRKÉP, GYŰJTŐ ADATLAP ÉRTÉKELÉSEKKEL,
-// AI OCR MATRICALISTA FELISMERŐ, TÖMEGES E-MAIL ÉS RENDSZERINDÍTÁS
+// MESSENGER-PIPÁK (✓/✓✓), AI OCR BEEMELŐ, ADMIN ABC REND & BOOT
 // =========================================================================
 
 // STATISZTIKA & HŐTÉRKÉP
@@ -4276,7 +4640,7 @@ function renderHeatmap() {
   if (highwayTextEl) {
     const margitRatio = (totalMeters / 607).toFixed(1);
     const eiffelRatio = (totalMeters / 330).toFixed(1);
-    highwayTextEl.innerHTML = `Több mint <strong>${margitRatio}× olyan hosszú</strong>, mint a Margit híd (607 m), ez a sor élére állítva <strong>${eiffelRatio}× magasabb</strong>, mint az Eiffel-torony!`;
+    highwayTextEl.innerHTML = `Több mint <strong>${margitRatio}× olyan hosszú</strong>, mint a Margit híd (607 m), élére állítva <strong>${eiffelRatio}× magasabb</strong>, mint az Eiffel-torony!`;
   }
 
   const totalTowerM = (totalPoolCount * 0.00015).toFixed(2);
@@ -4626,7 +4990,9 @@ function checkSenderProfileReady() {
   return true;
 }
 
-// BELSŐ ÜZENETEK ÉS ÉRTESÍTÉSEK
+// =========================================================================
+// BELSŐ ÜZENETEK: MESSENGER-PIPÁK (✓/✓✓) & AUTOMATIKUS OLVASOTTSÁG
+// =========================================================================
 safeAddListener('btn-msg-tab-inbox', () => {
   activeInboxTab = 'inbox';
   document.getElementById('btn-msg-tab-inbox')?.classList.add('active');
@@ -4692,6 +5058,18 @@ function renderMessages() {
 
   updateMsgAlbumFilterOptions();
 
+  // Ha a beérkező üzeneteket nézi, automatikusan megjelöljük őket olvasottként a feladónál!
+  if (activeInboxTab === 'inbox' && db && myIncomingMessages.length > 0) {
+    myIncomingMessages.forEach(msg => {
+      if (msg.read !== true) {
+        db.collection("messages").doc(msg.id).update({
+          read: true,
+          readAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(() => {});
+      }
+    });
+  }
+
   let list = activeInboxTab === 'inbox' ? myIncomingMessages : myOutgoingMessages;
 
   if (msgAlbumFilter !== 'all') {
@@ -4716,6 +5094,16 @@ function renderMessages() {
     const dateStr = msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' }) : 'Nemrég';
     const albumDisplay = getAlbumDisplayTitle(msg.albumId);
 
+    // Messenger pipák az elküldött leveleknél
+    let pipaHtml = '';
+    if (!isIncoming) {
+      if (msg.read === true) {
+        pipaHtml = `<span class="msg-status-pipa msg-read-double" title="Megnyitva / Elolvasva">✓✓</span>`;
+      } else {
+        pipaHtml = `<span class="msg-status-pipa msg-delivered" title="Kézbesítve a partner postafiókjába">✓</span>`;
+      }
+    }
+
     return `
       <div class="message-card ${isIncoming ? 'incoming' : 'outgoing'}">
         <div class="message-header">
@@ -4725,7 +5113,10 @@ function renderMessages() {
               📦 ${escapeHtml(albumDisplay)}
             </span>
           </div>
-          <span style="font-size:0.75rem; color:var(--text-muted);">${dateStr}</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:0.75rem; color:var(--text-muted);">${dateStr}</span>
+            ${pipaHtml}
+          </div>
         </div>
         <div class="message-body">${formatLinksWithAnchors(msg.message || msg.text || '')}</div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -4794,7 +5185,6 @@ async function openUserProfileModal(uid) {
   if (nameEl) nameEl.textContent = `Gyűjtő: ${targetUser.nev || 'Névtelen'}`;
   if (cityEl) cityEl.textContent = targetUser.telepules ? `Település: ${targetUser.telepules}` : 'Nincs megadva település';
 
-  // Csillagok és értékelési darabszám kiírása
   const rCount = targetUser.ratingsCount || 0;
   const tScore = targetUser.trustScore || 0;
   const avg = rCount > 0 ? (tScore / rCount).toFixed(1) : (tScore > 0 ? tScore : '5.0');
@@ -4829,7 +5219,7 @@ async function openUserProfileModal(uid) {
       } else if (rCount > 0) {
         reviewsDetails.style.display = 'block';
         reviewsCountEl.textContent = rCount;
-        reviewsListEl.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">Korábbi sikeres cserékből jóváírt bizalmi pontok.</span>';
+        reviewsListEl.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">Korábbi sikeres cserékből jóváírt megbízhatósági pontok.</span>';
       } else {
         reviewsDetails.style.display = 'none';
       }
@@ -4838,7 +5228,6 @@ async function openUserProfileModal(uid) {
     }
   }
 
-  // Adatlap alsó Csereindítás gombja (azonnal betölti a matricákat a szerkesztőbe)
   const contactBtn = document.getElementById('btn-user-profile-contact');
   if (contactBtn) {
     contactBtn.onclick = () => {
@@ -4939,13 +5328,14 @@ function listenToMyMessages(uid) {
 
     const badge = document.getElementById('unread-msg-badge');
     const badgeM = document.getElementById('unread-msg-badge-m');
+    const unreadCount = myIncomingMessages.filter(m => m.read !== true).length;
     if (badge) {
-      badge.textContent = myIncomingMessages.length;
-      badge.style.display = myIncomingMessages.length > 0 ? 'inline-block' : 'none';
+      badge.textContent = unreadCount;
+      badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
     }
     if (badgeM) {
-      badgeM.textContent = myIncomingMessages.length;
-      badgeM.style.display = myIncomingMessages.length > 0 ? 'inline-block' : 'none';
+      badgeM.textContent = unreadCount;
+      badgeM.style.display = unreadCount > 0 ? 'inline-block' : 'none';
     }
     updateCserebereBadge();
     renderMessages();
@@ -5092,18 +5482,18 @@ safeAddListener('btn-add-location', () => {
 safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
 // =========================================================================
-// ADMINISZTRÁCIÓ, AI OCR KÉPELEMZŐ & TÖMEGES E-MAIL BEKAPCSOLÁS
+// ADMINISZTRÁCIÓ: AI KÉP/SZÖVEG BEEMELŐ, ABC SÁV & TÖMEGES MŰVELETEK
 // =========================================================================
 
 let adminAlbumCoverBase64 = '';
 
-// 1. 1-KATTINTÁSOS ADATBÁZIS INICIALIZÁLÁS (21 ALBUM & BOLTLISTÁK FELTÖLTÉSE)
+// 1. ADATBÁZIS INICIALIZÁLÁS (21+ ALBUM & BOLTLISTÁK)
 safeAddListener('btn-admin-seed-database', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  if (!confirm("Feltöltöd mind a 21 albumot és az összes boltlistát a Firestore adatbázisba?")) return;
+  if (!confirm("Feltöltöd az összes albumot és a boltlistákat a Firestore adatbázisba?")) return;
 
   const btn = document.getElementById('btn-admin-seed-database');
-  if (btn) { btn.disabled = true; btn.textContent = "Feltöltés folyamatban..."; }
+  if (btn) { btn.disabled = true; btn.textContent = "Feltöltés..."; }
 
   try {
     const batch = db.batch();
@@ -5128,129 +5518,109 @@ safeAddListener('btn-admin-seed-database', async () => {
     });
 
     await batch.commit();
-    showToast("Sikeres inicializálás! Mind a 21 album és a boltlisták a Firestore-ban vannak.");
+    showToast("Sikeres inicializálás! Az adatok a felhőben vannak.");
   } catch (err) {
-    showToast("Hiba a feltöltés során: " + err.message);
+    showToast("Hiba: " + err.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Adatbázis inicializálása & Feltöltése Firestore-ba most"; }
+    if (btn) { btn.disabled = false; btn.textContent = "Adatbázis inicializálása Firestore-ba most"; }
   }
 });
 
-// 2. AI KÉPALAPÚ MATRICALISTA FELISMERŐ (GEMINI AI VISION OCR)
-safeAddListener('btn-admin-ai-ocr-process', async () => {
+// 2. UNIVERZÁLIS BEEMELŐ (GEMINI AI KÉP OCR + NYERS SZÖVEG / CSV)
+safeAddListener('btn-admin-process-universal', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  const fileInput = document.getElementById('admin-ai-ocr-file');
-  const file = fileInput?.files[0];
-  const statusEl = document.getElementById('admin-ai-ocr-status');
-  const outputEl = document.getElementById('admin-ai-ocr-output');
-  const applyBtn = document.getElementById('btn-admin-ai-ocr-apply');
+  
+  const file = document.getElementById('admin-ai-ocr-file')?.files[0];
+  const rawText = document.getElementById('admin-raw-import-text')?.value.trim() || '';
+  const statusEl = document.getElementById('admin-universal-status');
 
-  if (!file) return showToast("Válassz ki egy képet az album ellenőrzőlistájáról!");
+  if (!file && !rawText) {
+    return showToast("Válassz ki egy fotót VAGY másolj be nyers szöveget!");
+  }
 
   if (statusEl) {
     statusEl.style.display = 'block';
-    statusEl.textContent = "Kép optimalizálása és AI szövegfelismerés folyamatban...";
+    statusEl.innerHTML = "Feldolgozás és adatok kinyerése folyamatban...";
   }
 
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const img = new Image();
-    img.onload = async () => {
-      try {
-        const canvas = document.createElement('canvas');
-        const maxDim = 1600;
-        let w = img.width, h = img.height;
-        if (w > maxDim || h > maxDim) {
-          if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
-          else { w = Math.round((w * maxDim) / h); h = maxDim; }
-        }
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        const base64Data = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+  let extractedText = rawText;
 
-        const idToken = await currentUser.getIdToken();
-        const res = await fetch(WORKER_ENDPOINT_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`
-          },
-          body: JSON.stringify({
-            base64Data,
-            mode: 'table_ocr'
-          })
-        });
+  // Ha képet töltött fel, elküldjük a Cloudflare Workernek (CORS hiba nélkül, sima POST-tal)
+  if (file) {
+    try {
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxDim = 1600;
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+          };
+          img.src = evt.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Hiba az AI képfelismerés során.");
+      const res = await fetch(WORKER_ENDPOINT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64Data, mode: 'table_ocr' })
+      });
 
-        const recognizedText = data.text || (data.numbers ? data.numbers.map((n, i) => `${n}: Tétel ${n}`).join('\n') : '');
-        
-        if (outputEl) {
-          outputEl.value = recognizedText;
-          outputEl.style.display = 'block';
-        }
-        if (applyBtn) applyBtn.style.display = 'block';
-        if (statusEl) statusEl.innerHTML = "<span style='color:var(--moss-soft);'>✓ Matricalista sikeresen kiolvasva! lentebb javítható és átemelhető.</span>";
-      } catch (err) {
-        if (statusEl) statusEl.innerHTML = `<span style='color:var(--danger);'>Hiba: ${err.message}</span>`;
-        showToast("AI Hiba: " + err.message);
-      }
-    };
-    img.src = evt.target.result;
-  };
-  reader.readAsDataURL(file);
-});
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "A képfelismerő hibát adott.");
 
-safeAddListener('btn-admin-ai-ocr-apply', () => {
-  const text = document.getElementById('admin-ai-ocr-output')?.value.trim();
-  if (!text) return showToast("Nincs átemelhető szöveg!");
-
-  const customNamesField = document.getElementById('admin-album-custom-names');
-  if (customNamesField) {
-    customNamesField.value = text;
-    showToast("Tételek átemelve a gyűjteményszerkesztőbe!");
-    customNamesField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      extractedText = data.text || (data.numbers ? data.numbers.map((n, i) => `${n}: Tétel ${n}`).join('\n') : '');
+    } catch (err) {
+      if (statusEl) statusEl.innerHTML = `<span style="color:var(--danger);">AI Hiba: ${err.message}</span>`;
+      return showToast("AI Hiba: " + err.message);
+    }
   }
-});
 
-// 3. TÖMEGES JSON ALBUM IMPORTŐR
-safeAddListener('btn-admin-import-json', async () => {
-  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  const rawJson = document.getElementById('admin-album-json-import')?.value.trim();
-  if (!rawJson) return showToast("Illessz be egy érvényes JSON szöveget!");
+  // Automatikusan kielemezzük a szöveget és kitöltjük a 3. gyűjteményszerkesztő űrlapot!
+  const namesArray = expandCustomNamesText(extractedText);
+  const totalCount = namesArray.length;
 
-  try {
-    const parsed = JSON.parse(rawJson);
-    const albumsToImport = Array.isArray(parsed) ? parsed : [parsed];
-
-    const batch = db.batch();
-    albumsToImport.forEach(album => {
-      if (!album.id || !album.title) throw new Error("Hiányzik az album 'id' vagy 'title' mezője!");
-      const docRef = db.collection("albums").doc(album.id);
-      batch.set(docRef, {
-        ...album,
-        active: true,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    });
-
-    await batch.commit();
-    document.getElementById('admin-album-json-import').value = '';
-    showToast(`Sikeres importálás! ${albumsToImport.length} db album mentve a Firestore-ba.`);
-  } catch (err) {
-    showToast("JSON hiba: " + err.message);
+  if (document.getElementById('admin-album-custom-names')) {
+    document.getElementById('admin-album-custom-names').value = extractedText;
   }
+  if (totalCount > 0 && document.getElementById('admin-album-total')) {
+    document.getElementById('admin-album-total').value = totalCount;
+  }
+
+  if (statusEl) {
+    statusEl.innerHTML = `<span style="color:var(--moss-soft);">✓ Sikeres feldolgozás! ${totalCount} tétel átemelve a lenti űrlapba.</span>`;
+  }
+  showToast(`${totalCount} tétel sikeresen kitöltve az űrlapon!`);
+
+  // Odagörgetünk az űrlaphoz
+  document.getElementById('admin-album-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-// 4. VISSZAMENŐLEGES TELEPÜLÉSTISZTÍTÁS & TÖMEGES E-MAIL BEKAPCSOLÁS MINDENKINEK
+safeAddListener('btn-admin-clear-universal', () => {
+  if (document.getElementById('admin-ai-ocr-file')) document.getElementById('admin-ai-ocr-file').value = '';
+  if (document.getElementById('admin-raw-import-text')) document.getElementById('admin-raw-import-text').value = '';
+  if (document.getElementById('admin-universal-status')) document.getElementById('admin-universal-status').style.display = 'none';
+  showToast("Beemelő mezők kiürítve.");
+});
+
+// 3. TELEPÜLÉSTISZTÍTÁS & TÖMEGES E-MAIL BEKAPCSOLÁS
 safeAddListener('btn-admin-migrate-locations', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  if (!confirm("Biztosan elindítod az összes felhasználó településének tisztítását és az E-MAIL ÉRTESÍTŐK TÖMEGES BEKAPCSOLÁSÁT a Firestore-ban?")) return;
+  if (!confirm("Bekapcsolod az automatikus e-mail értesítőket mind a 733+ felhasználónál?")) return;
 
   const btn = document.getElementById('btn-admin-migrate-locations');
-  if (btn) { btn.disabled = true; btn.textContent = "Karbantartás folyamatban..."; }
+  if (btn) { btn.disabled = true; btn.textContent = "Karbantartás..."; }
 
   try {
     const snap = await db.collection("public_profiles").get();
@@ -5289,16 +5659,14 @@ safeAddListener('btn-admin-migrate-locations', async () => {
           return l.city;
         }).join(', ');
 
-        const docRef = db.collection("public_profiles").doc(doc.id);
-        batch.set(docRef, {
+        batch.set(db.collection("public_profiles").doc(doc.id), {
           locations: cleanLocations,
           telepules: prettyTelepules,
           city: prettyTelepules,
-          emailNotifications: true // ✉️ TÖMEGES E-MAIL BEKAPCSOLÁS MINDENKINEK
+          emailNotifications: true // ✉️ Tömeges e-mail bekapcsolása
         }, { merge: true });
 
-        const userRef = db.collection("users").doc(doc.id);
-        batch.set(userRef, {
+        batch.set(db.collection("users").doc(doc.id), {
           locations: cleanLocations,
           telepules: prettyTelepules,
           emailNotifications: true
@@ -5309,15 +5677,16 @@ safeAddListener('btn-admin-migrate-locations', async () => {
     });
 
     await batch.commit();
-    showToast(`Sikeres karbantartás! ${updatedCount} felhasználónál aktiválva az e-mail értesítő és megtisztítva a település.`);
+    showToast(`Sikeres karbantartás! ${updatedCount} felhasználónál aktiválva az e-mail értesítő.`);
   } catch (err) {
-    showToast("Hiba a karbantartás során: " + err.message);
+    showToast("Hiba: " + err.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Minden felhasználó településének tisztítása és e-mail bekapcsolása most"; }
+    if (btn) { btn.disabled = false; btn.textContent = "Településtisztítás és e-mail bekapcsolása most"; }
   }
 });
 
-safeAddListener('admin-album-cover-input', 'change', (e) => {
+// 4. ALBUMOK SZERKESZTÉSE & MENTÉSE
+safeAddListener('admin-album-cover-input', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -5376,10 +5745,8 @@ function resetAdminAlbumForm() {
 
   const formTitle = document.getElementById('admin-album-form-title');
   const cancelBtn = document.getElementById('btn-admin-cancel-edit');
-  const saveBtn = document.getElementById('btn-admin-save-album');
-  if (formTitle) formTitle.textContent = "Új gyűjtemény / album felvitele";
+  if (formTitle) formTitle.textContent = "✏️ 3. Új gyűjtemény felvitele / Szerkesztő";
   if (cancelBtn) cancelBtn.style.display = 'none';
-  if (saveBtn) saveBtn.textContent = "Gyűjtemény mentése és azonnali élesítése";
 }
 
 safeAddListener('btn-admin-save-album', async () => {
@@ -5394,7 +5761,7 @@ safeAddListener('btn-admin-save-album', async () => {
   const type = document.getElementById('admin-album-type')?.value || 'sticker';
   const subtitle = document.getElementById('admin-album-subtitle')?.value.trim() || '';
   const isFeatured = document.getElementById('admin-album-featured')?.checked || false;
-  const isRetro = document.getElementById('admin-album-is-retro')?.checked || (year < 2010);
+  const isRetro = document.getElementById('admin-album-is-retro')?.checked || (year < 2018);
   const hasFavorites = document.getElementById('admin-album-has-favorites')?.checked !== false;
   const radarType = document.getElementById('admin-album-radar-type')?.value || 'none';
   const hasChapters = (type === 'sticker') && (document.getElementById('admin-album-has-chapters')?.checked || false);
@@ -5404,22 +5771,16 @@ safeAddListener('btn-admin-save-album', async () => {
   const customChaptersRaw = document.getElementById('admin-album-custom-chapters')?.value.trim() || '';
 
   if (!id || !title || !publisher) {
-    return showToast("Kérlek töltsd ki az azonosítót, a címet és a kiadót!");
+    return showToast("Kérlek töltsd ki az ID-t, a címet és a kiadót!");
   }
 
   const customItems = expandCustomItemsText(customItemsRaw);
   const customNames = expandCustomNamesText(customNamesRaw);
 
   let finalTotal = totalItems;
-  if (customItems.length > 0 && (!finalTotal || finalTotal < customItems.length)) {
-    finalTotal = customItems.length;
-  }
-  if (customNames.length > 0 && (!finalTotal || finalTotal < customNames.length)) {
-    finalTotal = customNames.length;
-  }
-  if (finalTotal < 1) {
-    return showToast("Kérlek add meg a darabszámot vagy a tételeket!");
-  }
+  if (customItems.length > 0 && (!finalTotal || finalTotal < customItems.length)) finalTotal = customItems.length;
+  if (customNames.length > 0 && (!finalTotal || finalTotal < customNames.length)) finalTotal = customNames.length;
+  if (finalTotal < 1) return showToast("Kérlek add meg a darabszámot!");
 
   const customChaptersList = (type === 'sticker') ? parseChaptersText(customChaptersRaw, customItems) : [];
   const typeLabel = type === 'sticker' ? 'Matricaalbum' : type === 'card' ? 'Kártya' : 'Figura / Kinder';
@@ -5453,10 +5814,9 @@ safeAddListener('btn-admin-save-album', async () => {
     };
 
     await db.collection("albums").doc(id).set(payload, { merge: true });
-
     ALBUMS_REGISTRY[id] = { ...payload };
 
-    showToast(editingAlbumId ? "Gyűjtemény sikeresen módosítva!" : "Új gyűjtemény közzétéve!");
+    showToast(editingAlbumId ? "Gyűjtemény sikeresen módosítva!" : "Új gyűjtemény élesítve!");
     resetAdminAlbumForm();
     editingAlbumId = null;
     renderHub();
@@ -5466,34 +5826,109 @@ safeAddListener('btn-admin-save-album', async () => {
   }
 });
 
+// =========================================================================
+// 5. ALBUMOK ABC RENDJE ÉS KEZDŐBETŰS CSOPORTOSÍTÁSA AZ ADMINBAN
+// =========================================================================
+let adminSelectedLetter = 'ALL';
+
 function renderAdminAlbumsList() {
   const container = document.getElementById('admin-albums-list');
+  const abcBar = document.getElementById('admin-albums-abc-bar');
+  const totalCountEl = document.getElementById('admin-albums-total-count');
+  const query = (document.getElementById('admin-albums-search')?.value || '').toLowerCase().trim();
+
   if (!container) return;
 
-  const list = Object.values(ALBUMS_REGISTRY);
-  container.innerHTML = list.map(a => `
-    <div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <img src="${a.coverUrl || 'og-image.png'}" style="width:38px; height:38px; border-radius:4px; object-fit:contain; background:#F3EEDF; padding:2px;" alt="Borító">
-        <div>
-          <strong>${escapeHtml(a.title)}</strong> (${a.year}) — <span style="color:var(--sand); font-size:0.8rem;">${a.totalItems} db (${escapeHtml(a.typeLabel || a.type)})</span>
-          <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(a.id)} • Kiadó: ${escapeHtml(a.publisher)}</div>
+  const allAlbums = Object.values(ALBUMS_REGISTRY).sort((a, b) => a.title.localeCompare(b.title, 'hu'));
+  if (totalCountEl) totalCountEl.textContent = allAlbums.length;
+
+  // 1. ABC Gyorsugró sáv felépítése
+  if (abcBar) {
+    const availableLetters = new Set();
+    allAlbums.forEach(a => {
+      const firstChar = a.title.charAt(0).toUpperCase();
+      availableLetters.add(firstChar);
+    });
+
+    const sortedLetters = [...availableLetters].sort((a, b) => a.localeCompare(b, 'hu'));
+    abcBar.innerHTML = `
+      <button class="admin-abc-btn ${adminSelectedLetter === 'ALL' ? 'active' : ''}" data-letter="ALL" style="width:auto; padding:0 8px;">Mind</button>
+      ${sortedLetters.map(l => `
+        <button class="admin-abc-btn ${adminSelectedLetter === l ? 'active' : ''}" data-letter="${l}">${l}</button>
+      `).join('')}
+    `;
+  }
+
+  // 2. Szűrés keresés és kezdőbetű alapján
+  let filtered = allAlbums.filter(a => {
+    if (query) {
+      const matchTitle = (a.title || '').toLowerCase().includes(query);
+      const matchPub = (a.publisher || '').toLowerCase().includes(query);
+      const matchId = (a.id || '').toLowerCase().includes(query);
+      return matchTitle || matchPub || matchId;
+    }
+    if (adminSelectedLetter !== 'ALL') {
+      return a.title.charAt(0).toUpperCase() === adminSelectedLetter;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem; padding:10px;">Nincs találat a szűrésre.</p>';
+    return;
+  }
+
+  // 3. Csoportosítás kezdőbetűk szerint
+  const groups = {};
+  filtered.forEach(a => {
+    const letter = a.title.charAt(0).toUpperCase();
+    if (!groups[letter]) groups[letter] = [];
+    groups[letter].push(a);
+  });
+
+  let html = '';
+  Object.keys(groups).sort((a, b) => a.localeCompare(b, 'hu')).forEach(letter => {
+    html += `
+      <div class="admin-album-group-header">
+        <span>${letter}</span>
+        <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">${groups[letter].length} db</span>
+      </div>
+    `;
+
+    groups[letter].forEach(a => {
+      html += `
+        <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="${a.coverUrl || 'og-image.png'}" style="width:36px; height:36px; border-radius:4px; object-fit:contain; background:#F3EEDF; padding:2px;" alt="Borító">
+            <div>
+              <strong>${escapeHtml(a.title)}</strong> (${a.year}) — <span style="color:var(--sand); font-size:0.8rem;">${a.totalItems} db (${escapeHtml(a.typeLabel || a.type)})</span>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(a.id)} • Kiadó: ${escapeHtml(a.publisher)}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-primary btn-sm" data-action="edit-album" data-id="${escapeHtml(a.id)}">Szerkesztés</button>
+            <button class="btn btn-secondary btn-sm" data-action="toggle-feature-album" data-id="${escapeHtml(a.id)}">${a.featured ? 'Kiemelt levétel' : 'Kiemelés'}</button>
+            <button class="btn btn-secondary btn-sm" data-action="delete-album" data-id="${escapeHtml(a.id)}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>
+          </div>
         </div>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <button class="btn btn-primary btn-sm" data-action="edit-album" data-id="${escapeHtml(a.id)}">
-          Szerkesztés
-        </button>
-        <button class="btn btn-secondary btn-sm" data-action="toggle-feature-album" data-id="${escapeHtml(a.id)}">
-          ${a.featured ? 'Kiemelés levétele' : 'Kiemelés'}
-        </button>
-        <button class="btn btn-secondary btn-sm" data-action="delete-album" data-id="${escapeHtml(a.id)}" style="color:var(--danger); border-color:var(--danger);">
-          Törlés
-        </button>
-      </div>
-    </div>
-  `).join('');
+      `;
+    });
+  });
+
+  container.innerHTML = html;
 }
+
+safeAddListener('admin-albums-abc-bar', (e) => {
+  const btn = e.target.closest('.admin-abc-btn');
+  if (!btn) return;
+  adminSelectedLetter = btn.dataset.letter;
+  renderAdminAlbumsList();
+});
+
+safeAddListener('admin-albums-search', 'input', () => {
+  adminSelectedLetter = 'ALL';
+  renderAdminAlbumsList();
+});
 
 safeAddListener('admin-albums-list', async (e) => {
   const btn = e.target.closest('[data-action]');
@@ -5518,7 +5953,7 @@ safeAddListener('admin-albums-list', async (e) => {
     document.getElementById('admin-album-custom-names').value = album.customNamesRaw || (album.customNames ? album.customNames.map((n, i) => `${i+1}: ${n}`).join('   ') : '');
     document.getElementById('admin-album-custom-chapters').value = album.customChaptersRaw || '';
     document.getElementById('admin-album-featured').checked = album.featured === true;
-    document.getElementById('admin-album-is-retro').checked = album.isRetro === true || album.year < 2010;
+    document.getElementById('admin-album-is-retro').checked = album.isRetro === true || album.year < 2018;
     document.getElementById('admin-album-has-favorites').checked = album.hasFavorites !== false;
     document.getElementById('admin-album-radar-type').value = album.radarType || (album.hasRadar ? 'lidl' : 'none');
     document.getElementById('admin-album-has-chapters').checked = album.hasChapters === true;
@@ -5534,25 +5969,20 @@ safeAddListener('admin-albums-list', async (e) => {
 
     const formTitle = document.getElementById('admin-album-form-title');
     const cancelBtn = document.getElementById('btn-admin-cancel-edit');
-    const saveBtn = document.getElementById('btn-admin-save-album');
-    if (formTitle) formTitle.textContent = `Gyűjtemény szerkesztése: ${album.title}`;
+    if (formTitle) formTitle.textContent = `✏️ Gyűjtemény szerkesztése: ${album.title}`;
     if (cancelBtn) cancelBtn.style.display = 'inline-block';
-    if (saveBtn) saveBtn.textContent = "Módosítások mentése";
 
     document.getElementById('admin-album-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else if (btn.dataset.action === 'toggle-feature-album') {
     const current = ALBUMS_REGISTRY[albumId]?.featured || false;
-    const newFeatured = !current;
-    
-    if (ALBUMS_REGISTRY[albumId]) ALBUMS_REGISTRY[albumId].featured = newFeatured;
-    await db.collection("albums").doc(albumId).set({ featured: newFeatured }, { merge: true });
-    
+    ALBUMS_REGISTRY[albumId].featured = !current;
+    await db.collection("albums").doc(albumId).set({ featured: !current }, { merge: true });
     renderHub();
     renderAdminAlbumsList();
-    showToast("Kiemelési státusz frissítve.");
+    showToast("Kiemelés frissítve.");
   } else if (btn.dataset.action === 'delete-album') {
-    if (albumId === 'lidl-lutra-2026') return showToast("A Lutra alapértelmezett gyűjtemény nem törölhető.");
-    if (!confirm(`Biztosan törölni szeretnéd a(z) ${albumId} gyűjteményt?`)) return;
+    if (albumId === 'lidl-lutra-2026') return showToast("A Lutra alapértelmezett album nem törölhető.");
+    if (!confirm(`Biztosan törlöd a(z) ${albumId} gyűjteményt?`)) return;
     await db.collection("albums").doc(albumId).delete();
     delete ALBUMS_REGISTRY[albumId];
     renderHub();
@@ -5561,7 +5991,7 @@ safeAddListener('admin-albums-list', async (e) => {
   }
 });
 
-// KÖZÖSSÉGI VÁRÓLISTA KEZELŐ
+// KÖZÖSSÉGI VÁRÓLISTA
 function listenToSuggestions() {
   if (!db) return;
   if (suggestionsUnsubscribe) suggestionsUnsubscribe();
@@ -5570,8 +6000,10 @@ function listenToSuggestions() {
     .where("status", "==", "pending")
     .onSnapshot(snap => {
       albumSuggestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const badge = document.getElementById('admin-suggestions-badge');
+      if (badge) badge.textContent = albumSuggestions.length;
       renderAdminSuggestionsList();
-    }, err => console.warn("Suggestions listener hiba:", err));
+    }, err => console.warn("Suggestions listener:", err));
 }
 
 function renderAdminSuggestionsList() {
@@ -5593,12 +6025,8 @@ function renderAdminSuggestionsList() {
         </div>
       </div>
       <div style="display:flex; gap:6px;">
-        <button class="btn btn-primary btn-sm" data-action="approve-suggestion" data-id="${s.id}">
-          Betöltés & Jóváhagyás
-        </button>
-        <button class="btn btn-secondary btn-sm" data-action="reject-suggestion" data-id="${s.id}" style="color:var(--danger); border-color:var(--danger);">
-          Elutasítás
-        </button>
+        <button class="btn btn-primary btn-sm" data-action="approve-suggestion" data-id="${s.id}">Betöltés & Jóváhagyás</button>
+        <button class="btn btn-secondary btn-sm" data-action="reject-suggestion" data-id="${s.id}" style="color:var(--danger); border-color:var(--danger);">Elutasítás</button>
       </div>
     </div>
   `).join('');
@@ -5621,7 +6049,7 @@ safeAddListener('admin-suggested-albums-list', async (e) => {
     document.getElementById('admin-album-subtitle').value = sug.note || '';
 
     await db.collection("album_suggestions").doc(sugId).update({ status: "approved" });
-    showToast("Javaslat betöltve a szerkesztőbe!");
+    showToast("Javaslat betöltve az űrlapba!");
     document.getElementById('admin-album-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else if (btn.dataset.action === 'reject-suggestion') {
     if (!confirm("Biztosan elutasítod ezt a javaslatot?")) return;
@@ -5649,7 +6077,7 @@ function listenToAlbums() {
         typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
         coverUrl: data.coverUrl || 'covers/' + doc.id + '.webp',
         featured: data.featured === true,
-        isRetro: data.isRetro === true || data.year < 2010,
+        isRetro: data.isRetro === true || data.year < 2018,
         hasFavorites: data.hasFavorites !== false,
         hasRadar: data.hasRadar === true,
         radarType: data.radarType || 'none',
@@ -5664,7 +6092,7 @@ function listenToAlbums() {
     if (currentUser && currentUser.email === ADMIN_EMAIL) {
       renderAdminAlbumsList();
     }
-  }, err => console.warn("Albums listener hiba:", err));
+  }, err => console.warn("Albums listener:", err));
 }
 
 // RENDSZERÜZENETEK
@@ -5714,7 +6142,7 @@ function showAnnouncementModal(announcement) {
 
 safeAddListener('btn-admin-preview-msg', () => {
   const title = document.getElementById('admin-msg-title')?.value.trim() || 'Előnézeti Cím';
-  const content = document.getElementById('admin-msg-content')?.value.trim() || 'Ez egy előnézeti üzenet szövege.';
+  const content = document.getElementById('admin-msg-content')?.value.trim() || 'Előnézeti üzenet szövege.';
   showAnnouncementModal({ id: 'preview', title, content });
 });
 
@@ -5728,7 +6156,7 @@ safeAddListener('btn-admin-publish-msg', async () => {
   const format = document.getElementById('admin-msg-format')?.value || 'banner';
   const city = document.getElementById('admin-msg-city')?.value.trim() || '';
 
-  if (!title || !content) return showToast("Add meg az üzenet címét és szövegét!");
+  if (!title || !content) return showToast("Add meg a címet és a szöveget!");
 
   try {
     let finalContent = content;
@@ -5743,7 +6171,7 @@ safeAddListener('btn-admin-publish-msg', async () => {
 
     if (document.getElementById('admin-msg-title')) document.getElementById('admin-msg-title').value = '';
     if (document.getElementById('admin-msg-content')) document.getElementById('admin-msg-content').value = '';
-    showToast("Rendszerüzenet sikeresen élesítve.");
+    showToast("Rendszerüzenet élesítve.");
   } catch (err) {
     showToast("Hiba: " + err.message);
   }
@@ -5970,7 +6398,7 @@ safeAddListener('btn-save-profile', () => {
 
       await batch.commit();
       checkMandatoryProfile();
-      showToast("Profil adatok és települések elmentve.");
+      showToast("Profil adatok elmentve.");
     } catch (err) {
       showToast("Mentési hiba: " + err.message);
     }
@@ -6017,7 +6445,7 @@ safeAddListener('btn-donably-donate-click', () => {
   document.getElementById('modal-donably-support')?.classList.remove('open');
 });
 
-// AUTOMATIKUS E-MAIL FRISSÍTÉSI BANNER KEZELÉSE
+// AUTOMATIKUS E-MAIL FRISSÍTÉSI BANNER
 function checkSystemUpdateEmailBanner() {
   const banner = document.getElementById('system-update-email-banner');
   const isDismissed = localStorage.getItem('cserelj_email_update_dismissed') === 'true';
@@ -6032,7 +6460,9 @@ safeAddListener('btn-dismiss-email-banner', () => {
   localStorage.setItem('cserelj_email_update_dismissed', 'true');
 });
 
-// FIREBASE INICIALIZÁLÁS & AUTH
+// =========================================================================
+// FIREBASE INICIALIZÁLÁS & BIZTONSÁGOS FIÓKVÁLTÁS (TISZTA LOGOUT)
+// =========================================================================
 function initFirebase() {
   if (typeof firebase === 'undefined') return;
   try {
@@ -6051,6 +6481,10 @@ function initFirebase() {
     auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
+      // 🛡️ FIÓKVÁLTÁSKOR AZONNAL LEÁLLÍTJUK A FUTÓ MENTÉSI IDŐZÍTŐKET
+      clearTimeout(saveDebounceTimer);
+      lastLocalEditTimestamp = 0;
+
       currentUser = user;
       const authArea = document.getElementById('auth-area');
       const guestNotice = document.getElementById('guest-notice');
@@ -6067,7 +6501,11 @@ function initFirebase() {
             <div class="user-badge"><span>${escapeHtml(user.displayName || user.email.split('@')[0])}</span></div>
             <button class="btn btn-secondary btn-sm" id="btn-logout" style="padding:4px 10px; font-size:0.75rem;">Kilépés</button>
           `;
-          document.getElementById('btn-logout')?.addEventListener('click', () => auth.signOut());
+          document.getElementById('btn-logout')?.addEventListener('click', () => {
+            // Tiszta kijelentkezés: leállítjuk a mentéseket és töröljük a memóriát
+            clearTimeout(saveDebounceTimer);
+            auth.signOut();
+          });
         }
 
         document.getElementById('modal-auth')?.classList.remove('open');
@@ -6080,6 +6518,7 @@ function initFirebase() {
         listenToAlbums();
         if (user.email === ADMIN_EMAIL) listenToSuggestions();
       } else {
+        // 🛡️ KIJELENTKEZÉSKOR VISSZAÁLLÍTJUK A TISZTA VENDÉG ÁLLAPOTOT (NINCS KORÁBBI MEMÓRIA-ÁTMÁSOLÓDÁS)
         if (myDocUnsubscribe) myDocUnsubscribe();
         if (messagesUnsubscribe) messagesUnsubscribe();
         if (suggestionsUnsubscribe) suggestionsUnsubscribe();
@@ -6088,6 +6527,31 @@ function initFirebase() {
         myIncomingMessages = [];
         myOutgoingMessages = [];
 
+        myProfile = {
+          nev: "Vendég gyűjtő",
+          telepules: "",
+          locations: [{ city: "", districts: [] }],
+          geo: myGpsCoords,
+          email: "",
+          isGiftOffering: false,
+          showEmailToUsers: false,
+          emailNotifications: true,
+          allowInspect: true,
+          gdprAccepted: true,
+          trustScore: 0,
+          ratingsCount: 0,
+          privateNote: '',
+          favorites: [9, 4, 35],
+          van: [],
+          vanCounts: {},
+          kell: [],
+          foglalva: [],
+          foglalvaCounts: {},
+          activeTrades: []
+        };
+
+        renderGrid();
+        renderActiveTradesPanel();
         listenToAllUsers();
         listenToRadarReports();
         listenToMeetups();
@@ -6156,12 +6620,13 @@ function listenToAllUsers() {
   }, err => console.warn("All users listener:", err));
 }
 
+// 🛡️ BIZTONSÁGOS FELHŐS PROFIL-BETÖLTÉS (FIRESTORE PRIORITY)
 function listenToMyProfile(uid) {
   if (!db) return;
   if (myDocUnsubscribe) myDocUnsubscribe();
 
   myDocUnsubscribe = db.collection("public_profiles").doc(uid).onSnapshot(async pubSnap => {
-    // 🛡️ VÉDELEM: Ha az elmúlt 1500 ms-ban mi magunk kattintottunk, nem engedjük a szerveres felülírást!
+    // Ha az elmúlt 1500 ms-ban mi magunk kattintottunk, nem engedjük a szerveres felülírást
     if (Date.now() - lastLocalEditTimestamp < 1500) {
       return;
     }
@@ -6177,6 +6642,7 @@ function listenToMyProfile(uid) {
     const merged = { ...(userData || {}), ...(pubData || {}) };
     const parsed = extractUserData(merged, uid, currentAlbumId);
 
+    // KIZÁRÓLAG A FELHŐS ADATOKAT ÍRJUK BE A MEMÓRIÁBA ÉS A HELYI TÁRBA
     if (parsed) {
       let loadedNote = userData?.privateNote;
       if (!loadedNote && merged.collections && merged.collections[currentAlbumId]) {
@@ -6210,6 +6676,7 @@ function listenToMyProfile(uid) {
         foglalvaCounts: parsed.foglalvaCounts || {}
       };
 
+      // Helyi gyorsítótár felülírása a friss felhős adattal
       localStorage.setItem(`private_note_${currentAlbumId}`, myProfile.privateNote);
       if (currentAlbumId === 'lidl-lutra-2026') localStorage.setItem('lutra_private_note', myProfile.privateNote);
 
