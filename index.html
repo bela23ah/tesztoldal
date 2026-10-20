@@ -98,7 +98,7 @@
   <option value="Orosháza">
   <option value="Szentes">
   <option value="Kiskunhalas">
-  <option value="Kazincbarcika">
+  <option value="Kazincbarcik">
   <option value="Jászberény">
   <option value="Siófok">
   <option value="Szentendre">
@@ -185,7 +185,7 @@
     ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- 2. HIERARCHIA: FŐNAVIGÁCIÓ (4 FŐ KATEGÓRIA) -->
+  <!-- 2. HIERARCHIA: FŐNAVIGÁCIÓ (4 FŐ KATEGÓRIA - JAVÍTOTT FELIRATTAL) -->
   <nav class="primary-nav" id="main-primary-nav" style="display:none;">
     <!-- 1. Gyűjteményem -->
     <div class="nav-dropdown-item">
@@ -225,10 +225,10 @@
       </div>
     </div>
 
-    <!-- 4. Profil & Admin -->
+    <!-- 4. Profil & Jegyzet (JAVÍTVA) -->
     <div class="nav-dropdown-item">
       <button class="primary-tab" data-cat="profil">
-        Profil & Admin <span class="dropdown-arrow">▾</span>
+        Profil & Jegyzet <span class="dropdown-arrow">▾</span>
       </button>
       <div class="dropdown-menu">
         <button class="dropdown-link" data-view="profil">Profil & Jegyzet</button>
@@ -373,6 +373,11 @@
           <button class="mode-btn active" id="btn-mode-grid">Rácsos nézet</button>
           <button class="mode-btn" id="btn-mode-album">Album nézet</button>
         </div>
+      </div>
+
+      <!-- INAKTÍV ALBUM FIGYELMEZTETŐ SÁV (JAVÍTVA) -->
+      <div id="inactive-album-banner" class="notice-banner" style="display:none; background:rgba(232,90,79,0.2); border-color:var(--danger); color:#FFC0BA; margin-bottom:12px;">
+        <span>⚠️ <strong>Ez a gyűjtemény jelenleg inaktív / ellenőrzés alatt áll.</strong> Az adataid megmaradtak, de az album reaktiválásig csak olvasható.</span>
       </div>
 
       <!-- TÖMEGES BEVITEL -->
@@ -563,7 +568,7 @@
         </div>
       </details>
 
-      <!-- 4. BLOKK: PARTNER KERESÉSE NÉV VAGY BECENÉV SZERINT (ÚJ) -->
+      <!-- 4. BLOKK: PARTNER KERESÉSE NÉV VAGY BECENÉV SZERINT -->
       <details class="search-accordion" open id="search-acc-partner" style="margin-top:12px;">
         <summary class="search-acc-summary">
           <span>👤 4. Partner keresése név vagy becenév szerint</span>
@@ -859,19 +864,23 @@
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <div class="card" style="margin-bottom:16px;">
-        <h3 style="margin-top:0; font-size:1.05rem; display:flex; justify-content:space-between; align-items:center;">
-          <span>Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;" id="note-char-count">0/250</span>
-        </h3>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 8px;">
-          Ezt a jegyzetet <strong>kizárólag te látod</strong> ehhez a gyűjteményhez.
-        </p>
-        <textarea id="prof-private-note" class="input-field" rows="3" maxlength="250" placeholder="Pl. #12 félretéve Marcinak; Postázás szerdán..."></textarea>
-        <div style="margin-top:8px; display:flex; justify-content:flex-end;">
-          <button class="btn btn-secondary btn-sm" id="btn-save-note">Jegyzet mentése</button>
+      <!-- SAJÁT JEGYZET HARMONIKA (JAVÍTVA) -->
+      <details class="search-accordion" open id="prof-note-accordion" style="margin-bottom:14px;">
+        <summary class="search-acc-summary">
+          <span>📝 Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
+          <span class="acc-chevron">▾</span>
+        </summary>
+        <div class="search-acc-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:0.78rem; color:var(--text-muted);">Ezt a jegyzetet <strong>kizárólag te látod</strong> ehhez a gyűjteményhez.</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="note-char-count">0/250</span>
+          </div>
+          <textarea id="prof-private-note" class="input-field" rows="3" maxlength="250" placeholder="Pl. #12 félretéve Marcinak; Postázás szerdán..."></textarea>
+          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-secondary btn-sm" id="btn-save-note">Jegyzet mentése</button>
+          </div>
         </div>
-      </div>
+      </details>
 
       <div class="card">
         <div class="form-group">

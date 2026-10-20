@@ -1,10 +1,13 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.1 TELJES, JAVÍTOTT KIADÁS)
-// 1 / 4. RÉSZ: ALAPADATOK, NORMALIZÁLÓK, 0 MS RÁCS, LAKATVÉDELEM & UNDO
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.2 KARCSÚSÍTOTT KIADÁS)
+// 1 / 4. RÉSZ: ALAPOK, 0 MS RÁCS, LAKATVÉDELEM, UNDO & FEJEZETEK
 // =========================================================================
 
-let ALBUMS_REGISTRY = {
-  // --- ALAP ÉS KIEMELT GYŰJTEMÉNYEK ---
+const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
+const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
+
+// --- DINAMIKUS ALBUMOK & BOLTOK (A FIRESTORE-BÓL ÉS CACHE-BŐL OLVAS!) ---
+let ALBUMS_REGISTRY = safeJsonParse('cached_albums_registry', {
   "lidl-lutra-2026": {
     id: "lidl-lutra-2026",
     title: "Lutra Album",
@@ -19,334 +22,12 @@ let ALBUMS_REGISTRY = {
     hasRadar: true,
     radarType: "lidl",
     hasChapters: true,
-    hasFavorites: true
-  },
-  "garfield-mentsuk-meg-a-bolygot-2026": {
-    id: "garfield-mentsuk-meg-a-bolygot-2026",
-    title: "Garfield - Mentsük meg a bolygót 2026",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2026,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F130c309d-cda4-435f-8112-51b236ec8880.jpg&w=3840&q=75",
-    featured: true,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "panini-fifa-world-cup-2026": {
-    id: "panini-fifa-world-cup-2026",
-    title: "FIFA World Cup 2026",
-    subtitle: "Hivatalos VB matricagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 1345,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F6e6fdbf7-9a10-4a50-8337-f54e867ba053.jpg&w=3840&q=75",
-    featured: true,
-    hasRadar: true,
-    radarType: "retail_general",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "fifa-world-cup-2026-adrenalyn-xl": {
-    id: "fifa-world-cup-2026-adrenalyn-xl",
-    title: "FIFA World Cup 2026 – Adrenalyn XL",
-    subtitle: "Hivatalos VB kártyagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 630,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ffifa-world-cup-2026-adrenalyn-xl.webp&w=3840&q=75",
-    featured: true,
-    hasRadar: true,
-    radarType: "retail_general",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "topps-match-attax-uefa-champions-league-2025-26": {
-    id: "topps-match-attax-uefa-champions-league-2025-26",
-    title: "Topps Match Attax UEFA Champions League 2025/26",
-    subtitle: "Hivatalos BL kártyák",
-    publisher: "Topps",
-    year: 2025,
-    totalItems: 743,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F0e1d4a44-674c-4dbf-8165-d1848067514f.jpg&w=3840&q=75",
-    featured: true,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "toy-story-5": {
-    id: "toy-story-5",
-    title: "Toy Story 5",
-    subtitle: "Hivatalos matricagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 192,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F10110c3c-f734-4083-a1a1-14762ecda0c5.jpg&w=3840&q=75",
-    featured: true,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "mancs-orjarat-2026": {
-    id: "mancs-orjarat-2026",
-    title: "Mancs őrjárat - Legizgalmasabb kalandok!",
-    subtitle: "Panini matricakollekció",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 184,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F3a6ea592-5bb6-411f-88ef-d4bcd2f31823.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "topps-turbo-attax-official-formula-1-2026": {
-    id: "topps-turbo-attax-official-formula-1-2026",
-    title: "Topps Turbo Attax Official Formula 1 2026",
-    subtitle: "Hivatalos F1 kártyák",
-    publisher: "Topps",
-    year: 2026,
-    totalItems: 353,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fda69f746-d909-4691-b14a-a73ebfcf530a.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "topps-flagship-premier-league-2026-27": {
-    id: "topps-flagship-premier-league-2026-27",
-    title: "Topps Flagship Premier League 2026/27",
-    subtitle: "Angol bajnokság kártyák",
-    publisher: "Topps",
-    year: 2026,
-    totalItems: 734,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ftopps-premier-league-202627-flagship-edition.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "fifa-365-2026-adrenalyn-xl": {
-    id: "fifa-365-2026-adrenalyn-xl",
-    title: "FIFA 365 2026 – Adrenalyn XL",
-    subtitle: "Panini focikártyák",
-    publisher: "Panini",
-    year: 2025,
-    totalItems: 452,
-    type: "card",
-    typeLabel: "Kártya",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fbcb13313-afad-4ac7-ae1c-5906c7ea5358.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false
-  },
-  "garfield-magyarorszag": {
-    id: "garfield-magyarorszag",
-    title: "Garfield - Magyarország",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2026,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F07287733-3f12-45b3-9cee-a56ec03a111c.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "garfield-allati-rekordok-2": {
-    id: "garfield-allati-rekordok-2",
-    title: "Garfield - Állati rekordok 2",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2025,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fcc29ba2f-339e-404e-8587-0d86be878648.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "garfield-rejtelymania": {
-    id: "garfield-rejtelymania",
-    title: "Garfield - Rejtélymánia",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2017,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F95348744-3d51-4303-9205-4eca8ff48655.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
     hasFavorites: true,
-    isRetro: true
-  },
-  "allati-rekordok": {
-    id: "allati-rekordok",
-    title: "Állati rekordok",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2016,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F7eb6eef5-5f6f-4144-9a82-db387ace1bd2.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true,
-    isRetro: true
-  },
-  "szigetmania": {
-    id: "szigetmania",
-    title: "Szigetmánia",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2014,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F0e64fd31-5ea7-410c-ad6a-712d827d6a67.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true,
-    isRetro: true
-  },
-  "garfield-oceanmania": {
-    id: "garfield-oceanmania",
-    title: "Garfield - Óceánmánia",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2013,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fb9b544e9-fea3-4ad4-952b-2bd7b55fb863.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true,
-    isRetro: true
-  },
-  "garfield-dzsungel-mania": {
-    id: "garfield-dzsungel-mania",
-    title: "Garfield - Dzsungelmánia",
-    subtitle: "Spar matricagyűjtemény",
-    publisher: "Spar",
-    year: 2011,
-    totalItems: 200,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F660fbb5a-24fe-4987-9f86-b07c73e46d8a.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: true,
-    radarType: "spar",
-    hasChapters: false,
-    hasFavorites: true,
-    isRetro: true
-  },
-  "super-mario-it-s-a-me-mario": {
-    id: "super-mario-it-s-a-me-mario",
-    title: "Super Mario - It's-a me, Mario!",
-    subtitle: "Nintendo matricagyűjtemény",
-    publisher: "Panini",
-    year: 2026,
-    totalItems: 180,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2F571f40ae-b90d-4bdd-85ea-6bca1cea22b1.jpg&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "lego-ninjago-dragons-rising": {
-    id: "lego-ninjago-dragons-rising",
-    title: "Lego Ninjago - Dragons Rising",
-    subtitle: "Lego matricák",
-    publisher: "Egyéb",
-    year: 2025,
-    totalItems: 212,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fce4d3f5d-3b8d-4210-9bb5-70d5bb3fdd99.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "one-piece-kinder": {
-    id: "one-piece-kinder",
-    title: "One Piece Kinder Joy",
-    subtitle: "Anime figuragyűjtemény",
-    publisher: "Kinder",
-    year: 2026,
-    totalItems: 25,
-    type: "figure",
-    typeLabel: "Figura / Kinder",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fdc648487-9950-4179-a2f8-4a96cf8a7283.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
-  },
-  "minecraft-kinder-joy": {
-    id: "minecraft-kinder-joy",
-    title: "Minecraft Kinder Joy",
-    subtitle: "Figura gyűjtemény",
-    publisher: "Kinder",
-    year: 2026,
-    totalItems: 28,
-    type: "figure",
-    typeLabel: "Figura / Kinder",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fe6ed94a7-8dd0-4a50-90de-8b92a592c06d.webp&w=3840&q=75",
-    featured: false,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: true
+    active: true
   }
-};
+});
+
+let STORE_DATABASES = safeJsonParse('cached_store_databases', { "lidl": [], "spar": [], "tesco": [], "penny": [] });
 
 let currentAlbumId = localStorage.getItem('lutra_active_album') || "lidl-lutra-2026";
 let currentHubFilter = "all";
@@ -357,17 +38,16 @@ let lastLocalEditTimestamp = 0;
 let lastUndoState = null;
 let undoToastTimer = null;
 
-// GPS, TÁVOLSÁGI & TELEPÜLÉS ÁLLAPOTOK
 let myGpsCoords = safeJsonParse('cserelj_gps_coords', null);
 let selectedSearchRadius = 'all';
 let selectedCityFilter = '';
 
 function getActiveAlbum() {
-  return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"];
+  return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"] || { totalItems: 108, title: "Gyűjtemény", type: "sticker", active: true };
 }
 
 function getActiveAlbumSize() {
-  return getActiveAlbum().totalItems;
+  return getActiveAlbum().totalItems || 108;
 }
 
 function getAlbumDisplayTitle(albumId) {
@@ -376,10 +56,7 @@ function getAlbumDisplayTitle(albumId) {
   return `${alb.title} (${alb.year})`;
 }
 
-const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
-const WORKER_ENDPOINT_URL = "https://blue-bread-cef1.gyorgy-harkai.workers.dev";
-
-// KOORDINÁTA-TÁR
+// TELEPÜLÉS KOORDINÁTÁK
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -408,12 +85,8 @@ const CITY_COORDINATES = {
   "gyor": { lat: 47.6875, lng: 17.6504, x: 26.0, y: 27.0 },
   "sopron": { lat: 47.6865, lng: 16.5843, x: 10.5, y: 30.0 },
   "szombathely": { lat: 47.2307, lng: 16.6218, x: 13.0, y: 44.0 },
-  "zalaegerszeg": { lat: 46.8417, lng: 16.8416, x: 20.0, y: 56.0 },
-  "veszprem": { lat: 47.0933, lng: 17.9115, x: 35.0, y: 46.0 },
   "szekesfehervar": { lat: 47.1860, lng: 18.4221, x: 44.0, y: 45.0 },
   "pecs": { lat: 46.0727, lng: 18.2323, x: 41.0, y: 83.0 },
-  "kaposvar": { lat: 46.3594, lng: 17.7968, x: 32.0, y: 73.0 },
-  "szekszard": { lat: 46.3501, lng: 18.7091, x: 50.0, y: 73.0 },
   "kecskemet": { lat: 46.9069, lng: 19.6913, x: 61.0, y: 59.0 },
   "nagykörös": { lat: 47.0322, lng: 19.7828, x: 62.5, y: 56.0 },
   "nagykoros": { lat: 47.0322, lng: 19.7828, x: 62.5, y: 56.0 },
@@ -422,130 +95,11 @@ const CITY_COORDINATES = {
   "lajosmizse": { lat: 47.0256, lng: 19.5583, x: 59.0, y: 56.0 },
   "dabas": { lat: 47.1878, lng: 19.3139, x: 56.0, y: 51.0 },
   "albertirsa": { lat: 47.2417, lng: 19.6167, x: 60.0, y: 49.0 },
-  "tiszakecske": { lat: 46.9317, lng: 20.0911, x: 66.0, y: 59.0 },
-  "kiskunmajsa": { lat: 46.4917, lng: 19.7389, x: 61.0, y: 72.0 },
-  "kiskoros": { lat: 46.6214, lng: 19.2853, x: 55.0, y: 68.0 },
-  "solt": { lat: 46.8000, lng: 19.0000, x: 53.0, y: 62.0 },
-  "soltvadkert": { lat: 46.5778, lng: 19.3944, x: 56.5, y: 70.0 },
-  "dunavecse": { lat: 46.9167, lng: 18.9833, x: 53.0, y: 58.0 },
   "szeged": { lat: 46.2530, lng: 20.1414, x: 66.0, y: 81.0 },
-  "bekescsaba": { lat: 46.6796, lng: 21.0911, x: 84.0, y: 69.0 },
-  "szolnok": { lat: 47.1756, lng: 20.1764, x: 69.0, y: 51.0 },
   "debrecen": { lat: 47.5316, lng: 21.6273, x: 88.0, y: 40.0 },
-  "nyiregyhaza": { lat: 47.9554, lng: 21.7167, x: 90.0, y: 26.0 },
   "miskolc": { lat: 48.1035, lng: 20.7784, x: 77.0, y: 23.0 },
-  "eger": { lat: 47.9025, lng: 20.3772, x: 71.0, y: 31.0 },
-  "salgotarjan": { lat: 48.0934, lng: 19.8030, x: 62.0, y: 21.0 },
-  "tatabanya": { lat: 47.5849, lng: 18.3932, x: 42.0, y: 32.0 },
   "erd": { lat: 47.3789, lng: 18.9192, x: 51.0, y: 43.0 },
-  "budaors": { lat: 47.4625, lng: 18.9536, x: 51.2, y: 40.5 },
-  "szentendre": { lat: 47.6667, lng: 19.0833, x: 53.0, y: 34.0 },
-  "dunakeszi": { lat: 47.6333, lng: 19.1333, x: 53.5, y: 35.0 },
-  "godollo": { lat: 47.6000, lng: 19.3667, x: 57.0, y: 36.0 },
-  "szigetszentmiklos": { lat: 47.3439, lng: 19.0436, x: 52.4, y: 44.0 },
-  "dunaujvaros": { lat: 46.9619, lng: 18.9355, x: 53.0, y: 53.0 },
-  "baja": { lat: 46.1819, lng: 18.9568, x: 54.0, y: 80.0 },
-  "hodmezovasarhely": { lat: 46.4303, lng: 20.3189, x: 71.0, y: 75.0 },
-  "oroshaza": { lat: 46.5667, lng: 20.6667, x: 78.0, y: 73.0 },
-  "gyula": { lat: 46.6500, lng: 21.2833, x: 89.0, y: 68.0 },
-  "siofok": { lat: 46.9041, lng: 18.0580, x: 42.0, y: 50.0 },
-  "keszthely": { lat: 46.7691, lng: 17.2481, x: 27.0, y: 58.0 },
-  "nagykanizsa": { lat: 46.4535, lng: 16.9910, x: 21.0, y: 70.0 }
-};
-
-// 221 LIDL BOLTLISTA
-const STORE_DATABASES = {
-  "lidl": [
-    "Agárd – Akácfa utca 2.", "Ajka – Hársfa utca 1/A", "Aszód – Pesti út 14-16.",
-    "Baja – Bajcsy-Zsilinszky utca 9.", "Balassagyarmat – Kóvári út 8", "Balatonfűzfő – Vízmű utca 1.",
-    "Balatonlelle – Rákóczi F. út 307.", "Balmazújváros – Böszörményi u. 1.", "Barcs – Erkel F. utca 2.",
-    "Bátonyterenye – Berekgát köz 2.", "Békés – Kossuth L. u. 31.", "Békéscsaba – Corvin u. 29-33.",
-    "Békéscsaba – Szarvasi út 15-17.", "Berettyóújfalu – Kossuth u. 98.", "Biatorbágy – Budaörsi út 4.",
-    "Bicske – Szent László utca 55.", "Bonyhád – Deák Ferenc utca 10/A", "Budakeszi – Kert utca 27-29.",
-    "Budaörs – Károly király út 145.", "Budapest – Ady Endre út 54-60.", "Budapest – Alsómalom u. 8-10.",
-    "Budapest – Arany János utca 27-29.", "Budapest – Bajcsy-Zsilinszky út 61.", "Budapest – Bartók Béla út 47.",
-    "Budapest – Báthory u. 6.", "Budapest – Bécsi út 325-337.", "Budapest – Béke utca 2-4.",
-    "Budapest – Budaörsi út 121.", "Budapest – Ciklámen u. 3.", "Budapest – Csalogány u. 43",
-    "Budapest – Cziffra Gy. u. 115.", "Budapest – Erdőkerülő utca 36.", "Budapest – Fehérvári út 211.",
-    "Budapest – Ferenciek tere 2.", "Budapest – Görgey Artúr u. 14-20", "Budapest – Gubacsi út 34.",
-    "Budapest – Haraszti út 34.", "Budapest – Huszti út 20", "Budapest – János u. 196",
-    "Budapest – Leonardo da Vinci u. 23.", "Budapest – Lobogó u. 12", "Budapest – Madách utca 72.",
-    "Budapest – Maglódi út 17", "Budapest – Margó Tivadar u. 83.", "Budapest – Máriaremetei út 1.",
-    "Budapest – Megyeri út 53", "Budapest – Mogyoródi út 23-29", "Budapest – Nagy Lajos Király útja 121-123",
-    "Budapest – Nagykőrösi út 35-38.", "Budapest – Nagytétényi út 216-218.", "Budapest – Pesti út 237/H",
-    "Budapest – Rákóczi út 48-50.", "Budapest – Régi Fóti u. 1", "Budapest – Sibrik Miklós út 30/b.",
-    "Budapest – Szalay utca 14.", "Budapest – Szentendrei út 251-253", "Budapest – Teleki tér 1.",
-    "Budapest – Újszász u. 47/B", "Budapest – Üllői út 112.", "Budapest – Üllői út 379-381.",
-    "Budapest – VI. Király u. 112.", "Budapest – Victor Hugo u. 11-15.", "Budapest – VIII. Hungária körút 26.",
-    "Budapest – XIII. Váci út 201", "Budapest – XVII. Pesti út 2.", "Cegléd – Törteli út 2.",
-    "Csongrád – Fő u. 59.", "Csorna – Soproni út 66/C.", "Csurgó – Széchenyi tér 12-14.",
-    "Dabas – Bartók Béla út 63.", "Debrecen – Balmazújvárosi út 7.", "Debrecen – Derék u. 31.",
-    "Debrecen – Faraktár utca 58.", "Debrecen – Mikepércsi út 168.", "Debrecen – Széchenyi u. 59",
-    "Dombóvár – Kórház utca 55.", "Dorog – Bányász körönd Hrsz. 1732/98", "Dunaharaszti – Némedi út 102/A",
-    "Dunakeszi – Berek u. 2.", "Dunaújváros – Magyar út 11.", "Dunaújváros – Velinszky utca 1.",
-    "Eger – II. Rákóczi Ferenc u. 141.", "Eger – Mátyás király út 144.", "Enying – Rákóczi Ferenc utca 5.",
-    "Érd – Balatoni út 73-75.", "Érd – Diósdi u. 2-4", "Esztergom – Bánomi út 10.",
-    "Esztergom – Dobogókői út 39.", "Fonyód – Ady Endre utca 57-59.", "Fót – Keleti Márton u. 7.",
-    "Gödöllő – Ottó Ferenc utca 2-4.", "Gyomaendrőd – Fő út 81/2.", "Gyöngyös – Budai Nagy Antal tér 10.",
-    "Győr – Jereváni utca 42.", "Győr – Kossuth Lajos utca 123.", "Győr – Mécs László utca 1/A",
-    "Győr – Szeszgyár utca 6.", "Győr – Tihanyi Árpád út 9.", "Gyula – Szent István u. 69/1.",
-    "Hajdúböszörmény – Bánság tér 10.", "Hajdúhadház – Dr. Földi János utca 55.", "Hajdúnánás – Dorogi u. 108.",
-    "Hajdúsámson – Kiscsere utca 3.", "Hajdúszoboszló – Dózsa György út 62.", "Hatvan – Radnóti tér 19.",
-    "Heves – Kolozsvári út 2/A", "Hódmezővásárhely – Hódtó u. 2.", "Jászberény – Nagykátai út 7/a.",
-    "Kalocsa – Pataji út 31.", "Kaposvár – Bereczk S. utca 2.", "Kaposvár – Előd Vezér utca 3.",
-    "Kaposvár – Füredi út 97.", "Kapuvár – Győri u. 60.", "Kazincbarcika – Mátyás király út 34/A",
-    "Kecskemét – Izsáki út 2.", "Kecskemét – Nyíri út 38/E", "Kecskemét – Szolnoki út 18.",
-    "Keszthely – Sopron utca 43.", "Keszthely – Tapolcai út 45/a", "Kiskőrös – Kossuth utca 13.",
-    "Kiskunfélegyháza – Majsai út 5.", "Kiskunhalas – Széchenyi út 1-3.", "Kistarcsa – Szabadság útja 60",
-    "Kisújszállás – Deák Ferenc u. 10.", "Kisvárda – Attila út 2/A", "Komárom – Mártírok útja 80.",
-    "Komló – Tröszt utca 1.", "Körmend – Dr. Remetei Filep utca 2.", "Kőszeg – Cáki út 2.",
-    "Kunszentmárton – Kossuth Lajos u. 23", "Makó – Szegedi u. 63.", "Marcali – Rákóczi Ferenc utca 50.",
-    "Martfű – Földvári út 1.", "Mezőkovácsháza – Árpád u. 135.", "Mezőkövesd – Dohány út 2/A",
-    "Mezőtúr – Földvári út 21.", "Miskolc – Csermőkei út 207.", "Miskolc – József Attila u. 74.",
-    "Miskolc – Kiss Ernő u. 13/b.", "Miskolc – Pesti út 5.", "Mohács – Pécsi út 41.",
-    "Monor – Gém utca 1.", "Mór – Akai utca 8.", "Mosonmagyaróvár – Királyhidai utca 49.",
-    "Nagyatád – Árpád utca 49.", "Nagykáta – Dózsa György út 16.", "Nagykanizsa – Balatoni utca 41.",
-    "Nagykőrös – Kecskeméti út 73.", "Nyíregyháza – Debreceni u. 106/c.", "Nyíregyháza – Pazonyi út 37/a.",
-    "Orosháza – Hóvirág u. 1-5.", "Oroszlány – Környei u. 2. ", "Ózd – Sárli út 2.",
-    "Paks – Tolnai út 70.", "Pápa – Jókai Mór utca 57.", "Pécs – Lahti utca 45.",
-    "Pécs – Lázár Vilmos utca 10.", "Pécs – Málomi út 3.", "Pécs – Puskin tér 22.",
-    "Pécs – Siklósi út 52/A", "Pilisvörösvár – Budai út 18.", "Pomáz – József Attila u. 32.",
-    "Püspökladány – Rákóczi utca 16-20.", "Ráckeve – Lacházi út 26", "Salgótarján – Csokonai út 23.",
-    "Sárbogárd – Ady E. utca 232-236.", "Sárvár – Rákóczi utca 12.", "Sátoraljaújhely – Esze Tamás u. 92.",
-    "Siklós – Szent István tér 2.", "Siófok – Zamárdi utca 1-2.", "Solt – Kossuth Lajos utca 2-8.",
-    "Soltvadkert – Kossuth Lajos u. 110.", "Solymár – Terstyánszky Ödön utca 89.", "Sopron – Bánfalvi út 12.",
-    "Sopron – Lófuttató utca 4.", "Sümeg – Fehérkő utca 1/1.", "Szada – Dózsa György út 1/B",
-    "Szarvas – Csabai út 1/4.", "Szeged – Makkosházi krt. 21.", "Szeged – Szabadkai út 1/c.",
-    "Szeged – Vásárhelyi Pál út 7.", "Szeghalom – Széchenyi u. 45-49.", "Székesfehérvár – Balatoni út 21.",
-    "Székesfehérvár – Farkasvermi köz 1.", "Székesfehérvár – Mártírok útja 11.", "Székesfehérvár – Pozsonyi út 4.",
-    "Szekszárd – Arany János utca 4.", "Szekszárd – Béri Balogh Ádám utca 94/B", "Szentendre – Dózsa Gy. út 20",
-    "Szentes – Ipartelepi út 2-6.", "Szerencs – Csalogány út 58.", "Szigethalom – Mű út 7.",
-    "Szigetszentmiklós – Csepeli út 16/a.", "Szigetvár – Almás patak utca 5.", "Szolnok – Délibáb u. 6.",
-    "Szolnok – Széchenyi krt. 4/b.", "Szolnok – Tószegi út 5.", "Szombathely – Kenyérvíz utca 2.",
-    "Szombathely – Verseny utca 30.", "Szombathely – Zanati út 42", "Tamási – Deák Ferenc utca 10/A",
-    "Tapolca – Veszprémi út 1.", "Tata – Piac tér 8.", "Tatabánya – Győri út 31.",
-    "Tatabánya – Szent Borbála út 31.", "Tiszafüred – Húszöles út 25.", "Tiszaújváros – Lévay u. 118.",
-    "Törökszentmiklós – Kossuth Lajos u. 102-108.", "Újfehértó – Debreceni út 14-24.", "Üröm – Dózsa György út 63.",
-    "Vác – Balassagyarmati út 9-15.", "Vác – Bolgár u. 1.", "Vác – Naszály utca 20.",
-    "Várpalota – Hét vezér utca 3.", "Vecsés – Fő u. 244", "Veresegyház – Budapesti út 1.",
-    "Veresegyház – Szadai út 7.", "Veszprém – Cholnoky utca 29/1.", "Veszprém – Észak-keleti útgyűrű 2.",
-    "Zalaegerszeg – Átkötő utca 3.", "Zalaegerszeg – Platán sor 6/A"
-  ],
-  "spar": [
-    "Budapest – Allee Interspar", "Budapest – Árkád Interspar", "Budapest – Westend Spar",
-    "Budapest – Mammut Spar", "Budapest – Corvin Plaza Spar", "Budapest – Bécsi út Interspar",
-    "Debrecen – Fórum Spar", "Győr – Interspar", "Szeged – Árkád Spar", "Pécs – Árkád Interspar",
-    "Székesfehérvár – Interspar", "Kecskemét – Malom Spar", "Nyíregyháza – Korzó Spar"
-  ],
-  "tesco": [
-    "Budapest – Váci út Tesco Extra", "Budapest – Fogarasi út Tesco", "Budapest – Campona Tesco",
-    "Budaörs – Tesco Hipermarket", "Győr – Tesco Hipermarket", "Debrecen – Kishegyesi Tesco",
-    "Szeged – Rókusi krt. Tesco", "Pécs – Kincses út Tesco", "Székesfehérvár – Palotai út Tesco"
-  ],
-  "penny": [
-    "Budapest – Hős utca Penny", "Budapest – Kerepesi út Penny", "Debrecen – Sámsoni út Penny",
-    "Miskolc – Illyés Gyula Penny", "Szeged – Makkosházi Penny", "Pécs – Zsolnay Penny"
-  ]
+  "budaors": { lat: 47.4625, lng: 18.9536, x: 51.2, y: 40.5 }
 };
 
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
@@ -553,37 +107,12 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c * 10) / 10;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) / 10;
 }
 
-const ROMAN_NUMERALS = [
-  "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
-  "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX",
-  "XXI", "XXII", "XXIII"
-];
-
-const KNOWN_CANONICAL_CITIES = {
-  "erd": "Érd", "gyor": "Győr", "pecs": "Pécs", "szeged": "Szeged",
-  "debrecen": "Debrecen", "miskolc": "Miskolc", "kecskemet": "Kecskemét",
-  "szekesfehervar": "Székesfehérvár", "szombathely": "Szombathely",
-  "nyiregyhaza": "Nyíregyháza", "szolnok": "Szolnok", "tatabanya": "Tatabánya",
-  "kaposvar": "Kaposvár", "bekescsaba": "Békéscsaba", "veszprem": "Veszprém",
-  "zalaegerszeg": "Zalaegerszeg", "eger": "Eger", "sopron": "Sopron",
-  "nagykanizsa": "Nagykanizsa", "dunaujvaros": "Dunaújváros",
-  "hodmezovasarhely": "Hódmezővásárhely", "salgotarjan": "Salgótarján",
-  "szekszard": "Szekszárd", "baja": "Baja", "siofok": "Siófok",
-  "gyula": "Gyula", "oroshaza": "Orosháza", "keszthely": "Keszthely",
-  "nagykoros": "Nagykőrös", "cegled": "Cegléd", "kiskunfelegyhaza": "Kiskunfélegyháza",
-  "lajosmizse": "Lajosmizse", "dabas": "Dabas", "albertirsa": "Albertirsa",
-  "tiszakecske": "Tiszakécske", "kiskunmajsa": "Kiskunmajsa", "kiskoros": "Kiskőrös",
-  "budaors": "Budaörs", "szentendre": "Szentendre", "dunakeszi": "Dunakeszi",
-  "godollo": "Gödöllő", "szigetszentmiklos": "Szigetszentmiklós"
-};
+const ROMAN_NUMERALS = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII"];
+const KNOWN_CANONICAL_CITIES = { "erd": "Érd", "gyor": "Győr", "pecs": "Pécs", "szeged": "Szeged", "debrecen": "Debrecen", "miskolc": "Miskolc", "kecskemet": "Kecskemét", "szekesfehervar": "Székesfehérvár", "nagykoros": "Nagykőrös", "cegled": "Cegléd" };
 
 function normalizeText(text) {
   if (!text) return '';
@@ -594,23 +123,11 @@ function parseBudapestDistricts(text) {
   if (!text) return [];
   const clean = text.toLowerCase().replace(/kerület|kerulet|ker\.?|district/g, ' ');
   const districts = [];
-
-  const romanMap = {
-    xxiii: 23, xxii: 22, xxi: 21, xx: 20, xix: 19, xviii: 18, xvii: 17, xvi: 16,
-    xv: 15, xiv: 14, xiii: 13, xii: 12, xi: 11, x: 10, ix: 9, viii: 8, vii: 7,
-    vi: 6, v: 5, iv: 4, iii: 3, ii: 2, i: 1
-  };
-
+  const romanMap = { xxiii: 23, xxii: 22, xxi: 21, xx: 20, xix: 19, xviii: 18, xvii: 17, xvi: 16, xv: 15, xiv: 14, xiii: 13, xii: 12, xi: 11, x: 10, ix: 9, viii: 8, vii: 7, vi: 6, v: 5, iv: 4, iii: 3, ii: 2, i: 1 };
   const romanMatches = clean.match(/\b(xxiii|xxii|xxi|xx|xix|xviii|xvii|xvi|xv|xiv|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/g);
-  if (romanMatches) {
-    romanMatches.forEach(r => { if (romanMap[r]) districts.push(romanMap[r]); });
-  }
-
+  if (romanMatches) romanMatches.forEach(r => { if (romanMap[r]) districts.push(romanMap[r]); });
   const arabMatches = clean.match(/\b([1-9]|1[0-9]|2[0-3])\b/g);
-  if (arabMatches) {
-    arabMatches.forEach(n => districts.push(parseInt(n, 10)));
-  }
-
+  if (arabMatches) arabMatches.forEach(n => districts.push(parseInt(n, 10)));
   return [...new Set(districts)].sort((a, b) => a - b);
 }
 
@@ -618,18 +135,14 @@ function extractNormalizedLocations(locationInput) {
   if (!locationInput) return [];
   const results = [];
   const SPLIT_REGEX = /[\/,;\\\+\-–—]|\bés\b|\bill\.?\b|\bvalamint\b/i;
-
   let rawList = [];
+
   if (Array.isArray(locationInput)) {
     locationInput.forEach(loc => {
-      if (typeof loc === 'string') {
-        loc.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
-      } else if (loc && loc.city) {
-        if (loc.districts && loc.districts.length > 0) {
-          loc.districts.forEach(d => rawList.push(`Budapest ${d}. kerület`));
-        } else {
-          loc.city.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
-        }
+      if (typeof loc === 'string') loc.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
+      else if (loc && loc.city) {
+        if (loc.districts && loc.districts.length > 0) loc.districts.forEach(d => rawList.push(`Budapest ${d}. kerület`));
+        else loc.city.split(SPLIT_REGEX).forEach(t => { if (t.trim()) rawList.push(t.trim()); });
       }
     });
   } else if (typeof locationInput === 'string') {
@@ -639,48 +152,20 @@ function extractNormalizedLocations(locationInput) {
   rawList.forEach(raw => {
     const norm = normalizeText(raw);
     if (!norm) return;
-
-    const isBp = norm.includes('budapest') || norm.includes('bp') || norm.includes('pest') || norm.includes('fovaros') || /^[0-9ivx\.\s\-]+ker/.test(norm);
-    
+    const isBp = norm.includes('budapest') || norm.includes('bp') || norm.includes('pest') || /^[0-9ivx\.\s\-]+ker/.test(norm);
     if (isBp) {
       const districts = parseBudapestDistricts(raw);
-      if (districts.length > 0) {
-        districts.forEach(d => {
-          results.push({
-            canonicalKey: `budapest_${d}`,
-            displayName: `Budapest ${ROMAN_NUMERALS[d]}. kerület`,
-            cityGroup: "Budapest"
-          });
-        });
-      } else {
-        results.push({
-          canonicalKey: `budapest`,
-          displayName: `Budapest`,
-          cityGroup: "Budapest"
-        });
-      }
-    } else if (norm.includes('erd') || norm.includes('parkvaros') || norm.includes('erdliget')) {
-      results.push({ canonicalKey: 'erd', displayName: 'Érd', cityGroup: 'Érd' });
-    } else if (norm.includes('gyor') || norm.includes('menfocsanak') || norm.includes('gyorszentivan')) {
-      results.push({ canonicalKey: 'gyor', displayName: 'Győr', cityGroup: 'Győr' });
+      if (districts.length > 0) districts.forEach(d => results.push({ canonicalKey: `budapest_${d}`, displayName: `Budapest ${ROMAN_NUMERALS[d]}. kerület`, cityGroup: "Budapest" }));
+      else results.push({ canonicalKey: `budapest`, displayName: `Budapest`, cityGroup: "Budapest" });
     } else {
       const cleanKey = norm.replace(/[\s\.\-]+/g, '');
       const prettyName = KNOWN_CANONICAL_CITIES[cleanKey] || raw.charAt(0).toUpperCase() + raw.slice(1);
-      results.push({
-        canonicalKey: cleanKey,
-        displayName: prettyName,
-        cityGroup: prettyName
-      });
+      results.push({ canonicalKey: cleanKey, displayName: prettyName, cityGroup: prettyName });
     }
   });
 
   const uniqueMap = new Map();
-  results.forEach(item => {
-    if (!uniqueMap.has(item.canonicalKey)) {
-      uniqueMap.set(item.canonicalKey, item);
-    }
-  });
-
+  results.forEach(item => { if (!uniqueMap.has(item.canonicalKey)) uniqueMap.set(item.canonicalKey, item); });
   return Array.from(uniqueMap.values());
 }
 
@@ -701,205 +186,36 @@ function isLocalCityMatch(locA, locB) {
   return citiesA.some(cA => citiesB.includes(cA));
 }
 
-function getItemLabel(num, albumId = currentAlbumId) {
-  const album = ALBUMS_REGISTRY[albumId];
-  if (album && album.customItems && album.customItems[num - 1]) {
-    const raw = album.customItems[num - 1];
-    return raw.startsWith('#') ? raw : `#${raw}`;
-  }
-  return `#${num}`;
-}
-
-function getItemFullName(num, albumId = currentAlbumId) {
-  if (albumId === 'lidl-lutra-2026') {
-    return STICKER_NAMES[num] ? `#${num} ${STICKER_NAMES[num]}` : `#${num}`;
-  }
-  const album = ALBUMS_REGISTRY[albumId];
-  if (album && album.customNames && album.customNames[num - 1]) {
-    return `${getItemLabel(num, albumId)} ${album.customNames[num - 1]}`;
-  }
-  return getItemLabel(num, albumId);
-}
-
-function expandCustomItemsText(rawText) {
-  if (!rawText || !rawText.trim()) return [];
-  const tokens = rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
-  const result = [];
-
-  tokens.forEach(token => {
-    const rangeMatch = token.match(/^([A-Za-z0-9_\s]+?)\s*(\d+)[\s\-—–]+(\d+)$/);
-    if (rangeMatch) {
-      const prefix = rangeMatch[1].trim();
-      const start = parseInt(rangeMatch[2], 10);
-      const end = parseInt(rangeMatch[3], 10);
-      const min = Math.min(start, end);
-      const max = Math.max(start, end);
-      for (let i = min; i <= max; i++) {
-        result.push(`${prefix} ${i}`);
-      }
-    } else {
-      result.push(token);
-    }
-  });
-  return result;
-}
-
-function expandCustomNamesText(rawText) {
-  if (!rawText || !rawText.trim()) return [];
-  const mapByIndex = {};
-  let maxIndexFound = 0;
-  let hasIndexedNames = false;
-
-  const regexNamed = /(?:^|\s+|,\s*)(?:#?(\d+))[\s:\.\-—–]+([^#\n\r]+?)(?=(?:\s+#?\d+[\s:\.\-—–]+)|$|,)/g;
-  let match;
-
-  if (/^#?\d+[\s:\.\-—–]+/m.test(rawText.trim()) || /(?:^|\s+)#?\d+[\s:\.\-—–]+/.test(rawText)) {
-    while ((match = regexNamed.exec(rawText)) !== null) {
-      const idx = parseInt(match[1], 10);
-      const name = match[2].trim().replace(/^[,\s]+|[,\s]+$/g, '');
-      if (idx > 0 && name.length > 0) {
-        mapByIndex[idx] = name;
-        if (idx > maxIndexFound) maxIndexFound = idx;
-        hasIndexedNames = true;
-      }
-    }
-  }
-
-  if (hasIndexedNames && maxIndexFound > 0) {
-    const indexedResult = [];
-    for (let i = 1; i <= maxIndexFound; i++) {
-      indexedResult.push(mapByIndex[i] || '');
-    }
-    return indexedResult;
-  }
-
-  return rawText.split(/[\n,;]+/).map(t => t.trim()).filter(t => t.length > 0);
-}
-
-function parseChaptersText(rawText, customItems = []) {
-  if (!rawText || !rawText.trim()) return [];
-  const lines = rawText.split(/[\r\n]+/);
-  const chapters = [];
-
-  lines.forEach((line, idx) => {
-    line = line.trim();
-    if (!line) return;
-
-    const isCombo = line.toLowerCase().includes('[combo]');
-    const cleanLine = line.replace(/\[combo\]/gi, '').trim();
-
-    const rangeMatch = cleanLine.match(/(?:#?\s*)(\d+)[\s\-—–−]+(?:#?\s*)(\d+)/);
-    if (!rangeMatch) return;
-
-    const start = parseInt(rangeMatch[1], 10);
-    const end = parseInt(rangeMatch[2], 10);
-    const min = Math.min(start, end);
-    const max = Math.max(start, end);
-
-    let title = cleanLine
-      .replace(/(?:#?\s*)(\d+)[\s\-—–−]+(?:#?\s*)(\d+)/g, '')
-      .replace(/^[\s:\.\-—–]+|[\s:\.\-—–]+$/g, '')
-      .trim();
-
-    if (!title) title = `${idx + 1}. fejezet`;
-
-    const elements = [];
-    if (isCombo && max - min === 1) {
-      elements.push({
-        type: "combo",
-        nums: [min, max],
-        name: title,
-        orient: "panoráma"
-      });
-    } else {
-      for (let n = min; n <= max; n++) {
-        const customName = customItems && customItems[n - 1] ? customItems[n - 1] : `#${n}`;
-        elements.push({
-          type: "single",
-          num: n,
-          name: customName,
-          orient: "négyzet"
-        });
-      }
-    }
-
-    if (elements.length > 0) {
-      chapters.push({
-        id: `chap_${idx + 1}`,
-        cim: title,
-        elemek: elements
-      });
-    }
-  });
-
-  return chapters;
-}
-
-function getActiveChapters() {
-  const activeAlbum = getActiveAlbum();
-  if (currentAlbumId === 'lidl-lutra-2026') return FEJEZETEK;
-  if (activeAlbum.type === 'sticker' && activeAlbum.customChaptersList && activeAlbum.customChaptersList.length > 0) {
-    return activeAlbum.customChaptersList;
-  }
-  return [];
-}
-
-function safeAddListener(id, eventOrHandler, handler) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (typeof eventOrHandler === 'function') {
-    el.addEventListener('click', eventOrHandler);
-  } else if (typeof eventOrHandler === 'string' && typeof handler === 'function') {
-    el.addEventListener(eventOrHandler, handler);
-  }
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+function safeJsonParse(key, fallback) {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : fallback;
+  } catch (e) { return fallback; }
 }
 
 function ensureArray(val) {
   if (!val) return [];
   const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
   if (Array.isArray(val)) {
-    return val
-      .map(item => parseInt(String(item).replace(/[^\d]/g, ''), 10))
-      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
+    return val.map(item => parseInt(String(item).replace(/[^\d]/g, ''), 10)).filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
   }
-  if (typeof val === 'string') {
-    return val.split(/[\s,;]+/)
-      .map(token => parseInt(String(token).replace(/[^\d]/g, ''), 10))
-      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
-  }
-  if (typeof val === 'object') {
-    return Object.keys(val)
-      .map(token => parseInt(String(token).replace(/[^\d]/g, ''), 10))
-      .filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
+  if (typeof val === 'string' || typeof val === 'object') {
+    const rawTokens = typeof val === 'string' ? val.split(/[\s,;]+/) : Object.keys(val);
+    return rawTokens.map(t => parseInt(String(t).replace(/[^\d]/g, ''), 10)).filter(n => !isNaN(n) && n >= 1 && n <= maxLimit);
   }
   return [];
 }
 
-function safeJsonParse(key, fallback) {
-  try {
-    const item = localStorage.getItem(key);
-    if (!item) return fallback;
-    return JSON.parse(item);
-  } catch (e) {
-    return fallback;
-  }
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
-function getFirstValidString(...values) {
-  for (const v of values) {
-    if (typeof v === 'string' && v.trim().length > 0) return v.trim();
-  }
-  return '';
+function safeAddListener(id, eventOrHandler, handler) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (typeof eventOrHandler === 'function') el.addEventListener('click', eventOrHandler);
+  else if (typeof eventOrHandler === 'string' && typeof handler === 'function') el.addEventListener(eventOrHandler, handler);
 }
 
 function showToast(msg) {
@@ -910,87 +226,24 @@ function showToast(msg) {
   setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
 
-// 🔒 KIZÁRÓLAG AZ AKTÍV FOLYAMATBAN LÉVŐ CSERÉKBŐL SZÁMOLT LAKAT-SZÁMLÁLÓ
+function getFirstValidString(...values) {
+  for (const v of values) {
+    if (typeof v === 'string' && v.trim().length > 0) return v.trim();
+  }
+  return '';
+}
+
 function getActiveLockedCounts(albumId = currentAlbumId) {
   const counts = {};
   (myProfile.activeTrades || []).forEach(t => {
     if (t.status === 'pending' && (t.albumId || 'lidl-lutra-2026') === albumId) {
-      (t.givingItems || []).forEach(num => {
-        counts[num] = (counts[num] || 0) + 1;
-      });
+      (t.givingItems || []).forEach(num => { counts[num] = (counts[num] || 0) + 1; });
     }
   });
   return counts;
 }
 
-function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
-  if (!data) return null;
-
-  const nev = getFirstValidString(data.nev, data.nickname, data.name, data.displayName) || 'Névtelen gyűjtő';
-  const telepules = getFirstValidString(data.telepules, data.city, data.varos);
-  const email = getFirstValidString(data.notifyEmail, data.email, data.mail);
-  const locations = Array.isArray(data.locations) ? data.locations : (telepules ? [{ city: telepules, districts: [] }] : []);
-  const geo = (data.geo && typeof data.geo.lat === 'number') ? data.geo : null;
-
-  let rawVan = [];
-  let rawKell = [];
-  let rawFoglalva = [];
-  let vanCounts = {};
-  let foglalvaCounts = {};
-
-  if (data.collections && data.collections[targetAlbumId]) {
-    const col = data.collections[targetAlbumId];
-    rawVan = col.van || [];
-    rawKell = col.kell || [];
-    rawFoglalva = col.foglalva || [];
-    vanCounts = col.vanCounts || {};
-    foglalvaCounts = col.foglalvaCounts || {};
-  } else if (targetAlbumId === 'lidl-lutra-2026') {
-    rawVan = data.van || data.duplicates || data.duplak || [];
-    rawKell = data.kell || data.missing || data.hianyzo || [];
-    rawFoglalva = data.foglalva || data.reserved || [];
-    vanCounts = data.vanCounts || {};
-    foglalvaCounts = data.foglalvaCounts || {};
-  }
-
-  const van = ensureArray(rawVan).sort((a, b) => a - b);
-  const kell = ensureArray(rawKell).sort((a, b) => a - b);
-  const foglalva = ensureArray(rawFoglalva).sort((a, b) => a - b);
-
-  const favorites = ensureArray(data.favorites || []);
-  const isGiftOffering = data.isGiftOffering === true || data.isGift === true;
-  const showEmailToUsers = data.showEmailToUsers === true;
-  const emailNotifications = data.emailNotifications !== false;
-  const allowInspect = data.allowInspect !== false;
-  const gdprAccepted = data.gdprAccepted !== false;
-  const trustScore = parseFloat(data.trustScore || '0');
-  const ratingsCount = parseInt(data.ratingsCount || '0', 10);
-  const recentReviews = Array.isArray(data.recentReviews) ? data.recentReviews : [];
-
-  return {
-    id: docId,
-    nev,
-    telepules,
-    locations,
-    geo,
-    email,
-    van,
-    kell,
-    foglalva,
-    favorites,
-    vanCounts,
-    foglalvaCounts,
-    isGiftOffering,
-    showEmailToUsers,
-    emailNotifications,
-    allowInspect,
-    gdprAccepted,
-    trustScore,
-    ratingsCount,
-    recentReviews
-  };
-}
-
+// PROFIL ALAPÁLLAPOT
 let myProfile = {
   nev: "Vendég gyűjtő",
   telepules: "",
@@ -1048,105 +301,98 @@ let suggestionsUnsubscribe = null;
 let db = null;
 let auth = null;
 
-let activeContactTarget = {
-  uid: '',
-  nev: '',
-  telepules: '',
-  email: '',
-  showEmail: false,
-  subject: ''
-};
+let activeContactTarget = { uid: '', nev: '', telepules: '', email: '', showEmail: false, subject: '' };
 
-// HIVATALOS LIDL LUTRA 2026 FEJEZETEK ÉS MATRICÁK (1–108)
+// LUTRA 108 FEJEZET ÉS TÁJOLÁSOK (A 4. RÉSZBEN GOMBNYOMÁSRA FELMEGY A FIRESTORE-BA!)
 const FEJEZETEK = [
-  { id: "bevezeto", cim: "1. oldal — Bevezető", elemek: [ { type: "single", num: 1, name: "WWF Magyarország logó", orient: "álló" } ] },
+  { id: "bevezeto", cim: "1. oldal — Bevezető", elemek: [{ type: "single", num: 1, name: "WWF Magyarország logó", orient: "álló" }] },
   { id: "elettel_teli_bolygo", cim: "2–3. oldal — Élettel teli bolygó", elemek: [
-      { type: "single", num: 2, name: "Kék bálna", orient: "fekvő" }, { type: "single", num: 3, name: "Jegesmedve", orient: "fekvő" },
-      { type: "single", num: 4, name: "Hópárduc", orient: "fekvő" }, { type: "single", num: 5, name: "Óriáspanda", orient: "fekvő" },
-      { type: "single", num: 6, name: "Kondorkeselyű", orient: "fekvő" }, { type: "single", num: 7, name: "Bogáncslepke", orient: "fekvő" },
-      { type: "single", num: 8, name: "Atlanti tokhal", orient: "fekvő" }, { type: "single", num: 9, name: "Vidra", orient: "fekvő" }
+    { type: "single", num: 2, name: "Kék bálna", orient: "fekvő" }, { type: "single", num: 3, name: "Jegesmedve", orient: "fekvő" },
+    { type: "single", num: 4, name: "Hópárduc", orient: "fekvő" }, { type: "single", num: 5, name: "Óriáspanda", orient: "fekvő" },
+    { type: "single", num: 6, name: "Kondorkeselyű", orient: "fekvő" }, { type: "single", num: 7, name: "Bogáncslepke", orient: "fekvő" },
+    { type: "single", num: 8, name: "Atlanti tokhal", orient: "fekvő" }, { type: "single", num: 9, name: "Vidra", orient: "fekvő" }
   ]},
   { id: "europa", cim: "4–5. oldal — Európa", elemek: [
-      { type: "single", num: 10, name: "Vöröshasú unka", orient: "fekvő" }, { type: "single", num: 11, name: "Barna medve", orient: "fekvő" },
-      { type: "single", num: 12, name: "Eurázsiai hiúz", orient: "fekvő" }, { type: "single", num: 13, name: "Szürke farkas", orient: "fekvő" },
-      { type: "single", num: 14, name: "Kacsafarkú szender", orient: "fekvő" }, { type: "single", num: 15, name: "Törpekuvik", orient: "fekvő" }
+    { type: "single", num: 10, name: "Vöröshasú unka", orient: "fekvő" }, { type: "single", num: 11, name: "Barna medve", orient: "fekvő" },
+    { type: "single", num: 12, name: "Eurázsiai hiúz", orient: "fekvő" }, { type: "single", num: 13, name: "Szürke farkas", orient: "fekvő" },
+    { type: "single", num: 14, name: "Kacsafarkú szender", orient: "fekvő" }, { type: "single", num: 15, name: "Törpekuvik", orient: "fekvő" }
   ]},
   { id: "afrika", cim: "6–7. oldal — Afrika", elemek: [
-      { type: "single", num: 16, name: "Erdei elefánt", orient: "fekvő" }, { type: "single", num: 17, name: "Gepárd", orient: "fekvő" },
-      { type: "single", num: 18, name: "Fehérhátú keselyű", orient: "fekvő" }, { type: "single", num: 19, name: "Közönséges cserepesteknős", orient: "fekvő" },
-      { type: "single", num: 20, name: "Nyugati gorilla", orient: "fekvő" }, { type: "single", num: 21, name: "Szélesszájú orrszarvú", orient: "fekvő" }
+    { type: "single", num: 16, name: "Erdei elefánt", orient: "fekvő" }, { type: "single", num: 17, name: "Gepárd", orient: "fekvő" },
+    { type: "single", num: 18, name: "Fehérhátú keselyű", orient: "fekvő" }, { type: "single", num: 19, name: "Cserepesteknős", orient: "fekvő" },
+    { type: "single", num: 20, name: "Nyugati gorilla", orient: "fekvő" }, { type: "single", num: 21, name: "Szélesszájú orrszarvú", orient: "fekvő" }
   ]},
   { id: "eszak_amerika", cim: "8–9. oldal — Észak-Amerika", elemek: [
-      { type: "single", num: 22, name: "Amerikai bölény", orient: "fekvő" }, { type: "single", num: 23, name: "Fehérfejű rétisas", orient: "fekvő" },
-      { type: "single", num: 24, name: "Kaliforniai disznódelfin", orient: "fekvő" }, { type: "single", num: 25, name: "Vörhenyes kolibri", orient: "fekvő" },
-      { type: "single", num: 26, name: "Királylazac", orient: "fekvő" }, { type: "single", num: 27, name: "Pompás királylepke", orient: "fekvő" }
+    { type: "single", num: 22, name: "Amerikai bölény", orient: "fekvő" }, { type: "single", num: 23, name: "Fehérfejű rétisas", orient: "fekvő" },
+    { type: "single", num: 24, name: "Kaliforniai disznódelfin", orient: "fekvő" }, { type: "single", num: 25, name: "Vörhenyes kolibri", orient: "fekvő" },
+    { type: "single", num: 26, name: "Királylazac", orient: "fekvő" }, { type: "single", num: 27, name: "Pompás királylepke", orient: "fekvő" }
   ]},
   { id: "del_amerika", cim: "10–11. oldal — Dél-Amerika", elemek: [
-      { type: "single", num: 28, name: "Jaguár", orient: "fekvő" }, { type: "single", num: 29, name: "Kutyafejű boa", orient: "fekvő" },
-      { type: "single", num: 30, name: "Arany oroszlánmajom", orient: "fekvő" }, { type: "single", num: 31, name: "Nagy jácintara", orient: "fekvő" },
-      { type: "single", num: 32, name: "Sakáre-kajmán", orient: "fekvő" }, { type: "single", num: 33, name: "Amazonasi folyamidelfin", orient: "fekvő" }
+    { type: "single", num: 28, name: "Jaguár", orient: "fekvő" }, { type: "single", num: 29, name: "Kutyafejű boa", orient: "fekvő" },
+    { type: "single", num: 30, name: "Arany oroszlánmajom", orient: "fekvő" }, { type: "single", num: 31, name: "Nagy jácintara", orient: "fekvő" },
+    { type: "single", num: 32, name: "Sakáre-kajmán", orient: "fekvő" }, { type: "single", num: 33, name: "Amazonasi folyamidelfin", orient: "fekvő" }
   ]},
   { id: "azsia", cim: "12–13. oldal — Ázsia", elemek: [
-      { type: "single", num: 34, name: "Mongol szajga", orient: "fekvő" }, { type: "combo", nums: [35, 36], name: "Tigris (2 részes kép)", orient: "panoráma" },
-      { type: "single", num: 37, name: "Borneói orangután", orient: "álló" }, { type: "single", num: 38, name: "Mandzsu daru", orient: "álló" },
-      { type: "single", num: 39, name: "Komodói sárkány", orient: "fekvő" }, { type: "single", num: 40, name: "Aranyarcú gibbon", orient: "fekvő" }
+    { type: "single", num: 34, name: "Mongol szajga", orient: "fekvő" }, { type: "combo", nums: [35, 36], name: "Tigris (2 részes)", orient: "panoráma" },
+    { type: "single", num: 37, name: "Borneói orangután", orient: "álló" }, { type: "single", num: 38, name: "Mandzsu daru", orient: "álló" },
+    { type: "single", num: 39, name: "Komodói sárkány", orient: "fekvő" }, { type: "single", num: 40, name: "Aranyarcú gibbon", orient: "fekvő" }
   ]},
   { id: "ausztralia", cim: "14–15. oldal — Ausztrália és Óceánia", elemek: [
-      { type: "single", num: 41, name: "Keleti szürke óriáskenguru", orient: "fekvő" }, { type: "single", num: 42, name: "Tasman vombat", orient: "fekvő" },
-      { type: "single", num: 43, name: "Koala", orient: "fekvő" }, { type: "single", num: 44, name: "Kakapó", orient: "fekvő" },
-      { type: "single", num: 45, name: "Kacsacsőrű emlős", orient: "fekvő" }, { type: "single", num: 46, name: "Barna kivi", orient: "fekvő" }
+    { type: "single", num: 41, name: "Keleti szürke óriáskenguru", orient: "fekvő" }, { type: "single", num: 42, name: "Tasman vombat", orient: "fekvő" },
+    { type: "single", num: 43, name: "Koala", orient: "fekvő" }, { type: "single", num: 44, name: "Kakapó", orient: "fekvő" },
+    { type: "single", num: 45, name: "Kacsacsőrű emlős", orient: "fekvő" }, { type: "single", num: 46, name: "Barna kivi", orient: "fekvő" }
   ]},
   { id: "antarktisz", cim: "16–17. oldal — Antarktisz", elemek: [
-      { type: "single", num: 47, name: "Leopárdfóka", orient: "fekvő" }, { type: "single", num: 48, name: "Weddell-fóka", orient: "fekvő" },
-      { type: "single", num: 49, name: "Császárpingvin", orient: "álló" }, { type: "combo", nums: [50, 51], name: "Adélie-pingvin (2 részes)", orient: "panoráma" },
-      { type: "single", num: 52, name: "Galambhojsza", orient: "álló" }, { type: "single", num: 53, name: "Antarktiszi krill", orient: "fekvő" }
+    { type: "single", num: 47, name: "Leopárdfóka", orient: "fekvő" }, { type: "single", num: 48, name: "Weddell-fóka", orient: "fekvő" },
+    { type: "single", num: 49, name: "Császárpingvin", orient: "álló" }, { type: "combo", nums: [50, 51], name: "Adélie-pingvin (2 részes)", orient: "panoráma" },
+    { type: "single", num: 52, name: "Galambhojsza", orient: "álló" }, { type: "single", num: 53, name: "Antarktiszi krill", orient: "fekvő" }
   ]},
   { id: "tengerek", cim: "18–19. oldal — Tengerek és óceánok", elemek: [
-      { type: "single", num: 54, name: "Hosszúszárnyú bálna", orient: "fekvő" }, { type: "combo", nums: [55, 56], name: "Kardszárnyú delfin (2 részes)", orient: "panoráma" },
-      { type: "single", num: 57, name: "Óriáscápa", orient: "fekvő" }, { type: "single", num: 58, name: "Kúpos fóka", orient: "fekvő" },
-      { type: "single", num: 59, name: "Parti lile", orient: "fekvő" }, { type: "single", num: 60, name: "Barna delfin", orient: "fekvő" }
+    { type: "single", num: 54, name: "Hosszúszárnyú bálna", orient: "fekvő" }, { type: "combo", nums: [55, 56], name: "Kardszárnyú delfin (2 részes)", orient: "panoráma" },
+    { type: "single", num: 57, name: "Óriáscápa", orient: "fekvő" }, { type: "single", num: 58, name: "Kúpos fóka", orient: "fekvő" },
+    { type: "single", num: 59, name: "Parti lile", orient: "fekvő" }, { type: "single", num: 60, name: "Barna delfin", orient: "fekvő" }
   ]},
   { id: "kihalt_allatok", cim: "20–21. oldal — Kihalt állatok", elemek: [
-      { type: "single", num: 61, name: "Dodó", orient: "álló" }, { type: "single", num: 62, name: "Vékonycsőrű póling", orient: "álló" },
-      { type: "single", num: 63, name: "Erszényesfarkas", orient: "fekvő" }, { type: "single", num: 64, name: "Tarpán", orient: "fekvő" },
-      { type: "single", num: 65, name: "Vándorgalamb", orient: "fekvő" }, { type: "single", num: 66, name: "Őstulok", orient: "fekvő" },
-      { type: "single", num: 67, name: "Elefántmadár", orient: "fekvő" }, { type: "single", num: 68, name: "Korallszirti patkány", orient: "fekvő" }
+    { type: "single", num: 61, name: "Dodó", orient: "álló" }, { type: "single", num: 62, name: "Vékonycsőrű póling", orient: "álló" },
+    { type: "single", num: 63, name: "Erszényesfarkas", orient: "fekvő" }, { type: "single", num: 64, name: "Tarpán", orient: "fekvő" },
+    { type: "single", num: 65, name: "Vándorgalamb", orient: "fekvő" }, { type: "single", num: 66, name: "Őstulok", orient: "fekvő" },
+    { type: "single", num: 67, name: "Elefántmadár", orient: "fekvő" }, { type: "single", num: 68, name: "Korallszirti patkány", orient: "fekvő" }
   ]},
   { id: "veszelyeztetett", cim: "22–23. oldal — Veszélyeztetett fajok", elemek: [
-      { type: "single", num: 69, name: "Jávai orrszarvú", orient: "fekvő" }, { type: "single", num: 70, name: "Mezei hörcsög", orient: "fekvő" },
-      { type: "single", num: 71, name: "Röviduszonyú makócápa", orient: "fekvő" }, { type: "single", num: 72, name: "Európai angolna", orient: "fekvő" },
-      { type: "single", num: 73, name: "Spix-ara", orient: "fekvő" }, { type: "single", num: 74, name: "Vastagfarkú oposszum", orient: "fekvő" }
+    { type: "single", num: 69, name: "Jávai orrszarvú", orient: "fekvő" }, { type: "single", num: 70, name: "Mezei hörcsög", orient: "fekvő" },
+    { type: "single", num: 71, name: "Röviduszonyú makócápa", orient: "fekvő" }, { type: "single", num: 72, name: "Európai angolna", orient: "fekvő" },
+    { type: "single", num: 73, name: "Spix-ara", orient: "fekvő" }, { type: "single", num: 74, name: "Vastagfarkú oposszum", orient: "fekvő" }
   ]},
   { id: "megmentett", cim: "24–25. oldal — Megmentett állatok", elemek: [
-      { type: "single", num: 75, name: "Arab bejza", orient: "fekvő" }, { type: "single", num: 76, name: "Fehérfarkú gnú", orient: "fekvő" },
-      { type: "single", num: 77, name: "Európai bölény", orient: "fekvő" }, { type: "single", num: 78, name: "Nagy szikibagoly", orient: "fekvő" },
-      { type: "single", num: 79, name: "Vörös kánya", orient: "fekvő" }, { type: "single", num: 80, name: "Mallorcai béka", orient: "fekvő" }
+    { type: "single", num: 75, name: "Arab bejza", orient: "fekvő" }, { type: "single", num: 76, name: "Fehérfarkú gnú", orient: "fekvő" },
+    { type: "single", num: 77, name: "Európai bölény", orient: "fekvő" }, { type: "single", num: 78, name: "Nagy szikibagoly", orient: "fekvő" },
+    { type: "single", num: 79, name: "Vörös kánya", orient: "fekvő" }, { type: "single", num: 80, name: "Mallorcai béka", orient: "fekvő" }
   ]},
   { id: "fenyegetes", cim: "26–27. oldal — Mi fenyegeti a természetet?", elemek: [
-      { type: "single", num: 81, name: "Élőhelyek elvesztése", orient: "fekvő" }, { type: "single", num: 82, name: "Élelmiszeripar", orient: "fekvő" },
-      { type: "single", num: 83, name: "Szennyezés", orient: "fekvő" }, { type: "combo", nums: [84, 85], name: "Túlzott kizsákmányolás (2 részes)", orient: "panoráma" },
-      { type: "single", num: 86, name: "Túlhalászás", orient: "fekvő" }, { type: "single", num: 87, name: "Műanyaghulladék", orient: "fekvő" },
-      { type: "single", num: 88, name: "Folyószabályozás", orient: "fekvő" }, { type: "single", num: 89, name: "Erőforrások", orient: "fekvő" },
-      { type: "single", num: 90, name: "Éghajlatváltozás", orient: "fekvő" }, { type: "single", num: 91, name: "Inváziós fajok", orient: "fekvő" }
+    { type: "single", num: 81, name: "Élőhelyek elvesztése", orient: "fekvő" }, { type: "single", num: 82, name: "Élelmiszeripar", orient: "fekvő" },
+    { type: "single", num: 83, name: "Szennyezés", orient: "fekvő" }, { type: "combo", nums: [84, 85], name: "Túlzott kizsákmányolás (2 részes)", orient: "panoráma" },
+    { type: "single", num: 86, name: "Túlhalászás", orient: "fekvő" }, { type: "single", num: 87, name: "Műanyaghulladék", orient: "fekvő" },
+    { type: "single", num: 88, name: "Folyószabályozás", orient: "fekvő" }, { type: "single", num: 89, name: "Erőforrások", orient: "fekvő" },
+    { type: "single", num: 90, name: "Éghajlatváltozás", orient: "fekvő" }, { type: "single", num: 91, name: "Inváziós fajok", orient: "fekvő" }
   ]},
   { id: "megoldasok", cim: "28–29. oldal — Bolygóbarát megoldások", elemek: [
-      { type: "single", num: 92, name: "Védett területek", orient: "fekvő" }, { type: "single", num: 93, name: "Élelmiszerrendszer", orient: "fekvő" },
-      { type: "single", num: 94, name: "Megújuló energia", orient: "fekvő" }, { type: "single", num: 95, name: "Természetalapú megoldások", orient: "fekvő" },
-      { type: "single", num: 96, name: "Közösségi bevonás", orient: "fekvő" }
+    { type: "single", num: 92, name: "Védett területek", orient: "fekvő" }, { type: "single", num: 93, name: "Élelmiszerrendszer", orient: "fekvő" },
+    { type: "single", num: 94, name: "Megújuló energia", orient: "fekvő" }, { type: "single", num: 95, name: "Természetalapú megoldások", orient: "fekvő" },
+    { type: "single", num: 96, name: "Közösségi bevonás", orient: "fekvő" }
   ]},
   { id: "wwf", cim: "30–31. oldal — WWF Magyarország", elemek: [
-      { type: "single", num: 97, name: "WWF hazai programok", orient: "fekvő" }, { type: "single", num: 98, name: "WWF erdőprogram", orient: "fekvő" },
-      { type: "single", num: 99, name: "Vizesélőhelyek", orient: "fekvő" }, { type: "single", num: 100, name: "Klímaprogramok", orient: "fekvő" },
-      { type: "single", num: 101, name: "Környezeti nevelés", orient: "fekvő" }, { type: "single", num: 102, name: "Jelképes örökbefogadás", orient: "álló" }
+    { type: "single", num: 97, name: "WWF hazai programok", orient: "fekvő" }, { type: "single", num: 98, name: "WWF erdőprogram", orient: "fekvő" },
+    { type: "single", num: 99, name: "Vizesélőhelyek", orient: "fekvő" }, { type: "single", num: 100, name: "Klímaprogramok", orient: "fekvő" },
+    { type: "single", num: 101, name: "Környezeti nevelés", orient: "fekvő" }, { type: "single", num: 102, name: "Jelképes örökbefogadás", orient: "álló" }
   ]},
   { id: "szuperhos", cim: "32. oldal — Legyél bolygóvédő szuperhős!", elemek: [
-      { type: "single", num: 103, name: "Természetmegfigyelés", orient: "álló" }, { type: "single", num: 104, name: "Kihívások otthon", orient: "fekvő" },
-      { type: "single", num: 105, name: "Vadon élő állatok", orient: "fekvő" }
+    { type: "single", num: 103, name: "Természetmegfigyelés", orient: "álló" }, { type: "single", num: 104, name: "Kihívások otthon", orient: "fekvő" },
+    { type: "single", num: 105, name: "Vadon élő állatok", orient: "fekvő" }
   ]},
   { id: "lidl_zold", cim: "33. oldal — Zöldebb jövő a Lidlnél", elemek: [
-      { type: "single", num: 106, name: "Biotermékek", orient: "fekvő" }, { type: "single", num: 107, name: "Vadvirágos rétek", orient: "fekvő" },
-      { type: "single", num: 108, name: "Planetary Health Diet", orient: "álló" }
-  ] }
+    { type: "single", num: 106, name: "Biotermékek", orient: "fekvő" }, { type: "single", num: 107, name: "Vadvirágos rétek", orient: "fekvő" },
+    { type: "single", num: 108, name: "Planetary Health Diet", orient: "álló" }
+  ]}
 ];
 
 const STICKER_NAMES = {};
@@ -1165,14 +411,40 @@ FEJEZETEK.forEach(f => {
   });
 });
 
+function getActiveChapters() {
+  const activeAlbum = getActiveAlbum();
+  if (currentAlbumId === 'lidl-lutra-2026') return FEJEZETEK;
+  if (activeAlbum.type === 'sticker' && activeAlbum.customChaptersList && activeAlbum.customChaptersList.length > 0) {
+    return activeAlbum.customChaptersList;
+  }
+  return [];
+}
+
+function getItemLabel(num, albumId = currentAlbumId) {
+  const album = ALBUMS_REGISTRY[albumId];
+  if (album && album.customItems && album.customItems[num - 1]) {
+    const raw = album.customItems[num - 1];
+    return raw.startsWith('#') ? raw : `#${raw}`;
+  }
+  return `#${num}`;
+}
+
+function getItemFullName(num, albumId = currentAlbumId) {
+  if (albumId === 'lidl-lutra-2026') {
+    return STICKER_NAMES[num] ? `#${num} ${STICKER_NAMES[num]}` : `#${num}`;
+  }
+  const album = ALBUMS_REGISTRY[albumId];
+  if (album && album.customNames && album.customNames[num - 1]) {
+    return `${getItemLabel(num, albumId)} ${album.customNames[num - 1]}`;
+  }
+  return getItemLabel(num, albumId);
+}
+
 function initFavoriteSelects() {
   const activeAlbum = getActiveAlbum();
   const totalSize = getActiveAlbumSize();
   const favContainer = document.getElementById('prof-favorites-container');
-
-  if (favContainer) {
-    favContainer.style.display = (activeAlbum.hasFavorites !== false) ? 'block' : 'none';
-  }
+  if (favContainer) favContainer.style.display = (activeAlbum.hasFavorites !== false) ? 'block' : 'none';
 
   const titleEl = document.getElementById('prof-favorites-title');
   if (titleEl) {
@@ -1184,7 +456,6 @@ function initFavoriteSelects() {
   ['prof-fav-1', 'prof-fav-2', 'prof-fav-3'].forEach((id, idx) => {
     const sel = document.getElementById(id);
     if (!sel) return;
-    
     sel.innerHTML = '<option value="">-- Válassz egyet --</option>';
     for (let i = 1; i <= Math.min(totalSize, 120); i++) {
       const opt = document.createElement('option');
@@ -1211,7 +482,6 @@ function updateHubSocialProofMetrics() {
   const trackedEl = document.getElementById('sp-tracked-items-count');
   const duplicatesEl = document.getElementById('sp-duplicates-count');
   const tradesEl = document.getElementById('sp-completed-trades-count');
-
   if (!collectorsEl) return;
 
   const totalCollectors = Math.max(809, allUsersData.length);
@@ -1239,12 +509,16 @@ function renderHub() {
   const countSpan = document.getElementById('hub-total-albums-count');
   const searchInput = document.getElementById('hub-search-input');
   const query = (searchInput?.value || '').toLowerCase().trim();
-
   if (!container) return;
 
   updateHubSocialProofMetrics();
 
   const allFilteredList = Object.values(ALBUMS_REGISTRY).filter(album => {
+    // Inaktív album elrejtése a nyilvános listából a nem-adminoknak
+    if (album.active === false && (!currentUser || currentUser.email !== ADMIN_EMAIL)) {
+      if (currentHubFilter !== 'my') return false;
+    }
+
     if (query) {
       const matchTitle = (album.title || '').toLowerCase().includes(query);
       const matchPub = (album.publisher || '').toLowerCase().includes(query);
@@ -1257,8 +531,7 @@ function renderHub() {
     if (currentHubFilter === 'figure') return album.type === 'figure';
     if (currentHubFilter === 'retro') return album.year < 2018 || album.isRetro === true;
     if (currentHubFilter === 'my') {
-      const myCount = ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length;
-      return myCount > 0;
+      return ensureArray(safeJsonParse(`lutra_van_${album.id}`, [])).length > 0;
     }
     return true;
   });
@@ -1284,19 +557,21 @@ function renderHub() {
   container.innerHTML = displayList.map(album => {
     const isFeatured = album.featured === true || album.id === 'lidl-lutra-2026';
     const isRetro = album.year < 2018 || album.isRetro === true;
+    const isInactive = (album.active === false);
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
     const collectedCount = albumVan.length;
     const pct = Math.min(100, Math.round((collectedCount / album.totalItems) * 100));
     const cover = album.coverUrl || 'og-image.png';
 
     return `
-      <div class="album-hub-card ${isFeatured ? 'featured-card' : ''}" data-album-id="${escapeHtml(album.id)}">
+      <div class="album-hub-card ${isFeatured ? 'featured-card' : ''}" data-album-id="${escapeHtml(album.id)}" style="${isInactive ? 'opacity:0.65; border-color:var(--danger);' : ''}">
         <div>
           <img src="${cover}" class="hub-card-thumb" alt="${escapeHtml(album.title)}" loading="lazy">
           <div class="album-hub-header">
             <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
               <span class="album-type-badge">${escapeHtml(album.typeLabel)}</span>
               ${isRetro ? `<span class="album-type-badge badge-retro">🕹️ Retro (${album.year})</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">${album.year}</span>`}
+              ${isInactive ? `<span class="badge-trade-status badge-inactive">Inaktív</span>` : ''}
             </div>
             <span style="font-size:0.75rem; color:var(--sand); font-weight:700;">${album.totalItems} db</span>
           </div>
@@ -1324,22 +599,14 @@ function renderHub() {
 }
 
 safeAddListener('hub-search-input', 'input', () => renderHub());
-
-safeAddListener('btn-toggle-all-hub-albums', () => {
-  showAllHubAlbums = !showAllHubAlbums;
-  renderHub();
-});
-
+safeAddListener('btn-toggle-all-hub-albums', () => { showAllHubAlbums = !showAllHubAlbums; renderHub(); });
 safeAddListener('hub-albums-grid', (e) => {
   const btn = e.target.closest('[data-action="select-album"]');
   const card = e.target.closest('.album-hub-card');
   const albumId = btn?.dataset.albumId || card?.dataset.albumId;
-  if (!albumId) return;
-
-  selectAlbum(albumId);
+  if (albumId) selectAlbum(albumId);
 });
 
-// KÖZÖSSÉGI ÚJ GYŰJTEMÉNY JAVASLAT BEKÜLDÉSE
 safeAddListener('btn-open-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.add('open'));
 safeAddListener('btn-close-suggest-album', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
 safeAddListener('btn-close-suggest-album-2', () => document.getElementById('modal-suggest-album')?.classList.remove('open'));
@@ -1364,7 +631,6 @@ safeAddListener('btn-submit-suggest-album', async () => {
         status: "pending"
       });
     }
-
     if (document.getElementById('suggest-album-title')) document.getElementById('suggest-album-title').value = '';
     if (document.getElementById('suggest-album-note')) document.getElementById('suggest-album-note').value = '';
     document.getElementById('modal-suggest-album')?.classList.remove('open');
@@ -1383,12 +649,11 @@ function updateRadarStoreDatalist() {
   const chain = activeAlbum.radarType || (activeAlbum.hasRadar ? 'lidl' : 'none');
   datalist.innerHTML = '';
 
-  if (chain === 'retail_general') {
-    inputEl.placeholder = "Írd be a várost és az üzletet (pl. Nyugati Relay vagy Árkád Müller)...";
-  } else if (STORE_DATABASES[chain]) {
+  const storeList = STORE_DATABASES[chain] || [];
+  if (storeList.length > 0) {
     const chainName = chain === 'lidl' ? 'Lidl' : (activeAlbum.publisher || chain);
-    inputEl.placeholder = `Válassz a(z) ${chainName} áruházak listájából vagy írd be a várost...`;
-    STORE_DATABASES[chain].forEach(store => {
+    inputEl.placeholder = `Válassz a(z) ${chainName} áruházak listájából...`;
+    storeList.forEach(store => {
       const opt = document.createElement('option');
       opt.value = store;
       datalist.appendChild(opt);
@@ -1403,63 +668,35 @@ function selectAlbum(albumId) {
   currentAlbumId = albumId;
   localStorage.setItem('lutra_active_album', albumId);
   const activeAlbum = getActiveAlbum();
+  const isInactive = (activeAlbum.active === false);
 
-  const albumBar = document.getElementById('active-album-bar');
-  const titleEl = document.getElementById('active-album-title');
-  const thumbEl = document.getElementById('active-album-thumb');
+  const banner = document.getElementById('inactive-album-banner');
+  const gridEl = document.getElementById('matrica-grid');
+  if (banner) banner.style.display = isInactive ? 'flex' : 'none';
+  if (gridEl) gridEl.classList.toggle('album-inactive', isInactive);
+
+  document.getElementById('active-album-bar').style.display = 'flex';
+  document.getElementById('active-album-title').textContent = `${activeAlbum.title} (${activeAlbum.year}) ${isInactive ? '[INAKTÍV]' : ''}`;
+  document.getElementById('active-album-thumb').src = activeAlbum.coverUrl || 'og-image.png';
+  document.getElementById('count-total-size').textContent = activeAlbum.totalItems;
+
   const noteTitleEl = document.getElementById('prof-note-album-title');
-  const statAlbumName = document.getElementById('stats-active-album-name');
-  const sizeSpan = document.getElementById('count-total-size');
-
-  if (albumBar) albumBar.style.display = 'flex';
-  if (titleEl) titleEl.textContent = `${activeAlbum.title} (${activeAlbum.year})`;
-  if (thumbEl) thumbEl.src = activeAlbum.coverUrl || 'og-image.png';
   if (noteTitleEl) noteTitleEl.textContent = activeAlbum.title;
-  if (statAlbumName) statAlbumName.textContent = activeAlbum.title;
-  if (sizeSpan) sizeSpan.textContent = activeAlbum.totalItems;
 
-  const primaryNav = document.getElementById('main-primary-nav');
-  const mobileNav = document.getElementById('mobile-subnav-bar');
-  if (primaryNav) primaryNav.style.display = 'grid';
-  if (mobileNav) mobileNav.style.display = 'block';
+  document.getElementById('main-primary-nav').style.display = 'grid';
+  document.getElementById('mobile-subnav-bar').style.display = 'block';
 
   updateRadarStoreDatalist();
-
-  const albumModeToggle = document.querySelector('.view-mode-toggle');
-  if (albumModeToggle) {
-    albumModeToggle.style.display = (activeAlbum.type === 'sticker' && activeAlbum.hasChapters) ? 'flex' : 'none';
-  }
-
-  const certPromoCard = document.getElementById('cert-promo-card');
-  if (certPromoCard) {
-    certPromoCard.style.display = albumId === 'lidl-lutra-2026' ? 'block' : 'none';
-  }
-
-  const diffSec = document.getElementById('stat-sec-diff');
-  const diffJump = document.getElementById('btn-jump-diff');
-  if (diffSec) diffSec.style.display = (activeAlbum.type === 'sticker' && activeAlbum.hasChapters) ? 'block' : 'none';
-  if (diffJump) diffJump.style.display = (activeAlbum.type === 'sticker' && activeAlbum.hasChapters) ? 'inline-block' : 'none';
-
-  const gridEl = document.getElementById('matrica-grid');
-  if (gridEl) {
-    gridEl.classList.toggle('matrica-grid-figures', activeAlbum.type === 'figure');
-  }
-
   loadAlbumState(albumId);
   initFavoriteSelects();
   switchView('matricaim');
-  showToast(`Aktív gyűjtemény: ${activeAlbum.title}`);
+  showToast(isInactive ? `Figyelem: ${activeAlbum.title} jelenleg inaktív!` : `Aktív: ${activeAlbum.title}`);
 }
 
 safeAddListener('btn-switch-album', () => {
-  const albumBar = document.getElementById('active-album-bar');
-  const primaryNav = document.getElementById('main-primary-nav');
-  const mobileNav = document.getElementById('mobile-subnav-bar');
-
-  if (albumBar) albumBar.style.display = 'none';
-  if (primaryNav) primaryNav.style.display = 'none';
-  if (mobileNav) mobileNav.style.display = 'none';
-
+  document.getElementById('active-album-bar').style.display = 'none';
+  document.getElementById('main-primary-nav').style.display = 'none';
+  document.getElementById('mobile-subnav-bar').style.display = 'none';
   switchView('hub');
 });
 
@@ -1471,10 +708,7 @@ function loadAlbumState(albumId) {
   myProfile.foglalvaCounts = safeJsonParse(`lutra_foglalva_counts_${albumId}`, albumId === 'lidl-lutra-2026' ? safeJsonParse('lutra_foglalva_counts', {}) : {});
   myProfile.activeTrades = safeJsonParse(`lutra_active_trades_${albumId}`, []);
   
-  let savedNote = localStorage.getItem(`private_note_${albumId}`);
-  if (!savedNote && albumId === 'lidl-lutra-2026') {
-    savedNote = localStorage.getItem('lutra_private_note') || '';
-  }
+  let savedNote = localStorage.getItem(`private_note_${albumId}`) || (albumId === 'lidl-lutra-2026' ? (localStorage.getItem('lutra_private_note') || '') : '');
   myProfile.privateNote = (savedNote || '').slice(0, 250);
 
   const noteInput = document.getElementById('prof-private-note');
@@ -1493,17 +727,9 @@ function loadAlbumState(albumId) {
 document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
     const clickedFilter = btn.dataset.hubFilter;
-    
-    if (btn.classList.contains('active') && clickedFilter !== 'all') {
-      document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
-      document.querySelector('.filter-btn[data-hub-filter="all"]')?.classList.add('active');
-      currentHubFilter = 'all';
-    } else {
-      document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentHubFilter = clickedFilter;
-    }
-    
+    document.querySelectorAll('.filter-btn[data-hub-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentHubFilter = clickedFilter;
     renderHub();
   });
 });
@@ -1522,7 +748,6 @@ function renderGrid() {
   const vanSet = new Set(ensureArray(myProfile.van));
   const kellSet = new Set(ensureArray(myProfile.kell));
   const foglalvaSet = new Set(ensureArray(myProfile.foglalva));
-
   const activeLocks = getActiveLockedCounts(currentAlbumId);
 
   for (let i = 1; i <= totalSize; i++) {
@@ -1541,17 +766,11 @@ function renderGrid() {
     const vQty = (isVan && myProfile.vanCounts && myProfile.vanCounts[i]) ? myProfile.vanCounts[i] : 1;
     const fQty = activeLocks[i] || 0;
 
-    if (isVan && vQty > 1) {
-      badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
-    }
-    if (isVan && fQty > 0) {
-      badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
-    }
+    if (isVan && vQty > 1) badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
+    if (isVan && fQty > 0) badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
     if (isFog) {
       const manualFogQty = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) ? myProfile.foglalvaCounts[i] : 1;
-      if (manualFogQty > 1) {
-        badgesHtml += `<span class="qty-badge foglalva">×${manualFogQty}</span>`;
-      }
+      if (manualFogQty > 1) badgesHtml += `<span class="qty-badge foglalva">×${manualFogQty}</span>`;
     }
 
     const itemLabel = getItemLabel(i, currentAlbumId);
@@ -1664,10 +883,7 @@ function renderAlbumChapter() {
           const isFog = foglalvaSet.has(el.num);
           const q = isVan ? (myProfile.vanCounts[el.num] || 1) : (myProfile.foglalvaCounts?.[el.num] || 1);
           let cls = isVan ? 'van' : isKell ? 'kell' : isFog ? 'foglalva' : '';
-          
-          let orientClass = isLutra 
-            ? (el.orient === 'álló' ? 'orient-allo' : 'orient-fekvo')
-            : 'orient-negyzet';
+          let orientClass = isLutra ? (el.orient === 'álló' ? 'orient-allo' : 'orient-fekvo') : 'orient-negyzet';
 
           return `
             <div class="slot ${orientClass} ${cls}" data-num="${el.num}">
@@ -1692,14 +908,19 @@ const popover = document.getElementById('qty-popover');
 function toggleStickerState(num) {
   hideQtyPopover();
 
-  // 1. ZÁROLT DUPLÁK VÉDELME: Ha van aktív lakat, nem engedjük véletlenül elállítani!
+  // Inaktív album védelem: csak olvasható
+  if (getActiveAlbum().active === false) {
+    showToast("Ez a gyűjtemény inaktív, reaktiválásig nem szerkeszthető!");
+    return;
+  }
+
+  // Zárolt duplák védelme aktív csere alatt
   const activeLocks = getActiveLockedCounts(currentAlbumId);
   if (activeLocks[num] && activeLocks[num] > 0 && myProfile.van.includes(num)) {
     showToast(`🔒 A #${num} tétel zárolva van egy aktív csere miatt!`);
     return;
   }
 
-  // 2. Előző állapot mentése a visszavonáshoz (Undo)
   lastUndoState = {
     num,
     prevVan: [...myProfile.van],
@@ -1796,16 +1017,11 @@ function updateSingleCellDOM(num, state) {
     const activeLocks = getActiveLockedCounts(currentAlbumId);
     const fQty = activeLocks[num] || 0;
 
-    if (vQty > 1) {
-      badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
-    }
-    if (fQty > 0 && state === 'van') {
-      badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
-    } else if (state === 'foglalva') {
+    if (vQty > 1) badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
+    if (fQty > 0 && state === 'van') badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
+    else if (state === 'foglalva') {
       const manQty = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[num]) ? myProfile.foglalvaCounts[num] : 1;
-      if (manQty > 1) {
-        badgesHtml += `<span class="qty-badge foglalva">×${manQty}</span>`;
-      }
+      if (manQty > 1) badgesHtml += `<span class="qty-badge foglalva">×${manQty}</span>`;
     }
     cell.insertAdjacentHTML('beforeend', badgesHtml);
   }
@@ -1992,7 +1208,7 @@ function saveMyState() {
   renderHub();
 }
 
-// DARABSZÁM POPOVER JAVÍTOTT MŰKÖDÉSE (NINCS TÖBBÉ DUPLÁN SZÁMOLÁS!)
+// DARABSZÁM POPOVER JAVÍTOTT MŰKÖDÉSE (NEM SZÁMOL DUPLÁN!)
 document.querySelectorAll('.qty-pop-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -2000,7 +1216,7 @@ document.querySelectorAll('.qty-pop-btn').forEach(btn => {
     const qty = parseInt(btn.dataset.qty, 10);
     const num = activePopoverNum;
 
-    // BUGFIX: Ha duplát állítunk be, azonnal kivesszük a Hiányzó és Foglalt listából!
+    // Ha duplát állítunk be, azonnal kivesszük a Hiányzó és Foglalt listából!
     const kIdx = myProfile.kell.indexOf(num);
     if (kIdx > -1) myProfile.kell.splice(kIdx, 1);
     const fIdx = myProfile.foglalva.indexOf(num);
@@ -2191,7 +1407,7 @@ safeAddListener('btn-album-next', () => {
   if (currentChapterIndex < chapters.length - 1) { currentChapterIndex++; renderAlbumChapter(); }
 });
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.1 TELJES, JAVÍTOTT KIADÁS)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.2 KARCSÚSÍTOTT KIADÁS)
 // 2 / 4. RÉSZ: ROUTER, PÁROSÍTÁSOK, KÖRCSERÉK, CSERETERVEZŐ & KAPCSOLATFELVÉTEL
 // =========================================================================
 
@@ -2870,7 +2086,29 @@ let activeContactGetNums = [];
 let excludedGiveNums = new Set();
 let excludedGetNums = new Set();
 
-function setupContactModal(targetUser, subject, rawGiveNums = [], rawGetNums = [], isGift = false) {
+function checkSenderProfileReady() {
+  if (!currentUser) {
+    showToast("Előbb lépj be a fiókodba a kapcsolatfelvételhez!");
+    document.getElementById('modal-auth')?.classList.add('open');
+    return false;
+  }
+
+  // Automatikus kitöltés a Google / Auth adataival, ha még nem mentett profilból
+  if (!myProfile.email || !myProfile.email.trim()) {
+    myProfile.email = currentUser.email || '';
+  }
+  if (!myProfile.nev || myProfile.nev === 'Vendég gyűjtő') {
+    myProfile.nev = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Gyűjtő');
+  }
+
+  return true;
+}
+
+function openContactModal(targetUser, giveArray = [], getArray = [], isGift = false) {
+  if (!checkSenderProfileReady()) return;
+  const activeAlbum = getActiveAlbum();
+  const subject = `${activeAlbum.title} csere megkeresés`;
+
   activeContactTarget = {
     uid: targetUser.id || targetUser.uid || '',
     nev: targetUser.nev || 'Gyűjtőpartner',
@@ -2881,8 +2119,8 @@ function setupContactModal(targetUser, subject, rawGiveNums = [], rawGetNums = [
     subject: subject
   };
 
-  activeContactGiveNums = ensureArray(rawGiveNums);
-  activeContactGetNums = ensureArray(rawGetNums);
+  activeContactGiveNums = ensureArray(giveArray);
+  activeContactGetNums = ensureArray(getArray);
   excludedGiveNums.clear();
   excludedGetNums.clear();
 
@@ -2907,6 +2145,16 @@ function setupContactModal(targetUser, subject, rawGiveNums = [], rawGetNums = [
   renderContactChips();
   updateContactModalText();
   document.getElementById('modal-contact')?.classList.add('open');
+}
+
+function openLoopContactModal(targetUser, thirdPersonName, stickersArray, role) {
+  if (!checkSenderProfileReady()) return;
+  openContactModal(targetUser, ensureArray(stickersArray), [], false);
+}
+
+function openDirectContactModal(targetUser, numsArray, isGift) {
+  if (!checkSenderProfileReady()) return;
+  openContactModal(targetUser, [], ensureArray(numsArray), isGift);
 }
 
 function renderContactChips() {
@@ -2988,33 +2236,6 @@ function updateContactModalText() {
 }
 
 safeAddListener('contact-custom-offer', 'input', updateContactModalText);
-
-function openContactModal(targetUser, giveArray, getArray, isGift) {
-  if (!checkSenderProfileReady()) return;
-  const activeAlbum = getActiveAlbum();
-  const subject = `${activeAlbum.title} csere megkeresés`;
-
-  const giveNums = ensureArray(giveArray);
-  const getNums = ensureArray(getArray);
-
-  setupContactModal(targetUser, subject, giveNums, getNums, isGift);
-}
-
-function openLoopContactModal(targetUser, thirdPersonName, stickersArray, role) {
-  if (!checkSenderProfileReady()) return;
-  const activeAlbum = getActiveAlbum();
-  const subject = `${activeAlbum.title} 3 fős körcsere egyeztetés`;
-  const giveNums = ensureArray(stickersArray);
-  setupContactModal(targetUser, subject, giveNums, [], false);
-}
-
-function openDirectContactModal(targetUser, numsArray, isGift) {
-  if (!checkSenderProfileReady()) return;
-  const activeAlbum = getActiveAlbum();
-  const subject = `${activeAlbum.title} tétel érdeklődés`;
-  const getNums = ensureArray(numsArray);
-  setupContactModal(targetUser, subject, [], getNums, isGift);
-}
 
 // BELSŐ ÜZENET KÜLDÉSE (THREADED CHAT AZONOSÍTÓVAL ÉS PIPÁKKAL)
 safeAddListener('btn-send-message', () => {
@@ -3333,7 +2554,7 @@ safeAddListener('btn-submit-trade-rating', async () => {
   showToast("Csere sikeresen lezárva és archiválva!");
 });
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.1 TELJES, JAVÍTOTT KIADÁS)
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.2 KARCSÚSÍTOTT KIADÁS)
 // 3 / 4. RÉSZ: 4 KERESŐBLOKK, KÉSZLETRADAR, TALÁLKOZÓK, HŐTÉRKÉP & SZKENNER
 // =========================================================================
 
@@ -3557,6 +2778,89 @@ safeAddListener('city-search-partners-list', (e) => {
 // 3. BLOKK: KÖZELI GPS KERESŐ ESEMÉNYEI (CSEREINDÍTÁS GOMBBAL)
 // =========================================================================
 
+let proximityDisplayLimit = 25;
+
+function renderProximityPartners() {
+  const container = document.getElementById('proximity-partners-list');
+  if (!container) return;
+
+  const myCoords = myGpsCoords || getUserCoordinates(myProfile);
+  const myId = currentUser ? currentUser.uid : 'me';
+
+  let list = allUsersData
+    .filter(u => u.id !== myId)
+    .map(u => {
+      const distanceKm = getMinDistanceToUser(myCoords, u);
+      const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
+      const totalDupes = ensureArray(u.van).length;
+      return { ...u, distanceKm, isSameCity, totalDupes };
+    });
+
+  if (selectedSearchRadius === 'city') {
+    list = list.filter(u => u.isSameCity);
+  } else if (selectedSearchRadius !== 'all') {
+    const maxDist = parseInt(selectedSearchRadius, 10);
+    list = list.filter(u => u.distanceKm !== null && u.distanceKm <= maxDist);
+  }
+
+  list.sort((a, b) => {
+    if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
+    if (a.distanceKm !== null) return -1;
+    if (b.distanceKm !== null) return 1;
+    return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
+  });
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:16px; background:rgba(0,0,0,0.25); border-radius:var(--radius-sm); font-size:0.85rem; color:var(--text-muted);">
+        ${selectedSearchRadius !== 'all' ? 'Nincs gyűjtő a megadott távolságon belül.' : 'Nincs regisztrált partner az adatbázisban.'}
+      </div>`;
+    return;
+  }
+
+  const paginatedList = list.slice(0, proximityDisplayLimit);
+  const hasMore = list.length > proximityDisplayLimit;
+
+  container.innerHTML = `
+    ${paginatedList.map(u => {
+      const distText = u.distanceKm !== null ? `📍 kb. ${u.distanceKm} km-re tőled` : (u.isSameCity ? '📍 Helyi gyűjtő' : '📍 Nincs GPS adat');
+      const trustText = u.ratingsCount > 0 
+        ? `⭐ ${(u.trustScore / u.ratingsCount).toFixed(1)} (${u.ratingsCount})` 
+        : (u.trustScore > 0 ? `⭐ ${u.trustScore}` : '');
+
+      return `
+        <div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <div>
+            <strong style="color:#FFF; font-size:0.95rem; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
+              ${escapeHtml(u.nev)} ${trustText ? `<span style="color:var(--gift-gold); font-size:0.75rem;">${trustText}</span>` : ''}
+            </strong>
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${escapeHtml(u.telepules || '')}</span>
+            <div style="font-size:0.75rem; color:var(--amber); font-weight:600; margin-top:2px;">
+              ${distText} • ${u.totalDupes} db cserélhető duplája van
+            </div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-contact-green btn-sm" data-action="contact-proximity" data-uid="${escapeHtml(u.id)}">
+              Csereindítás
+            </button>
+            <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(u.id)}">
+              Adatlap
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('')}
+
+    ${hasMore ? `
+      <div style="text-align:center; margin-top:12px;">
+        <button class="btn btn-secondary btn-sm" id="btn-load-more-proximity" style="width:100%; padding:8px;">
+          + További 25 gyűjtő mutatása (${list.length - proximityDisplayLimit} maradt)
+        </button>
+      </div>
+    ` : ''}
+  `;
+}
+
 safeAddListener('proximity-partners-list', 'click', (e) => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
@@ -3668,7 +2972,7 @@ safeAddListener('radar-photo-input', 'change', (e) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const maxDim = 800; // Optimalizált méret: garantáltan 60 KB alatt marad a Firestore-ban
+      const maxDim = 800; // Optimalizált méret: 60 KB alatt marad a Firestore-ban
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
@@ -3880,7 +3184,10 @@ function listenToRadarReports() {
     }, err => console.warn("Radar listener:", err));
 }
 
+// =========================================================================
 // TALÁLKOZÓK
+// =========================================================================
+
 safeAddListener('meetup-photo-input', 'change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -4657,8 +3964,8 @@ safeAddListener('btn-scanner-copy-list', () => {
   showToast("Számsor kimásolva a vágólapra!");
 });
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.1 TELJES, JAVÍTOTT KIADÁS)
-// 4 / 4. RÉSZ: MESSENGER PIPÁK, CHUNKED IMPORTŐR, AUTH & FIREBASE BOOT
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.2 KARCSÚSÍTOTT KIADÁS)
+// 4 / 4. RÉSZ: MESSENGER PIPÁK, ADMIN MIGRÁLÓK, AUTH MOTOR & INDÍTÁS
 // =========================================================================
 
 // =========================================================================
@@ -5156,7 +4463,7 @@ safeAddListener('btn-add-location', () => {
 safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
 // =========================================================================
-// ADMINISZTRÁCIÓ: MŰKÖDŐ CHUNKED IMPORTŐR, MIGRÁCIÓ & SZERKESZTŐ
+// ADMINISZTRÁCIÓ: CHUNKED IMPORTŐR, MIGRÁLÁS ÉS SZERKESZTÉS
 // =========================================================================
 
 let adminAlbumCoverBase64 = '';
@@ -5181,7 +4488,7 @@ safeAddListener('btn-admin-import-json', async () => {
     statusEl.textContent = `Feldolgozás: 0 / ${albumsList.length} album...`;
   }
 
-  const chunkSize = 400; // Firestore 500-as batch limitje alatt marad
+  const chunkSize = 400; // Mindig a Firestore 500-as batch limitje alatt marad
   let savedCount = 0;
 
   try {
@@ -5240,10 +4547,10 @@ safeAddListener('btn-admin-import-json', async () => {
   }
 });
 
-// 2. ADATBÁZIS INICIALIZÁLÁSA (21 ALBUM ÉS BOLTLISTÁK FELTÖLTÉSE)
+// 2. ADATBÁZIS INICIALIZÁLÁSA & LUTRA TÁJOLÁSOK/NEVEK FELTÖLTÉSE FIRESTORE-BA
 safeAddListener('btn-admin-seed-database', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  if (!confirm("Feltöltöd az összes alpalbumot és a boltlistákat a Firestore adatbázisba?")) return;
+  if (!confirm("Feltöltöd a boltokat és a Lidl Lutra 108 matricájának tájolását a Firestore-ba?")) return;
 
   const btn = document.getElementById('btn-admin-seed-database');
   if (btn) { btn.disabled = true; btn.textContent = "Feltöltés..."; }
@@ -5251,27 +4558,39 @@ safeAddListener('btn-admin-seed-database', async () => {
   try {
     const batch = db.batch();
 
-    Object.values(ALBUMS_REGISTRY).forEach(album => {
-      const docRef = db.collection("albums").doc(album.id);
-      batch.set(docRef, {
-        ...album,
-        active: true,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    });
+    // Lutra 2026 tájolások, fejezetek és nevek felküldése a felhőbe
+    batch.set(db.collection("albums").doc("lidl-lutra-2026"), {
+      id: "lidl-lutra-2026",
+      title: "Lutra Album",
+      subtitle: "Védett állatok a Föld körül",
+      publisher: "Lidl / WWF",
+      year: 2026,
+      totalItems: 108,
+      type: "sticker",
+      typeLabel: "Matricaalbum",
+      customChaptersList: FEJEZETEK,
+      customNames: Object.values(STICKER_NAMES),
+      active: true,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-    Object.entries(STORE_DATABASES).forEach(([chainKey, storeList]) => {
-      const storeRef = db.collection("stores").doc(chainKey);
-      batch.set(storeRef, {
-        chain: chainKey,
-        stores: storeList,
-        count: storeList.length,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    });
+    // Bolthálózatok felküldése a felhőbe
+    if (typeof STORE_DATABASES !== 'undefined') {
+      Object.entries(STORE_DATABASES).forEach(([chainKey, storeList]) => {
+        if (storeList && storeList.length > 0) {
+          const storeRef = db.collection("stores").doc(chainKey);
+          batch.set(storeRef, {
+            chain: chainKey,
+            stores: storeList,
+            count: storeList.length,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+      });
+    }
 
     await batch.commit();
-    showToast("Sikeres inicializálás! Az adatok a felhőben vannak.");
+    showToast("Lutra tájolások és boltok sikeresen mentve a Firestore-ba!");
   } catch (err) {
     showToast("Hiba: " + err.message);
   } finally {
@@ -5298,7 +4617,7 @@ safeAddListener('btn-admin-migrate-locations', async () => {
 
       chunk.forEach(doc => {
         batch.set(db.collection("public_profiles").doc(doc.id), {
-          emailNotifications: true
+          emailNotifications: true // ✉️ Tömeges értesítő bekapcsolva!
         }, { merge: true });
 
         batch.set(db.collection("users").doc(doc.id), {
@@ -5371,7 +4690,7 @@ safeAddListener('btn-admin-process-universal', async () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "A képfelismerő hibát adott.");
 
-      extractedText = data.text || (data.numbers ? data.numbers.map((n, i) => `${n}: Tétel ${n}`).join('\n') : '');
+      extractedText = data.text || '';
     } catch (err) {
       if (statusEl) statusEl.innerHTML = `<span style="color:var(--danger);">AI Hiba: ${err.message}</span>`;
       return showToast("AI Hiba: " + err.message);
@@ -5500,7 +4819,7 @@ safeAddListener('btn-admin-save-album', async () => {
 
   const customChaptersList = (type === 'sticker') ? parseChaptersText(customChaptersRaw, customItems) : [];
   const typeLabel = type === 'sticker' ? 'Matricaalbum' : type === 'card' ? 'Kártya' : 'Figura / Kinder';
-  const existingCover = ALBUMS_REGISTRY[id]?.coverUrl || 'covers/' + id + '.webp';
+  const existingCover = ALBUMS_REGISTRY[id]?.coverUrl || `covers/${id}.webp`;
 
   try {
     const payload = {
@@ -5542,7 +4861,7 @@ safeAddListener('btn-admin-save-album', async () => {
   }
 });
 
-// ABC ALBUM KERESÉS ÉS SZERKESZTŐ GOMBOK
+// ABC ALBUM KERESÉS, SZERKESZTŐ ÉS AKTIVÁLÁS/INAKTIVÁLÁS
 let adminSelectedLetter = 'ALL';
 
 function renderAdminAlbumsList() {
@@ -5607,16 +4926,21 @@ function renderAdminAlbumsList() {
     `;
 
     groups[letter].forEach(a => {
+      const isActive = (a.active !== false);
       html += `
         <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:10px;">
             <img src="${a.coverUrl || 'og-image.png'}" style="width:36px; height:36px; border-radius:4px; object-fit:contain; background:#F3EEDF; padding:2px;" alt="Borító">
             <div>
               <strong>${escapeHtml(a.title)}</strong> (${a.year}) — <span style="color:var(--sand); font-size:0.8rem;">${a.totalItems} db (${escapeHtml(a.typeLabel || a.type)})</span>
+              ${!isActive ? '<span class="badge-trade-status badge-inactive" style="margin-left:6px;">Inaktív</span>' : ''}
               <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(a.id)} • Kiadó: ${escapeHtml(a.publisher)}</div>
             </div>
           </div>
           <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary btn-sm" data-action="toggle-active-album" data-id="${escapeHtml(a.id)}">
+              ${isActive ? 'Inaktiválás' : 'Aktiválás'}
+            </button>
             <button class="btn btn-primary btn-sm" data-action="edit-album" data-id="${escapeHtml(a.id)}">Szerkesztés</button>
             <button class="btn btn-secondary btn-sm" data-action="toggle-feature-album" data-id="${escapeHtml(a.id)}">${a.featured ? 'Kiemelt levétel' : 'Kiemelés'}</button>
             <button class="btn btn-secondary btn-sm" data-action="delete-album" data-id="${escapeHtml(a.id)}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>
@@ -5647,7 +4971,22 @@ safeAddListener('admin-albums-list', async (e) => {
   const albumId = btn.dataset.id;
   if (!albumId) return;
 
-  if (btn.dataset.action === 'edit-album') {
+  if (btn.dataset.action === 'toggle-active-album') {
+    const album = ALBUMS_REGISTRY[albumId];
+    if (!album) return;
+    const currentActive = (album.active !== false);
+    const newActive = !currentActive;
+
+    album.active = newActive;
+    await db.collection("albums").doc(albumId).set({
+      active: newActive,
+      inactivatedAt: newActive ? null : firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    renderHub();
+    renderAdminAlbumsList();
+    showToast(newActive ? `${album.title} aktiválva!` : `${album.title} inaktiválva (csak olvasható)!`);
+  } else if (btn.dataset.action === 'edit-album') {
     const album = ALBUMS_REGISTRY[albumId];
     if (!album) return;
 
@@ -5769,12 +5108,12 @@ safeAddListener('admin-suggested-albums-list', async (e) => {
   }
 });
 
-// VALÓS IDEJŰ FELHŐS ALBUMFIGYELŐ (A 85+ ALBUM AZONNAL MEGJELENIK A HUBON)
+// VALÓS IDEJŰ FELHŐS ALBUMFIGYELŐ (A 85+ ALBUMOT KÖZVETLENÜL A FIRESTORE-BÓL OLVASSA ÉS GYORSÍTÓTÁRAZZA!)
 function listenToAlbums() {
   if (!db) return;
   if (albumsUnsubscribe) albumsUnsubscribe();
 
-  albumsUnsubscribe = db.collection("albums").where("active", "==", true).onSnapshot(snap => {
+  albumsUnsubscribe = db.collection("albums").onSnapshot(snap => {
     snap.docs.forEach(doc => {
       const data = doc.data();
       ALBUMS_REGISTRY[doc.id] = {
@@ -5786,7 +5125,7 @@ function listenToAlbums() {
         totalItems: data.totalItems || 100,
         type: data.type || 'sticker',
         typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
-        coverUrl: data.coverUrl || 'covers/' + doc.id + '.webp',
+        coverUrl: data.coverUrl || `covers/${doc.id}.webp`,
         featured: data.featured === true,
         isRetro: data.isRetro === true || data.year < 2018,
         hasFavorites: data.hasFavorites !== false,
@@ -5795,10 +5134,12 @@ function listenToAlbums() {
         hasChapters: (data.type === 'sticker') && (data.hasChapters === true),
         customItems: data.customItems || [],
         customNames: data.customNames || [],
-        customChaptersList: data.customChaptersList || []
+        customChaptersList: data.customChaptersList || [],
+        active: data.active !== false
       };
     });
 
+    localStorage.setItem('cached_albums_registry', JSON.stringify(ALBUMS_REGISTRY));
     renderHub();
     if (currentUser && currentUser.email === ADMIN_EMAIL) {
       renderAdminAlbumsList();
@@ -6170,7 +5511,7 @@ safeAddListener('btn-dismiss-email-banner', () => {
 });
 
 // =========================================================================
-// FIREBASE AUTH & BEJELENTKEZÉSI GOMBOK (HIÁNYTALANUL VISSZAÁLLÍTVA!)
+// FIREBASE AUTH & BEJELENTKEZÉSI GOMBOK (HIÁNYTALANUL MŰKÖDŐ MOTOR!)
 // =========================================================================
 
 safeAddListener('btn-open-auth', () => document.getElementById('modal-auth')?.classList.add('open'));
