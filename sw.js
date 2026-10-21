@@ -1,27 +1,26 @@
 // =========================================================================
-// Lutra Album Cserebere - Service Worker (sw.js v4.0)
+// Cserélj Okosan (csereljokosan.hu) - Service Worker (v4.3 STABIL)
 // =========================================================================
 
-const CACHE_NAME = 'lutra-csere-v2.0';
+const CACHE_NAME = 'cserelj-okosan-v4.3';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './og-image.png'
 ];
 
-// 1. Telepítés és statikus fájlok gyorsítótárazása
+// 1. Telepítés és friss fájlok letöltése
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
-// 2. Aktiválás és régi gyorsítótárak kitakarítása
+// 2. Aktiválás és a régi gyorsítótárak azonnali kényszerített törlése
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -33,15 +32,16 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// 3. Hálózati kérések kezelése: Network-first a dinamikus adatokhoz, Cache fallback
+// 3. Hálózati kérések kezelése: Network-first a friss adatokhoz
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // A Firestore és külső API hívásokat nem gyorsítótárazzuk, hagyjuk közvetlenül átmenni
+  // A Firestore, Brevo és Cloudflare Worker API hívásokat sosem cache-eljük!
   if (
     url.origin.includes('firestore.googleapis.com') ||
     url.origin.includes('workers.dev') ||
     url.origin.includes('firebaseio.com') ||
+    url.origin.includes('identitytoolkit') ||
     event.request.method !== 'GET'
   ) {
     return;
@@ -50,7 +50,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Ha sikeres a hálózati letöltés, frissítjük a gyorsítótárat
         if (response && response.status === 200 && response.type === 'basic') {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -60,10 +59,9 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Offline állapot esetén a gyorsítótárból szolgáljuk ki
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
-          if (event.request.headers.get('accept').includes('text/html')) {
+          if (event.request.headers.get('accept')?.includes('text/html')) {
             return caches.match('./index.html');
           }
         });

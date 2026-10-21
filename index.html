@@ -98,7 +98,7 @@
   <option value="Orosháza">
   <option value="Szentes">
   <option value="Kiskunhalas">
-  <option value="Kazincbarcik">
+  <option value="Kazincbarcika">
   <option value="Jászberény">
   <option value="Siófok">
   <option value="Szentendre">
@@ -151,8 +151,11 @@
   </div>
 
   <header>
-    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-      <h1 class="wordmark">🦦 Cserélj Okosan <span>(csereljokosan.hu)</span></h1>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <h1 class="wordmark">
+        <span style="font-size:1.6rem; line-height:1;" title="Cserélj Okosan Vidra">🦦</span>
+        Cserélj Okosan <span>(csereljokosan.hu)</span>
+      </h1>
       <button id="btn-pwa-install" class="btn btn-pwa-install" style="display:none;">
         Telepítés
       </button>
@@ -182,10 +185,10 @@
   </div>
 
   <div id="profile-warning" class="profile-warning-banner" style="display:none;">
-    ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek töltsd ki a profilodat: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
+    ⚠️ <strong>Figyelem:</strong> A cserékhez kérlek add meg a neved és e-mail címed: <a id="link-open-profile">Kattints ide a kitöltéshez</a>!
   </div>
 
-  <!-- 2. HIERARCHIA: FŐNAVIGÁCIÓ (4 FŐ KATEGÓRIA - JAVÍTOTT FELIRATTAL) -->
+  <!-- 2. HIERARCHIA: FŐNAVIGÁCIÓ (4 FŐ KATEGÓRIA) -->
   <nav class="primary-nav" id="main-primary-nav" style="display:none;">
     <!-- 1. Gyűjteményem -->
     <div class="nav-dropdown-item">
@@ -225,7 +228,7 @@
       </div>
     </div>
 
-    <!-- 4. Profil & Jegyzet (JAVÍTVA) -->
+    <!-- 4. Profil & Jegyzet -->
     <div class="nav-dropdown-item">
       <button class="primary-tab" data-cat="profil">
         Profil & Jegyzet <span class="dropdown-arrow">▾</span>
@@ -241,6 +244,9 @@
   <div class="mobile-subnav-wrapper" id="mobile-subnav-bar" style="display:none;">
     <div class="sub-nav" id="subnav-matricaim">
       <button class="sub-tab active" data-view="matricaim">Tételek / Rács</button>
+      <button class="sub-tab" id="subtab-active-trades" data-view="cseréim">
+        Cseréid & Zárolások <span id="badge-trades-count" class="nav-badge" style="display:none;">0</span>
+      </button>
     </div>
     <div class="sub-nav" id="subnav-cserebere" style="display:none;">
       <button class="sub-tab" data-view="cserek">Párosítások</button>
@@ -268,7 +274,7 @@
       </div>
       <p class="view-intro" style="margin-bottom:12px;">Válaszd ki a gyűjteményt, amellyel dolgozni szeretnél:</p>
 
-      <!-- KÖZÖSSÉGI MUTATÓK SÁV (809+ GYŰJTŐVEL) -->
+      <!-- KÖZÖSSÉGI MUTATÓK SÁV -->
       <div id="hub-social-proof-bar" class="social-proof-bar" style="margin-bottom:16px;">
         <div class="social-proof-item">
           <span class="sp-icon">👥</span>
@@ -375,7 +381,7 @@
         </div>
       </div>
 
-      <!-- INAKTÍV ALBUM FIGYELMEZTETŐ SÁV (JAVÍTVA) -->
+      <!-- INAKTÍV ALBUM FIGYELMEZTETŐ SÁV -->
       <div id="inactive-album-banner" class="notice-banner" style="display:none; background:rgba(232,90,79,0.2); border-color:var(--danger); color:#FFC0BA; margin-bottom:12px;">
         <span>⚠️ <strong>Ez a gyűjtemény jelenleg inaktív / ellenőrzés alatt áll.</strong> Az adataid megmaradtak, de az album reaktiválásig csak olvasható.</span>
       </div>
@@ -417,16 +423,16 @@
         </div>
         <div id="matrica-grid"></div>
 
-        <!-- RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & ARCHÍVUM PANEL -->
+        <!-- RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & ZÁROLÁSOK PANEL -->
         <div id="active-trades-panel" class="card" style="margin-top:16px; border-left:4px solid var(--reserved-blue); display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <h3 style="margin:0; font-size:1.05rem; color:var(--reserved-blue-soft);">
-              ⏳ Folyamatban lévő cseréid & Zárolások (<span id="active-trades-count">0</span>)
+              ⏳ Cseréid & Zárolások (<span id="active-trades-count">0</span>)
             </h3>
-            <span style="font-size:0.75rem; color:var(--text-muted);">Aktív megállapodások</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Folyamatban lévő megegyezések</span>
           </div>
           <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-            Ezek a tételek le vannak foglalva vagy úton vannak feléd. Amint megkaptad a matricákat, zárd le a cserét a készlet levonásához és a bizalmi pont jóváírásához!
+            Itt láthatod a folyamatban lévő csereajánlataidat. A zárolt tételek biztonságban vannak a megegyezés véglegesítéséig.
           </p>
           <div id="active-trades-list"></div>
         </div>
@@ -524,7 +530,7 @@
         </summary>
         <div class="search-acc-body">
           <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-            Keress rá rokonok vagy ismerősök városára az adott településen lévő partnerek azonnali listázásához:
+            Keress rá rokonok vagy ismerősök városára az adott településen lévő partnerek listázásához:
           </p>
           <div style="display:flex; gap:8px;">
             <input type="search" id="search-by-city-input" class="input-field" list="hungarian-cities-list" placeholder="Írd be a települést (pl. Nagykőrös, Szeged)..." autocomplete="off">
@@ -576,7 +582,7 @@
         </summary>
         <div class="search-acc-body">
           <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-            Emlékszel egy korábbi megbízható cserepartneredre? Keress rá a nevére a 809 regisztrált tag között:
+            Emlékszel egy korábbi cserepartneredre? Keress rá a nevére a 809 regisztrált tag között:
           </p>
           <div style="display:flex; gap:8px;">
             <input type="search" id="search-partner-input" class="input-field" placeholder="Írd be a gyűjtő nevét (pl. VidraPanni vagy Tamás)..." autocomplete="off">
@@ -864,7 +870,7 @@
       <h2>Saját profil & Jegyzet</h2>
       <p class="view-intro">A profilod adatai alapján tudnak elérni a cserepartnerek a belső rendszeren keresztül.</p>
       
-      <!-- SAJÁT JEGYZET HARMONIKA (JAVÍTVA) -->
+      <!-- SAJÁT JEGYZET HARMONIKA -->
       <details class="search-accordion" open id="prof-note-accordion" style="margin-bottom:14px;">
         <summary class="search-acc-summary">
           <span>📝 Saját Jegyzet (<span id="prof-note-album-title">Aktív gyűjtemény</span>)</span>
@@ -922,23 +928,24 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
+        <!-- KEDVENCEK (100%-BAN OPCIONÁLIS!) -->
         <div id="prof-favorites-container" style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
-          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);" id="prof-favorites-title">Top 3 Kedvenc Tételed <strong style="color:var(--amber);">(Opcionális)</strong></h4>
+          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);" id="prof-favorites-title">Top 3 Kedvenc Tételed (Opcionális)</h4>
           <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
-            Jelöld meg a 3 legkedvesebb tételedet! Ezzel szavazol a Közönségkedvencre:
+            Ha szeretnéd, megjelölheted a kedvenceidet, de a profilod enélkül is teljes:
           </p>
 
           <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
             <div>
-              <label style="font-size:0.75rem; color:var(--sand);">🥇 1. Legkedvesebb:</label>
+              <label style="font-size:0.75rem; color:var(--sand);">🥇 1. Kedvenc:</label>
               <select id="prof-fav-1" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
             </div>
             <div>
-              <label style="font-size:0.75rem; color:var(--sand);">🥈 2. Legkedvesebb:</label>
+              <label style="font-size:0.75rem; color:var(--sand);">🥈 2. Kedvenc:</label>
               <select id="prof-fav-2" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
             </div>
             <div>
-              <label style="font-size:0.75rem; color:var(--sand);">🥉 3. Legkedvesebb:</label>
+              <label style="font-size:0.75rem; color:var(--sand);">🥉 3. Kedvenc:</label>
               <select id="prof-fav-3" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
             </div>
           </div>
@@ -992,7 +999,7 @@
       <h2>Adminisztrátori Vezérlőpult</h2>
       <p class="view-intro">Átlátható harmonikák: kattints bármelyik doboz fejlécére a lenyitáshoz!</p>
 
-      <!-- 1. PANEL: GYORSMŰVELETEK & ADATBÁZIS KARBANTARTÁS -->
+      <!-- 1. PANEL: GYORSMŰVELETEK, ADATBÁZIS AUDIT & KARBANTARTÁS -->
       <details class="admin-accordion" open style="border-left: 4px solid var(--amber);">
         <summary class="admin-acc-summary">
           <span>🚀 1. Gyorsműveletek & Adatbázis Karbantartás</span>
@@ -1000,10 +1007,17 @@
         </summary>
         <div class="admin-acc-body">
           <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
+              <strong style="color:var(--amber);">🔍 Adatbázis Audit & Duplikáció-Szűrő:</strong>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Átvizsgálja a Firestore albumokat, leleplezi a scraper-szemetet és a duplikációkat, majd 1 kattintással kitisztítja őket!</p>
+              <button class="btn btn-primary btn-sm" id="btn-admin-audit-db">🔍 Duplikációk és Szemét elemek keresése</button>
+              <div id="admin-audit-report-box" class="audit-report-box" style="display:none;"></div>
+            </div>
+
             <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
-              <strong>Adatbázis inicializálása & Felhőbe költöztetése:</strong>
-              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Feltölti a 21 alapértelmezett albumot, a bolthálózatokat és a Lutra fejezeteket a Firestore adatbázisba.</p>
-              <button class="btn btn-primary btn-sm" id="btn-admin-seed-database">Adatbázis inicializálása Firestore-ba most</button>
+              <strong>Lutra 108 matrica tájolások & Boltok feltöltése:</strong>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Feltölti a Lidl Lutra 108 matricájának pontos tájolását és a boltokat a felhőbe (`albums/lidl-lutra-2026`).</p>
+              <button class="btn btn-secondary btn-sm" id="btn-admin-seed-database">Lutra adatok és Boltok feltöltése Firestore-ba</button>
             </div>
 
             <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
@@ -1018,12 +1032,12 @@
       <!-- 2. PANEL: TÖMEGES JSON ALBUM IMPORTŐR (MŰKÖDŐ KÖTEGELT MENTÉSSEL) -->
       <details class="admin-accordion" open style="border-left: 4px solid var(--water-light); margin-top:12px;">
         <summary class="admin-acc-summary">
-          <span>📥 2. Tömeges JSON Album Importőr (Azonnali felhős mentés)</span>
+          <span>📥 2. Tömeges JSON Album Importőr (Intelligens szűréssel)</span>
           <span class="acc-chevron">▾</span>
         </summary>
         <div class="admin-acc-body">
           <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
-            Másold be ide a komplett JSON albumcsomagot a gyűjtemények azonnali felhős élesítéséhez (darabolt batch mentéssel fut):
+            Másold be ide a komplett JSON albumcsomagot. A rendszer kiszűri a szemetet, megelőzi a duplikátumokat és 400-as darabokban élesíti őket:
           </p>
           <textarea id="admin-album-json-import" class="input-field" rows="5" placeholder='[{"id": "uj-album", "title": "Új Album Neve", "publisher": "Panini", "year": 2026, "totalItems": 200, "type": "sticker"}]'></textarea>
           <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
@@ -1069,7 +1083,7 @@
         </div>
       </details>
 
-      <!-- 4. PANEL: ÚJ GYŰJTEMÉNY ŰRLAP & SZERKESZTŐ -->
+      <!-- 4. PANEL: ÚJ GYŰJTEMÉNY ŰRLAP & SZERKESZTŐ (KÉTÁLLÁSÚ MENTÉSSEL!) -->
       <details class="admin-accordion" open id="admin-album-form-card" style="border-left: 4px solid var(--amber); margin-top:12px;">
         <summary class="admin-acc-summary">
           <span id="admin-album-form-title">✏️ 4. Új gyűjtemény felvitele / Szerkesztő</span>
@@ -1077,12 +1091,12 @@
         </summary>
         <div class="admin-acc-body">
           <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;" id="admin-album-form-desc">
-            Az AI-ból vagy nyers szövegből kiolvasott adatok ide töltődnek be automatikusan, ahol még belejavíthatsz mentés előtt:
+            Az adatok ide töltődnek be, az Album ID-t is szabadon átírhatod:
           </p>
 
           <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
             <div class="form-group">
-              <label>Gyűjtemény egyedi ID:</label>
+              <label>Gyűjtemény egyedi ID (szabadon módosítható):</label>
               <input type="text" id="admin-album-id" class="input-field" placeholder="pl. panini-fifa-365-2026">
             </div>
             <div class="form-group">
@@ -1135,7 +1149,7 @@
           </div>
 
           <div class="form-group">
-            <label>Könyvlapozó oldalbeosztás (Matricaalbumokhoz, pl. <code>Bevezető: 1 – 4</code> vagy <code>Az Óceán: 5 – 28</code>):</label>
+            <label>Könyvlapozó oldalbeosztás (Matricaalbumokhoz):</label>
             <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa soronként:&#10;Bevezető: 1 – 4&#10;Az Óceán: 5 – 28&#10;Döntősök: 29 – 30 [combo]"></textarea>
           </div>
 
@@ -1152,11 +1166,6 @@
               🕹️ Retro gyűjtemény (Kiemelt Retro jelvény a kártyán)
             </label>
 
-            <label class="checkbox-label">
-              <input type="checkbox" id="admin-album-has-favorites" checked>
-              Top 3 Kedvenc tétel szavazás engedélyezése ennél az albumnál (Profilban & Statisztikában)
-            </label>
-
             <div style="margin: 8px 0;">
               <label style="font-size:0.8rem; color:var(--sand); margin-bottom:4px; display:block;">Bolti Készletradar típusa / Terjesztés:</label>
               <select id="admin-album-radar-type" class="input-field" style="padding:6px; font-size:0.85rem;">
@@ -1165,7 +1174,7 @@
                 <option value="spar">Spar és Interspar áruházlánc</option>
                 <option value="tesco">Tesco áruházlánc</option>
                 <option value="penny">Penny Market</option>
-                <option value="retail_general">Országos / Üzletfüggetlen (Újságos, Relay, Müller, vegyes)</option>
+                <option value="retail_general">Országos / Üzletfüggetlen</option>
               </select>
             </div>
 
@@ -1175,9 +1184,13 @@
             </label>
           </div>
 
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary" id="btn-admin-save-album" style="flex:1; padding:10px; font-weight:700;">
-              Gyűjtemény mentése és azonnali élesítése
+          <!-- KÉTÁLLÁSÚ MENTÉS GOMBOK (PISZKOZAT VAGY ÉLESÍTÉS) -->
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btn-admin-save-draft" style="flex:1; padding:10px; font-weight:700;">
+              💾 Mentés piszkozatként (Inaktív)
+            </button>
+            <button class="btn btn-primary" id="btn-admin-publish-album" style="flex:1; padding:10px; font-weight:700;">
+              🚀 Gyűjtemény élesítése (Aktív)
             </button>
             <button class="btn btn-secondary btn-sm" id="btn-admin-cancel-edit" style="display:none; color:var(--danger); border-color:var(--danger);">
               ✕ Mégse
@@ -1194,13 +1207,13 @@
         </summary>
         <div class="admin-acc-body">
           <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">
-            A felhasználók által beküldött új gyűjtemények. Kattints a „Betöltés & Jóváhagyás”-ra az adatok azonnali beemeléséhez!
+            A felhasználók által beküldött új gyűjtemények:
           </p>
           <div id="admin-suggested-albums-list">Nincs függőben lévő javaslat.</div>
         </div>
       </details>
 
-      <!-- 6. PANEL: RENDSZERBEN LÉVŐ ALBUMOK KEZELÉSE (ABC REND & CSOPORTOSÍTÁS) -->
+      <!-- 6. PANEL: RENDSZERBEN LÉVŐ ALBUMOK KEZELÉSE -->
       <details class="admin-accordion" open style="border-left: 4px solid var(--amber); margin-top:12px;">
         <summary class="admin-acc-summary">
           <span>📦 6. Rendszerben lévő albumok (ABC rendszerezve)</span>
@@ -1294,6 +1307,40 @@
   <button class="btn-undo-action" id="btn-undo-click">Visszavonás</button>
 </div>
 
+<!-- CSERE VISSZAVONÁSI INDOKLÓ MODAL (ÚJ!) -->
+<div id="modal-cancel-trade-reason" class="modal-overlay" style="z-index: 2900;">
+  <div class="modal-card" style="max-width:440px;">
+    <h3 style="margin-top:0; color:var(--danger);">Megállapodás visszavonása</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
+      Kérlek válaszd ki a visszavonás okát, hogy a cserepartnered azonnal, automatikusan értesülhessen róla:
+    </p>
+
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+      <label class="radio-label">
+        <input type="radio" name="cancel-reason" value="meggondoltam_magam" checked> Meggondoltam magam
+      </label>
+      <label class="radio-label">
+        <input type="radio" name="cancel-reason" value="mashogy_megoldodott"> Időközben máshogy megoldódott a csere
+      </label>
+      <label class="radio-label">
+        <input type="radio" name="cancel-reason" value="egyeb"> Egyéb ok (saját szöveggel)
+      </label>
+    </div>
+
+    <div class="form-group" id="cancel-reason-custom-group" style="display:none; margin-bottom:14px;">
+      <label>Egyéni indoklás szövege:</label>
+      <input type="text" id="cancel-trade-custom-reason" class="input-field" placeholder="Pl. Nem tudok elmenni személyesen...">
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-danger" id="btn-confirm-cancel-trade" style="flex:1;">
+        Zárolás feloldása & Értesítés küldése
+      </button>
+      <button class="btn btn-secondary" id="btn-abort-cancel-trade">Mégse</button>
+    </div>
+  </div>
+</div>
+
 <!-- VISSZATÉRŐ FELHASZNÁLÓI DONABLY TÁMOGATÓI MODAL -->
 <div id="modal-donably-support" class="modal-overlay" style="z-index: 2600;">
   <div class="modal-card" style="max-width:440px; text-align:center; border:2px solid var(--amber);">
@@ -1301,10 +1348,10 @@
     <div style="font-size:2.2rem; margin-bottom:6px;">☕ 🦦</div>
     <h3 style="margin:0 0 8px; color:var(--amber); font-size:1.25rem;">Segített az oldal a cserékben?</h3>
     <p style="font-size:0.85rem; color:var(--sand); line-height:1.5; margin:0 0 14px;">
-      A Cserélj Okosan teljesen ingyenes és reklámmentes, a felhős adatbázis, az AI képfelismerés és a domain fenntartása azonban havi költségekkel jár.
+      A Cserélj Okosan teljesen ingyenes és reklámmentes, a felhős adatbázis és a szerverek fenntartása azonban költségekkel jár.
     </p>
     <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 16px;">
-      Ha találtál már cseretársat az oldalon, és megteheted, <strong>egy kávé árával</strong> hatalmas segítséget nyújtasz a szerverek működtetésében!
+      Ha találtál már cseretársat az oldalon, <strong>egy kávé árával</strong> hatalmas segítséget nyújtasz a működtetésben!
     </p>
     <div style="display:flex; flex-direction:column; gap:8px;">
       <a href="https://www.donably.com/cserebere" target="_blank" rel="noopener" class="btn btn-donably" id="btn-donably-donate-click" style="width:100%; padding:10px; font-size:0.95rem;">
@@ -1497,7 +1544,7 @@
     </div>
 
     <button class="btn btn-primary" id="btn-submit-trade-rating" style="width:100%; padding:10px; font-weight:700;">
-      Értékelés beküldése & Zárolás véglegesítése
+      Értékelés beküldése & Tételek átvezetése
     </button>
   </div>
 </div>
@@ -1540,7 +1587,7 @@
       <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--sand); margin-bottom:4px;">
         🎁 Egyedi felajánlásod / cserealapod (opcionális):
       </label>
-      <input type="text" id="contact-custom-offer" class="input-field" placeholder="Pl. 2 tábla Milka csoki, személyes megbeszélés, vagy más megegyezés...">
+      <input type="text" id="contact-custom-offer" class="input-field" placeholder="Pl. 2 tábla Milka csoki, személyes megbeszélés, vagy egyéb megegyezés...">
       <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:3px;">
         Ha beírsz ide valamit, automatikusan bekerül a levélbe az „Én tudom adni neked:” sorba!
       </span>
@@ -1624,7 +1671,7 @@
 
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(243,238,223,0.12); padding-top:12px;">
       <button class="btn btn-contact-green btn-sm" id="btn-user-profile-contact" style="flex:1;">
-        🤝 Kapcsolatfelvétel ezzel a gyűjtővel
+        🤝 Csereindítás ezzel a gyűjtővel
       </button>
       <button class="btn btn-secondary btn-sm" id="btn-close-user-profile-2">Bezárás</button>
     </div>

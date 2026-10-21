@@ -1,6 +1,6 @@
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v4.3 ÉLES KIADÁS)
-// 1 / 4. RÉSZ: UNIVERZÁLIS ADATKINYERŐ, 0 MS RÁCS, LAKATVÉDELEM & UNDO
+// 1 / 4. RÉSZ: UNIVERZÁLIS ADATKINYERŐ, 0 MS RÁCS, LAKATVÉDELEM & HIERARCHIA
 // =========================================================================
 
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
@@ -22,7 +22,7 @@ let ALBUMS_REGISTRY = safeJsonParse('cached_albums_registry', {
     hasRadar: true,
     radarType: "lidl",
     hasChapters: true,
-    hasFavorites: false, // 100% opcionális
+    hasFavorites: false,
     active: true
   }
 });
@@ -41,6 +41,7 @@ let undoToastTimer = null;
 let myGpsCoords = safeJsonParse('cserelj_gps_coords', null);
 let selectedSearchRadius = 'all';
 let selectedCityFilter = '';
+let filterTargetCity = '';
 
 function getActiveAlbum() {
   return ALBUMS_REGISTRY[currentAlbumId] || ALBUMS_REGISTRY["lidl-lutra-2026"] || { totalItems: 108, title: "Gyűjtemény", type: "sticker", active: true };
@@ -56,7 +57,9 @@ function getAlbumDisplayTitle(albumId) {
   return `${alb.title} (${alb.year})`;
 }
 
-// TELEPÜLÉS KOORDINÁTÁK
+// =========================================================================
+// TELJES KOORDINÁTA-TÁR (MINDEN VÁROS HELYREÁLLÍTVA A HŐTÉRKÉPHEZ!)
+// =========================================================================
 const CITY_COORDINATES = {
   "budapest": { lat: 47.4979, lng: 19.0402, x: 52.5, y: 39.0 },
   "budapest_1": { lat: 47.496, lng: 19.038, x: 52.0, y: 38.5 },
@@ -85,8 +88,12 @@ const CITY_COORDINATES = {
   "gyor": { lat: 47.6875, lng: 17.6504, x: 26.0, y: 27.0 },
   "sopron": { lat: 47.6865, lng: 16.5843, x: 10.5, y: 30.0 },
   "szombathely": { lat: 47.2307, lng: 16.6218, x: 13.0, y: 44.0 },
+  "zalaegerszeg": { lat: 46.8417, lng: 16.8416, x: 20.0, y: 56.0 },
+  "veszprem": { lat: 47.0933, lng: 17.9115, x: 35.0, y: 46.0 },
   "szekesfehervar": { lat: 47.1860, lng: 18.4221, x: 44.0, y: 45.0 },
   "pecs": { lat: 46.0727, lng: 18.2323, x: 41.0, y: 83.0 },
+  "kaposvar": { lat: 46.3594, lng: 17.7968, x: 32.0, y: 73.0 },
+  "szekszard": { lat: 46.3501, lng: 18.7091, x: 50.0, y: 73.0 },
   "kecskemet": { lat: 46.9069, lng: 19.6913, x: 61.0, y: 59.0 },
   "nagykörös": { lat: 47.0322, lng: 19.7828, x: 62.5, y: 56.0 },
   "nagykoros": { lat: 47.0322, lng: 19.7828, x: 62.5, y: 56.0 },
@@ -95,11 +102,35 @@ const CITY_COORDINATES = {
   "lajosmizse": { lat: 47.0256, lng: 19.5583, x: 59.0, y: 56.0 },
   "dabas": { lat: 47.1878, lng: 19.3139, x: 56.0, y: 51.0 },
   "albertirsa": { lat: 47.2417, lng: 19.6167, x: 60.0, y: 49.0 },
+  "tiszakecske": { lat: 46.9317, lng: 20.0911, x: 66.0, y: 59.0 },
+  "kiskunmajsa": { lat: 46.4917, lng: 19.7389, x: 61.0, y: 72.0 },
+  "kiskoros": { lat: 46.6214, lng: 19.2853, x: 55.0, y: 68.0 },
+  "solt": { lat: 46.8000, lng: 19.0000, x: 53.0, y: 62.0 },
+  "soltvadkert": { lat: 46.5778, lng: 19.3944, x: 56.5, y: 70.0 },
+  "dunavecse": { lat: 46.9167, lng: 18.9833, x: 53.0, y: 58.0 },
   "szeged": { lat: 46.2530, lng: 20.1414, x: 66.0, y: 81.0 },
+  "bekescsaba": { lat: 46.6796, lng: 21.0911, x: 84.0, y: 69.0 },
+  "szolnok": { lat: 47.1756, lng: 20.1764, x: 69.0, y: 51.0 },
   "debrecen": { lat: 47.5316, lng: 21.6273, x: 88.0, y: 40.0 },
+  "nyiregyhaza": { lat: 47.9554, lng: 21.7167, x: 90.0, y: 26.0 },
   "miskolc": { lat: 48.1035, lng: 20.7784, x: 77.0, y: 23.0 },
+  "eger": { lat: 47.9025, lng: 20.3772, x: 71.0, y: 31.0 },
+  "salgotarjan": { lat: 48.0934, lng: 19.8030, x: 62.0, y: 21.0 },
+  "tatabanya": { lat: 47.5849, lng: 18.3932, x: 42.0, y: 32.0 },
   "erd": { lat: 47.3789, lng: 18.9192, x: 51.0, y: 43.0 },
-  "budaors": { lat: 47.4625, lng: 18.9536, x: 51.2, y: 40.5 }
+  "budaors": { lat: 47.4625, lng: 18.9536, x: 51.2, y: 40.5 },
+  "szentendre": { lat: 47.6667, lng: 19.0833, x: 53.0, y: 34.0 },
+  "dunakeszi": { lat: 47.6333, lng: 19.1333, x: 53.5, y: 35.0 },
+  "godollo": { lat: 47.6000, lng: 19.3667, x: 57.0, y: 36.0 },
+  "szigetszentmiklos": { lat: 47.3439, lng: 19.0436, x: 52.4, y: 44.0 },
+  "dunaujvaros": { lat: 46.9619, lng: 18.9355, x: 53.0, y: 53.0 },
+  "baja": { lat: 46.1819, lng: 18.9568, x: 54.0, y: 80.0 },
+  "hodmezovasarhely": { lat: 46.4303, lng: 20.3189, x: 71.0, y: 75.0 },
+  "oroshaza": { lat: 46.5667, lng: 20.6667, x: 78.0, y: 73.0 },
+  "gyula": { lat: 46.6500, lng: 21.2833, x: 89.0, y: 68.0 },
+  "siofok": { lat: 46.9041, lng: 18.0580, x: 42.0, y: 50.0 },
+  "keszthely": { lat: 46.7691, lng: 17.2481, x: 27.0, y: 58.0 },
+  "nagykanizsa": { lat: 46.4535, lng: 16.9910, x: 21.0, y: 70.0 }
 };
 
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
@@ -179,11 +210,34 @@ function extractCanonicalCities(locationInput) {
   return [...new Set(result)];
 }
 
+// 🛡️ VAGY-VAGY ALAPÚ TELEPÜLÉSKAPCSOLAT (INGÁZÁS JAVÍTÁSA!)
 function isLocalCityMatch(locA, locB) {
-  const citiesA = extractCanonicalCities(locA);
-  const citiesB = extractCanonicalCities(locB);
+  const cleanA = Array.isArray(locA) ? locA.filter(l => (typeof l === 'string' ? l.trim().length > 0 : l?.city?.trim().length > 0)) : locA;
+  const cleanB = Array.isArray(locB) ? locB.filter(l => (typeof l === 'string' ? l.trim().length > 0 : l?.city?.trim().length > 0)) : locB;
+
+  const citiesA = extractCanonicalCities(cleanA);
+  const citiesB = extractCanonicalCities(cleanB);
   if (citiesA.length === 0 || citiesB.length === 0) return false;
+  
+  // Ha BÁRMELYIK megadott település megegyezik, az azonnal találat (VAGY kapcsolat)!
   return citiesA.some(cA => citiesB.includes(cA));
+}
+
+// FRISSÍTÉSI IDŐ FORMÁZÓ (pl. "ma frissítve", "3 napja frissítve")
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return '';
+  let millis = 0;
+  if (typeof timestamp === 'number') millis = timestamp;
+  else if (timestamp.toDate) millis = timestamp.toDate().getTime();
+  else if (timestamp.seconds) millis = timestamp.seconds * 1000;
+  if (!millis) return '';
+
+  const diffSec = Math.floor((Date.now() - millis) / 1000);
+  if (diffSec < 3600 * 24) return 'ma frissítve';
+  if (diffSec < 3600 * 48) return 'tegnap frissítve';
+  const days = Math.floor(diffSec / (3600 * 24));
+  if (days < 30) return `${days} napja frissítve`;
+  return 'régebben frissítve';
 }
 
 function safeJsonParse(key, fallback) {
@@ -236,7 +290,7 @@ function getFirstValidString(...values) {
 function getActiveLockedCounts(albumId = currentAlbumId) {
   const counts = {};
   (myProfile.activeTrades || []).forEach(t => {
-    if (t.status === 'pending' && (t.albumId || 'lidl-lutra-2026') === albumId) {
+    if ((t.status === 'pending' || t.status === 'accepted' || t.status === 'pending_acceptance') && (t.albumId || 'lidl-lutra-2026') === albumId) {
       (t.givingItems || []).forEach(num => { counts[num] = (counts[num] || 0) + 1; });
     }
   });
@@ -244,9 +298,8 @@ function getActiveLockedCounts(albumId = currentAlbumId) {
 }
 
 // =========================================================================
-// 🛡️ ROBUSZTUS, MINDEN FORMÁTUMOT ISMERŐ ADATKINYERŐ (FIRESTORE FIX!)
+// 🛡️ ROBUSZTUS ADATKINYERŐ: MIND A 4 FIRESTORE FORMÁTUMOT KEZELI!
 // =========================================================================
-
 function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   if (!data) return null;
 
@@ -280,7 +333,7 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     vanCounts = col.vanCounts || {};
     foglalvaCounts = col.foglalvaCounts || {};
   }
-  // 3. FORMÁTUM: Lutra 2026 gyökér mezők (van, kell, foglalva)
+  // 3. FORMÁTUM: Lutra 2026 gyökér mezők
   if (rawVan.length === 0 && rawKell.length === 0) {
     if (targetAlbumId === 'lidl-lutra-2026' || !data.collections) {
       rawVan = data.van || data.duplicates || data.duplak || [];
@@ -291,7 +344,6 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     }
   }
 
-  // Ha vanCounts van, de van tömb üres, kinyerjük a kulcsokat
   if (rawVan.length === 0 && vanCounts && Object.keys(vanCounts).length > 0) {
     rawVan = Object.keys(vanCounts);
   }
@@ -309,6 +361,7 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   const trustScore = parseFloat(data.trustScore || '0');
   const ratingsCount = parseInt(data.ratingsCount || '0', 10);
   const recentReviews = Array.isArray(data.recentReviews) ? data.recentReviews : [];
+  const updatedAt = data.updatedAt || data.localUpdatedAt || null;
 
   return {
     id: docId,
@@ -330,11 +383,11 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     gdprAccepted,
     trustScore,
     ratingsCount,
-    recentReviews
+    recentReviews,
+    updatedAt
   };
 }
 
-// PROFIL ALAPÁLLAPOT
 let myProfile = {
   nev: "Vendég gyűjtő",
   telepules: "",
@@ -413,11 +466,6 @@ const FEJEZETEK = [
     { type: "single", num: 18, name: "Fehérhátú keselyű", orient: "fekvő" }, { type: "single", num: 19, name: "Cserepesteknős", orient: "fekvő" },
     { type: "single", num: 20, name: "Nyugati gorilla", orient: "fekvő" }, { type: "single", num: 21, name: "Szélesszájú orrszarvú", orient: "fekvő" }
   ]},
-  { id: "eszak_amerika", cim: "8–9. oldal — Észak-Amerika", elemek: [
-    { type: "single", num: 22, name: "Amerikai bölény", orient: "fekvő" }, { type: "single", num: 23, name: "Fehérfejű rétisas", orient: "fekvő" },
-    { type: "single", num: 24, name: "Kaliforniai disznódelfin", orient: "fekvő" }, { type: "single", num: 25, name: "Vörhenyes kolibri", orient: "fekvő" },
-    { type: "single", num: 26, name: "Királylazac", orient: "fekvő" }, { type: "single", num: 27, name: "Pompás királylepke", orient: "fekvő" }
-  ]},
   { id: "azsia", cim: "12–13. oldal — Ázsia", elemek: [
     { type: "single", num: 34, name: "Mongol szajga", orient: "fekvő" }, { type: "combo", nums: [35, 36], name: "Tigris (2 részes)", orient: "panoráma" },
     { type: "single", num: 37, name: "Borneói orangután", orient: "álló" }, { type: "single", num: 38, name: "Mandzsu daru", orient: "álló" }
@@ -469,7 +517,6 @@ function getItemFullName(num, albumId = currentAlbumId) {
   return getItemLabel(num, albumId);
 }
 
-// KEDVENCEK (100%-BAN OPCIONÁLIS!)
 function initFavoriteSelects() {
   const totalSize = getActiveAlbumSize();
   const favContainer = document.getElementById('prof-favorites-container');
@@ -523,6 +570,10 @@ function updateHubSocialProofMetrics() {
   if (tradesEl) tradesEl.textContent = `${Math.max(290, Math.round(totalCollectors * 0.36))}+`;
 }
 
+// =========================================================================
+// FŐOLDALI MEGJELENÉSI HIERARCHIA:
+// 1. Kiemeltek -> 2. Legutóbb használtak -> 3. ABC -> 4. Inaktívak legvégén
+// =========================================================================
 function renderHub() {
   const container = document.getElementById('hub-albums-grid');
   const toggleBtn = document.getElementById('btn-toggle-all-hub-albums');
@@ -533,16 +584,17 @@ function renderHub() {
 
   updateHubSocialProofMetrics();
 
-  const allFilteredList = Object.values(ALBUMS_REGISTRY).filter(album => {
-    if (album.active === false && (!currentUser || currentUser.email !== ADMIN_EMAIL)) {
-      if (currentHubFilter !== 'my') return false;
-    }
+  const recentAlbumIds = safeJsonParse('cserelj_recent_albums', []);
+
+  // Szűrés a kategóriák és keresés szerint
+  let list = Object.values(ALBUMS_REGISTRY).filter(album => {
     if (query) {
       const matchTitle = (album.title || '').toLowerCase().includes(query);
       const matchPub = (album.publisher || '').toLowerCase().includes(query);
       const matchYear = String(album.year || '').includes(query);
       if (!matchTitle && !matchPub && !matchYear) return false;
     }
+
     if (currentHubFilter === 'sticker') return album.type === 'sticker';
     if (currentHubFilter === 'card') return album.type === 'card';
     if (currentHubFilter === 'figure') return album.type === 'figure';
@@ -553,24 +605,50 @@ function renderHub() {
     return true;
   });
 
-  if (countSpan) countSpan.textContent = allFilteredList.length;
+  // HIERARCHIKUS SORBARENDEZÉS
+  list.sort((a, b) => {
+    const aActive = a.active !== false;
+    const bActive = b.active !== false;
 
-  let displayList = allFilteredList;
+    // 1. Inaktívak mindig a legvégére kerülnek
+    if (aActive !== bActive) return aActive ? -1 : 1;
+
+    // 2. Kiemeltek legelőre (inaktív album kiemelése érvénytelen)
+    const aFeatured = a.featured && aActive;
+    const bFeatured = b.featured && bActive;
+    if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
+
+    // 3. Legutóbb használt/megnyitott albumok
+    const aRecentIdx = recentAlbumIds.indexOf(a.id);
+    const bRecentIdx = recentAlbumIds.indexOf(b.id);
+    if (aRecentIdx !== -1 && bRecentIdx !== -1) return aRecentIdx - bRecentIdx;
+    if (aRecentIdx !== -1) return -1;
+    if (bRecentIdx !== -1) return 1;
+
+    // 4. ABC betűrend a többire
+    return (a.title || '').localeCompare(b.title || '', 'hu');
+  });
+
+  if (countSpan) countSpan.textContent = list.length;
+
+  let displayList = list;
   if (currentHubFilter === 'all' && !showAllHubAlbums && !query) {
-    displayList = allFilteredList.slice(0, 6);
+    displayList = list.slice(0, 6);
   }
 
   if (toggleBtn) {
-    if (currentHubFilter !== 'all' || allFilteredList.length <= 6 || query) {
+    if (currentHubFilter !== 'all' || list.length <= 6 || query) {
       toggleBtn.style.display = 'none';
     } else {
       toggleBtn.style.display = 'inline-block';
-      toggleBtn.innerHTML = showAllHubAlbums ? '▲ Csak a kiemeltek mutatása (6 db)' : `Összes gyűjtemény listázása (${allFilteredList.length} db) ▼`;
+      toggleBtn.innerHTML = showAllHubAlbums 
+        ? '▲ Csak az első 6 album mutatása' 
+        : `Összes gyűjtemény listázása (${list.length} db) ▼`;
     }
   }
 
   container.innerHTML = displayList.map(album => {
-    const isFeatured = album.featured === true || album.id === 'lidl-lutra-2026';
+    const isFeatured = album.featured === true && album.active !== false;
     const isRetro = album.year < 2018 || album.isRetro === true;
     const isInactive = (album.active === false);
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
@@ -579,7 +657,7 @@ function renderHub() {
     const cover = album.coverUrl || 'og-image.png';
 
     return `
-      <div class="album-hub-card ${isFeatured ? 'featured-card' : ''}" data-album-id="${escapeHtml(album.id)}" style="${isInactive ? 'opacity:0.65; border-color:var(--danger);' : ''}">
+      <div class="album-hub-card ${isFeatured ? 'featured-card' : ''}" data-album-id="${escapeHtml(album.id)}" style="${isInactive ? 'opacity:0.6; border-color:var(--danger);' : ''}">
         <div>
           <img src="${cover}" class="hub-card-thumb" alt="${escapeHtml(album.title)}" loading="lazy">
           <div class="album-hub-header">
@@ -682,6 +760,12 @@ function selectAlbum(albumId) {
   if (!ALBUMS_REGISTRY[albumId]) return;
   currentAlbumId = albumId;
   localStorage.setItem('lutra_active_album', albumId);
+
+  // Legutóbb használt albumok mentése az előre rangsoroláshoz
+  let recent = safeJsonParse('cserelj_recent_albums', []);
+  recent = [albumId, ...recent.filter(id => id !== albumId)].slice(0, 10);
+  localStorage.setItem('cserelj_recent_albums', JSON.stringify(recent));
+
   const activeAlbum = getActiveAlbum();
   const isInactive = (activeAlbum.active === false);
 
@@ -923,13 +1007,11 @@ const popover = document.getElementById('qty-popover');
 function toggleStickerState(num) {
   hideQtyPopover();
 
-  // Inaktív album védelem: csak olvasható
   if (getActiveAlbum().active === false) {
     showToast("Ez a gyűjtemény inaktív, reaktiválásig nem szerkeszthető!");
     return;
   }
 
-  // Zárolt duplák védelme aktív csere alatt
   const activeLocks = getActiveLockedCounts(currentAlbumId);
   if (activeLocks[num] && activeLocks[num] > 0 && myProfile.van.includes(num)) {
     showToast(`🔒 A #${num} tétel zárolva van egy aktív csere miatt!`);
@@ -1194,8 +1276,10 @@ function syncLutraDualSave(albumId) {
 
 function saveMyStateFast() {
   const albumId = currentAlbumId;
-  lastLocalEditTimestamp = Date.now();
+  const now = Date.now();
+  lastLocalEditTimestamp = now;
 
+  localStorage.setItem(`lutra_updated_at_${albumId}`, now);
   localStorage.setItem(`lutra_van_${albumId}`, JSON.stringify(myProfile.van));
   localStorage.setItem(`lutra_van_counts_${albumId}`, JSON.stringify(myProfile.vanCounts || {}));
   localStorage.setItem(`lutra_kell_${albumId}`, JSON.stringify(myProfile.kell));
@@ -1224,7 +1308,7 @@ function saveMyState() {
   renderHub();
 }
 
-// DARABSZÁM POPOVER (NINCS TÖBBÉ DUPLÁN SZÁMOLÁS!)
+// DARABSZÁM POPOVER (NEM SZÁMOL DUPLÁN!)
 document.querySelectorAll('.qty-pop-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -1423,7 +1507,7 @@ safeAddListener('btn-album-next', () => {
 });
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v4.3 ÉLES KIADÁS)
-// 2 / 4. RÉSZ: ROUTER, PÁROSÍTÁSOK, KÖRCSERÉK, CSERETERVEZŐ & KAPCSOLATFELVÉTEL
+// 2 / 4. RÉSZ: ROUTER, PÁROSÍTÁSOK, KÉTOLDALÚ CSERE-ÉLETCIKLUS & INDOKLÁS
 // =========================================================================
 
 function formatLinksWithAnchors(text) {
@@ -1457,6 +1541,18 @@ function switchCategory(catName) {
 }
 
 function switchView(viewName) {
+  // Ha az almenüben a "Cseréid & Zárolások"-ra kattintott
+  if (viewName === 'cseréim') {
+    switchView('matricaim');
+    const tradesPanel = document.getElementById('active-trades-panel');
+    if (tradesPanel) {
+      tradesPanel.style.display = 'block';
+      tradesPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.id === 'subtab-active-trades'));
+    return;
+  }
+
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const targetView = document.getElementById('view-' + viewName);
   if (targetView) targetView.classList.add('active');
@@ -1549,7 +1645,10 @@ function updateCserebereBadge() {
   badge.style.display = hasUnread ? 'inline-block' : 'none';
 }
 
-// GPS ÉS TÁVOLSÁG MEGHATÁROZÁSA
+// =========================================================================
+// GEOLOKÁCIÓ & HAVERSINE TÁVOLSÁG
+// =========================================================================
+
 function getUserCoordinates(userObj) {
   if (userObj.geo && typeof userObj.geo.lat === 'number') {
     return userObj.geo;
@@ -1646,15 +1745,16 @@ document.querySelectorAll('#search-radius-group .filter-btn').forEach(btn => {
   });
 });
 
-safeAddListener('btn-match-all', 'click', function() { setActiveMatchFilter(this, 'all'); });
+safeAddListener('btn-match-all', 'click', function() { filterTargetCity = ''; setActiveMatchFilter(this, 'all'); });
 safeAddListener('btn-match-city', 'click', function() {
   if (!myProfile.telepules && (!myProfile.locations || myProfile.locations.length === 0)) {
     return showToast("Előbb add meg a településed a Profil fülön!");
   }
+  filterTargetCity = '';
   setActiveMatchFilter(this, 'city');
 });
-safeAddListener('btn-match-gift', 'click', function() { setActiveMatchFilter(this, 'gift'); });
-safeAddListener('btn-match-loop', 'click', function() { setActiveMatchFilter(this, 'loop'); });
+safeAddListener('btn-match-gift', 'click', function() { filterTargetCity = ''; setActiveMatchFilter(this, 'gift'); });
+safeAddListener('btn-match-loop', 'click', function() { filterTargetCity = ''; setActiveMatchFilter(this, 'loop'); });
 
 function refreshMatchesIfVisible() {
   const v = document.getElementById('view-cserek');
@@ -1708,6 +1808,7 @@ function computeLoopMatches() {
   return loops;
 }
 
+// PÁROSÍTÁSOK MEGJELENÍTÉSE (VAGY-VAGY INGÁZÁS LOGIKÁVAL ÉS FRISSÍTÉSI IDŐVEL!)
 function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
@@ -1768,15 +1869,22 @@ function renderMatches() {
       const get = [...uVanSet].filter(n => myKellSet.has(n) && !myVanSet.has(n)).sort((a, b) => a - b);
       const score = Math.min(give.length, get.length);
 
+      // VAGY-VAGY alapú összevetés: ha van közös városuk
       const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
       const isGift = u.isGiftOffering === true;
       const distanceKm = getMinDistanceToUser(myCoords, u);
+      const updatedAgo = formatTimeAgo(u.updatedAt);
 
-      return { ...u, give, get, score, isSameCity, isGift, distanceKm };
+      return { ...u, give, get, score, isSameCity, isGift, distanceKm, updatedAgo };
     })
     .filter(m => m.score > 0 || (m.isGift && m.get.length > 0));
 
-  if (matchFilter === 'city') matches = matches.filter(m => m.isSameCity);
+  // Ha a hőtérképről konkrét városra kattintott:
+  if (filterTargetCity) {
+    matches = matches.filter(m => isLocalCityMatch(filterTargetCity, m.locations || m.telepules));
+  } else if (matchFilter === 'city') {
+    matches = matches.filter(m => m.isSameCity);
+  }
   if (matchFilter === 'gift') matches = matches.filter(m => m.isGift);
 
   matches.sort((a, b) => {
@@ -1786,13 +1894,14 @@ function renderMatches() {
   });
 
   if (matches.length === 0) {
-    list.innerHTML = '<p class="view-intro">Jelenleg nincs a szűrésnek megfelelő cserepartner ehhez a gyűjteményhez.</p>';
+    list.innerHTML = `<p class="view-intro">${filterTargetCity ? `Nincs cserepartner a(z) ${filterTargetCity} településen.` : 'Jelenleg nincs a szűrésnek megfelelő cserepartner ehhez a gyűjteményhez.'}</p>`;
     return;
   }
 
   list.innerHTML = matches.map((m) => {
     const isCheckedInPlan = selectedTradePlanUids.has(m.id);
-    const distBadge = m.distanceKm !== null ? `<span style="font-size:0.75rem; color:var(--amber); font-weight:700;">📍 kb. ${m.distanceKm} km</span>` : '';
+    const distText = m.distanceKm !== null ? `📍 kb. ${m.distanceKm} km` : (m.isSameCity ? '📍 Helyi gyűjtő' : '');
+    const timeText = m.updatedAgo ? `• 🕒 ${m.updatedAgo}` : '';
     const trustBadge = m.ratingsCount > 0 
       ? `<span style="font-size:0.75rem; color:var(--gift-gold); font-weight:800;">⭐ ${(m.trustScore / m.ratingsCount).toFixed(1)} (${m.ratingsCount})</span>`
       : (m.trustScore > 0 ? `<span style="font-size:0.75rem; color:var(--gift-gold); font-weight:800;">⭐ ${m.trustScore}</span>` : '');
@@ -1804,7 +1913,9 @@ function renderMatches() {
           <h3 style="margin:0; cursor:pointer;" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
             ${escapeHtml(m.nev || 'Névtelen')} ${m.telepules ? `(${escapeHtml(m.telepules)})` : ''} ${trustBadge}
           </h3>
-          ${distBadge}
+          <div style="font-size:0.75rem; color:var(--amber); font-weight:600; margin-top:2px;">
+            ${distText} ${timeText}
+          </div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
           ${m.isSameCity ? '<span class="badge-local">Helyi csere</span>' : ''}
@@ -1825,7 +1936,7 @@ function renderMatches() {
         </label>
         <div style="display:flex; gap:6px;">
           <button class="btn btn-contact-green btn-sm" data-action="contact-match" data-uid="${escapeHtml(m.id)}">
-            Kapcsolatfelvétel
+            Csereindítás
           </button>
           <button class="btn btn-secondary btn-sm" data-action="inspect-user" data-uid="${escapeHtml(m.id)}">
             Adatlap
@@ -2010,7 +2121,7 @@ function renderTradePlannerModal() {
         </div>
         <div style="margin-top:8px;">
           <button class="btn btn-contact-green btn-sm" data-action="contact-planned-partner" data-uid="${escapeHtml(u.id)}" data-give="${allocatedToHim.join(',')}" data-get="${givesToMe.join(',')}">
-            Személyre szabott üzenet küldése ${escapeHtml(u.nev)}-nek
+            Csereindítás (${escapeHtml(u.nev)})
           </button>
         </div>
       </div>
@@ -2108,7 +2219,7 @@ function checkSenderProfileReady() {
     return false;
   }
 
-  // Automatikus kitöltés a Google / Auth adataival, ha még nem mentett profilból
+  // Ha be van lépve, de még nem mentett profilból, nem blokkoljuk, hanem automatikusan beemeljük az Auth adatait!
   if (!myProfile.email || !myProfile.email.trim()) {
     myProfile.email = currentUser.email || '';
   }
@@ -2252,7 +2363,7 @@ function updateContactModalText() {
 
 safeAddListener('contact-custom-offer', 'input', updateContactModalText);
 
-// BELSŐ ÜZENET KÜLDÉSE (THREADED CHAT AZONOSÍTÓVAL ÉS PIPÁKKAL)
+// BELSŐ ÜZENET KÜLDÉSE (KÉTOLDALÚ CSEREINDÍTÁS: JÓVÁHAGYÁSRA VÁR STÁTUSSZAL!)
 safeAddListener('btn-send-message', () => {
   const messageText = document.getElementById('contact-msg-input')?.value.trim() || '';
   if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
@@ -2269,30 +2380,15 @@ safeAddListener('btn-send-message', () => {
 
   (async () => {
     try {
-      if (db && currentUser) {
-        const threadId = [currentUser.uid, activeContactTarget.uid].sort().join('_') + '_' + currentAlbumId;
+      let tradeId = null;
 
-        await db.collection("messages").add({
-          fromUid: currentUser.uid,
-          fromName: myProfile.nev,
-          fromCity: myProfile.telepules || '',
-          toUid: activeContactTarget.uid,
-          toName: activeContactTarget.nev,
-          albumId: currentAlbumId,
-          threadId: threadId,
-          subject: activeContactTarget.subject,
-          message: messageText,
-          text: messageText,
-          read: false,
-          readAt: null,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-
+      // 1. Csere rögzítése a rács alatt
       if (autoCreateTrade && (effectiveGiveNums.length > 0 || effectiveGetNums.length > 0)) {
         if (!myProfile.activeTrades) myProfile.activeTrades = [];
+        tradeId = 'trade_' + Date.now();
         
         myProfile.activeTrades.unshift({
+          tradeId: tradeId,
           partnerUid: activeContactTarget.uid,
           partnerName: activeContactTarget.nev,
           partnerCity: activeContactTarget.telepules || 'Partner',
@@ -2300,9 +2396,11 @@ safeAddListener('btn-send-message', () => {
           givingItems: effectiveGiveNums,
           receivingItems: effectiveGetNums,
           createdAt: Date.now(),
-          status: 'pending'
+          status: 'pending_acceptance', // A partner elfogadására vár!
+          isInitiator: true
         });
 
+        // Csak a feladónál zároljuk a felajánlott duplákat, a partnernél még nem!
         effectiveGiveNums.forEach(n => {
           if (!myProfile.foglalva.includes(n)) myProfile.foglalva.push(n);
           if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
@@ -2314,6 +2412,33 @@ safeAddListener('btn-send-message', () => {
         renderGrid();
       }
 
+      // 2. Üzenet mentése a Firestore-ba (a csereazonosítóval összekapcsolva)
+      if (db && currentUser) {
+        const threadId = [currentUser.uid, activeContactTarget.uid].sort().join('_') + '_' + currentAlbumId;
+
+        await db.collection("messages").add({
+          fromUid: currentUser.uid,
+          fromName: myProfile.nev,
+          fromCity: myProfile.telepules || '',
+          toUid: activeContactTarget.uid,
+          toName: activeContactTarget.nev,
+          albumId: currentAlbumId,
+          threadId: threadId,
+          tradeId: tradeId,
+          tradeDetails: tradeId ? {
+            givingItems: effectiveGiveNums,
+            receivingItems: effectiveGetNums
+          } : null,
+          subject: activeContactTarget.subject,
+          message: messageText,
+          text: messageText,
+          read: false,
+          readAt: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      // 3. E-mail értesítő kiküldése Cloudflare Worker segítségével
       try {
         const idToken = currentUser ? await currentUser.getIdToken() : '';
         await fetch(WORKER_ENDPOINT_URL, {
@@ -2337,7 +2462,7 @@ safeAddListener('btn-send-message', () => {
         console.warn("Értesítési e-mail figyelmeztetés:", e);
       }
 
-      showToast("Üzeneted elküldve (✓ Kézbesítve)! A csere rögzítve lett a rácsod alatt.");
+      showToast("Üzeneted elküldve (✓ Kézbesítve)! A csere rögzítve a rácsod alatt.");
       document.getElementById('modal-contact')?.classList.remove('open');
     } catch (err) {
       showToast("Küldési hiba: " + err.message);
@@ -2363,23 +2488,29 @@ safeAddListener('btn-copy-partner-email', () => {
 });
 
 // =========================================================================
-// RÁCS ALATTI FOLYAMATBAN LÉVŐ CSERÉK & ARCHÍVUM
+// RÁCS ALATTI CSERÉK & ZÁROLÁSOK (KÉTOLDALÚ JÓVÁHAGYÁS, POSTÁZÁS & VISSZAVONÁS)
 // =========================================================================
 
 let activeTradeClosingData = null;
+let activeTradeCancellingIdx = null;
 
 function renderActiveTradesPanel() {
   const panel = document.getElementById('active-trades-panel');
   const list = document.getElementById('active-trades-list');
   const countSpan = document.getElementById('active-trades-count');
+  const subnavBadge = document.getElementById('badge-trades-count');
 
   if (!panel || !list) return;
 
   const allTrades = myProfile.activeTrades || [];
-  const pendingTrades = allTrades.filter(t => t.status !== 'completed');
+  const pendingTrades = allTrades.filter(t => t.status !== 'completed' && t.status !== 'cancelled');
   const completedTrades = allTrades.filter(t => t.status === 'completed');
 
   if (countSpan) countSpan.textContent = pendingTrades.length;
+  if (subnavBadge) {
+    subnavBadge.textContent = pendingTrades.length;
+    subnavBadge.style.display = pendingTrades.length > 0 ? 'inline-block' : 'none';
+  }
 
   if (pendingTrades.length === 0 && completedTrades.length === 0) {
     panel.style.display = 'none';
@@ -2394,6 +2525,22 @@ function renderActiveTradesPanel() {
   if (pendingTrades.length > 0) {
     html += pendingTrades.map((t) => {
       const originalIdx = allTrades.indexOf(t);
+      const isWaitingMyAcceptance = (t.status === 'pending_acceptance' && !t.isInitiator);
+      const isWaitingPartnerAcceptance = (t.status === 'pending_acceptance' && t.isInitiator);
+      const isAccepted = (t.status === 'accepted');
+      const isShipped = (t.status === 'shipped');
+
+      let statusBadge = '';
+      if (isWaitingMyAcceptance) {
+        statusBadge = `<span class="badge-trade-status badge-status-waiting">⏳ Elfogadásodra vár</span>`;
+      } else if (isWaitingPartnerAcceptance) {
+        statusBadge = `<span class="badge-trade-status badge-status-waiting">⏳ Partner jóváhagyására vár</span>`;
+      } else if (isShipped) {
+        statusBadge = `<span class="badge-trade-status badge-status-shipped">📦 Csomag postázva</span>`;
+      } else {
+        statusBadge = `<span class="badge-trade-status badge-status-reserved">🔒 Mindkét félnél zárolva</span>`;
+      }
+
       return `
         <div class="trade-manage-card" data-trade-idx="${originalIdx}">
           <div class="trade-manage-header">
@@ -2401,18 +2548,32 @@ function renderActiveTradesPanel() {
               <strong style="color:#FFF; font-size:0.95rem;">${escapeHtml(t.partnerName || 'Cserepartner')}</strong>
               <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">(${escapeHtml(t.partnerCity || 'Partner')})</span>
             </div>
-            <span class="badge-trade-status badge-status-reserved">🔒 Zárolva / Úton</span>
+            ${statusBadge}
           </div>
 
           <div style="font-size:0.8rem; line-height:1.5; margin:6px 0; background:rgba(0,0,0,0.2); padding:8px; border-radius:var(--radius-sm);">
-            <p style="margin:2px 0;"><strong>Te adod (Lefoglalva):</strong> ${t.givingItems && t.givingItems.length ? t.givingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Nincs lefoglalt tétel)</em>'}</p>
-            <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle várod:</strong> ${t.receivingItems && t.receivingItems.length ? t.receivingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Ajándék felajánlás)</em>'}</p>
+            <p style="margin:2px 0;"><strong>Te adod:</strong> ${t.givingItems && t.givingItems.length ? t.givingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Ajándék kapás)</em>'}</p>
+            <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle kapod:</strong> ${t.receivingItems && t.receivingItems.length ? t.receivingItems.map(n => getItemLabel(n)).join(', ') : '<em>(Ajándék adás)</em>'}</p>
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:6px;">
-            <button class="btn btn-contact-green btn-sm" data-action="complete-trade" data-trade-idx="${originalIdx}">
-              ✓ Megérkezett / Csere lezárása
-            </button>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${isWaitingMyAcceptance ? `
+                <button class="btn btn-contact-green btn-sm" data-action="accept-trade" data-trade-idx="${originalIdx}">
+                  ✓ Elfogadom & Tételek zárolása
+                </button>
+              ` : ''}
+
+              ${(isAccepted || isShipped) ? `
+                <button class="btn btn-contact-green btn-sm" data-action="complete-trade" data-trade-idx="${originalIdx}">
+                  ✓ Megérkezett / Csere lezárása
+                </button>
+                <button class="btn btn-secondary btn-sm" data-action="ship-trade" data-trade-idx="${originalIdx}" style="border-color:var(--amber); color:var(--amber);">
+                  📦 ${isShipped ? 'Postázva jelölve' : 'Csomag feladva'}
+                </button>
+              ` : ''}
+            </div>
+
             <button class="btn btn-secondary btn-sm" data-action="cancel-trade" data-trade-idx="${originalIdx}" style="color:var(--danger); border-color:var(--danger);">
               ✕ Megállapodás visszavonása
             </button>
@@ -2455,34 +2616,109 @@ safeAddListener('active-trades-list', 'click', (e) => {
   const trade = (myProfile.activeTrades || [])[idx];
   if (!trade) return;
 
-  if (btn.dataset.action === 'complete-trade') {
+  // 1. Csere elfogadása (a másik félnél)
+  if (btn.dataset.action === 'accept-trade') {
+    trade.status = 'accepted';
+    // Zároljuk a felajánlott duplákat nála is
+    if (trade.givingItems) {
+      trade.givingItems.forEach(n => {
+        if (!myProfile.foglalva.includes(n)) myProfile.foglalva.push(n);
+        if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
+        myProfile.foglalvaCounts[n] = (myProfile.foglalvaCounts[n] || 0) + 1;
+      });
+    }
+    saveMyState();
+    renderActiveTradesPanel();
+    renderGrid();
+    showToast("Csereajánlat elfogadva! A tételek mindkét félnél zárolva lettek.");
+  }
+  // 2. Postázás jelölése
+  else if (btn.dataset.action === 'ship-trade') {
+    trade.status = 'shipped';
+    saveMyState();
+    renderActiveTradesPanel();
+    showToast("Csomag postázva státusz beállítva.");
+  }
+  // 3. Csere lezárása (értékeléssel és átvezetéssel)
+  else if (btn.dataset.action === 'complete-trade') {
     activeTradeClosingData = { trade, tradeIdx: idx };
     const titleEl = document.getElementById('rate-modal-title');
     if (titleEl) titleEl.textContent = `Csere lezárása: ${trade.partnerName}`;
     document.getElementById('modal-rate-trade')?.classList.add('open');
-  } else if (btn.dataset.action === 'cancel-trade') {
-    if (!confirm("Biztosan feloldod a lefoglalt tételeket és visszavonod a cserét?")) return;
-    
-    // Zárolt duplák feloldása
-    if (trade.givingItems) {
-      trade.givingItems.forEach(n => {
-        if (myProfile.foglalvaCounts && myProfile.foglalvaCounts[n]) {
-          myProfile.foglalvaCounts[n] = Math.max(0, myProfile.foglalvaCounts[n] - 1);
-          if (myProfile.foglalvaCounts[n] === 0) {
-            delete myProfile.foglalvaCounts[n];
-            const fIdx = myProfile.foglalva.indexOf(n);
-            if (fIdx > -1) myProfile.foglalva.splice(fIdx, 1);
-          }
-        }
-      });
-    }
-
-    myProfile.activeTrades.splice(idx, 1);
-    saveMyState();
-    renderActiveTradesPanel();
-    renderGrid();
-    showToast("Csere megállapodás visszavonva, tételek újra szabadok.");
   }
+  // 4. Visszavonás indoklással
+  else if (btn.dataset.action === 'cancel-trade') {
+    activeTradeCancellingIdx = idx;
+    document.getElementById('modal-cancel-trade-reason')?.classList.add('open');
+  }
+});
+
+// VISSZAVONÁS INDOKLÁSA & MEGERŐSÍTÉSE
+document.querySelectorAll('input[name="cancel-reason"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const customGroup = document.getElementById('cancel-reason-custom-group');
+    if (customGroup) customGroup.style.display = e.target.value === 'egyeb' ? 'block' : 'none';
+  });
+});
+
+safeAddListener('btn-abort-cancel-trade', () => {
+  document.getElementById('modal-cancel-trade-reason')?.classList.remove('open');
+  activeTradeCancellingIdx = null;
+});
+
+safeAddListener('btn-confirm-cancel-trade', () => {
+  if (activeTradeCancellingIdx === null) return;
+  const idx = activeTradeCancellingIdx;
+  const trade = (myProfile.activeTrades || [])[idx];
+  if (!trade) return;
+
+  const selectedReasonVal = document.querySelector('input[name="cancel-reason"]:checked')?.value || 'meggondoltam_magam';
+  let reasonText = 'Meggondoltam magam';
+  if (selectedReasonVal === 'mashogy_megoldodott') reasonText = 'Időközben máshogy megoldódott a csere';
+  else if (selectedReasonVal === 'egyeb') {
+    reasonText = document.getElementById('cancel-trade-custom-reason')?.value.trim() || 'Egyéb okból visszavonva';
+  }
+
+  // Zárolt duplák lakatjának azonnali feloldása
+  if (trade.givingItems) {
+    trade.givingItems.forEach(n => {
+      if (myProfile.foglalvaCounts && myProfile.foglalvaCounts[n]) {
+        myProfile.foglalvaCounts[n] = Math.max(0, myProfile.foglalvaCounts[n] - 1);
+        if (myProfile.foglalvaCounts[n] === 0) {
+          delete myProfile.foglalvaCounts[n];
+          const fIdx = myProfile.foglalva.indexOf(n);
+          if (fIdx > -1) myProfile.foglalva.splice(fIdx, 1);
+        }
+      }
+    });
+  }
+
+  // Automatikus értesítő üzenet küldése a partnernek
+  if (db && currentUser && trade.partnerUid) {
+    const threadId = [currentUser.uid, trade.partnerUid].sort().join('_') + '_' + (trade.albumId || currentAlbumId);
+    db.collection("messages").add({
+      fromUid: currentUser.uid,
+      fromName: myProfile.nev,
+      fromCity: myProfile.telepules || '',
+      toUid: trade.partnerUid,
+      toName: trade.partnerName,
+      albumId: trade.albumId || currentAlbumId,
+      threadId: threadId,
+      subject: "Csereajánlat visszavonása",
+      message: `Szia! A korábban egyeztetett csereajánlatomat visszavontam.\nIndoklás: ${reasonText}`,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
+  }
+
+  myProfile.activeTrades.splice(idx, 1);
+  saveMyState();
+  renderActiveTradesPanel();
+  renderGrid();
+
+  document.getElementById('modal-cancel-trade-reason')?.classList.remove('open');
+  activeTradeCancellingIdx = null;
+  showToast("Megállapodás visszavonva, a zárolt matricák újra szabadok.");
 });
 
 // PARTNER ÉRTÉKELŐ CSILLAGOK ÉS BEKÜLDÉS
@@ -2742,7 +2978,7 @@ safeAddListener('btn-search-by-city', () => {
       listEl.innerHTML = matchedUsers.map(u => `
         <div style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
           <div>
-            <strong style="color:#FFF;">${escapeHtml(u.nev)}</strong> (${escapeHtml(u.telepules)})
+            <strong style="color:#FFF;">${escapeHtml(u.nev)}</strong> (${escapeHtml(u.telepules || 'Helyi')})
             <div style="font-size:0.75rem; color:var(--sand);">${ensureArray(u.van).length} db cserélhető dupla</div>
           </div>
           <div style="display:flex; gap:6px;">
@@ -2790,7 +3026,7 @@ safeAddListener('city-search-partners-list', (e) => {
 });
 
 // =========================================================================
-// 3. BLOKK: KÖZELI GPS KERESŐ ESEMÉNYEI (TALÁLATI KÁRTYÁN CSEREINDÍTÁS GOMBBAL)
+// 3. BLOKK: KÖZELI GPS KERESŐ (JAVÍTOTT „TOVÁBBI 25 GYŰJTŐ” GOMBBAL!)
 // =========================================================================
 
 let proximityDisplayLimit = 25;
@@ -2808,7 +3044,8 @@ function renderProximityPartners() {
       const distanceKm = getMinDistanceToUser(myCoords, u);
       const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
       const totalDupes = ensureArray(u.van).length;
-      return { ...u, distanceKm, isSameCity, totalDupes };
+      const updatedAgo = formatTimeAgo(u.updatedAt);
+      return { ...u, distanceKm, isSameCity, totalDupes, updatedAgo };
     });
 
   if (selectedSearchRadius === 'city') {
@@ -2838,7 +3075,8 @@ function renderProximityPartners() {
 
   container.innerHTML = `
     ${paginatedList.map(u => {
-      const distText = u.distanceKm !== null ? `📍 kb. ${u.distanceKm} km-re tőled` : (u.isSameCity ? '📍 Helyi gyűjtő' : '📍 Nincs GPS adat');
+      const distText = u.distanceKm !== null ? `📍 kb. ${u.distanceKm} km` : (u.isSameCity ? '📍 Helyi gyűjtő' : '📍 Nincs GPS adat');
+      const timeText = u.updatedAgo ? `• 🕒 ${u.updatedAgo}` : '';
       const trustText = u.ratingsCount > 0 
         ? `⭐ ${(u.trustScore / u.ratingsCount).toFixed(1)} (${u.ratingsCount})` 
         : (u.trustScore > 0 ? `⭐ ${u.trustScore}` : '');
@@ -2851,7 +3089,7 @@ function renderProximityPartners() {
             </strong>
             <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${escapeHtml(u.telepules || '')}</span>
             <div style="font-size:0.75rem; color:var(--amber); font-weight:600; margin-top:2px;">
-              ${distText} • ${u.totalDupes} db cserélhető duplája van
+              ${distText} ${timeText} • ${u.totalDupes} db cserélhető duplája van
             </div>
           </div>
           <div style="display:flex; gap:6px;">
@@ -2868,7 +3106,7 @@ function renderProximityPartners() {
 
     ${hasMore ? `
       <div style="text-align:center; margin-top:12px;">
-        <button class="btn btn-secondary btn-sm" id="btn-load-more-proximity" style="width:100%; padding:8px;">
+        <button class="btn btn-secondary btn-sm" data-action="load-more-proximity" id="btn-load-more-proximity" style="width:100%; padding:8px;">
           + További 25 gyűjtő mutatása (${list.length - proximityDisplayLimit} maradt)
         </button>
       </div>
@@ -2876,7 +3114,15 @@ function renderProximityPartners() {
   `;
 }
 
+// JAVÍTVA: A „További 25 gyűjtő” gomb mostantól azonnal lefut, nem akad el az azonosító hiányán!
 safeAddListener('proximity-partners-list', 'click', (e) => {
+  const loadMoreBtn = e.target.closest('[data-action="load-more-proximity"]') || e.target.closest('#btn-load-more-proximity');
+  if (loadMoreBtn) {
+    proximityDisplayLimit += 25;
+    renderProximityPartners();
+    return;
+  }
+
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const uid = btn.dataset.uid;
@@ -2887,12 +3133,6 @@ safeAddListener('proximity-partners-list', 'click', (e) => {
     openContactModal(targetUser, [], targetUser.van, targetUser.isGiftOffering);
   } else if (btn.dataset.action === 'inspect-user') {
     openUserProfileModal(uid);
-  }
-
-  const loadMoreBtn = e.target.closest('#btn-load-more-proximity');
-  if (loadMoreBtn) {
-    proximityDisplayLimit += 25;
-    renderProximityPartners();
   }
 });
 
@@ -2976,7 +3216,7 @@ safeAddListener('partner-search-list', (e) => {
 });
 
 // =========================================================================
-// BOLTI KÉSZLETRADAR & TALÁLKOZÓK
+// BOLTI KÉSZLETRADAR & TALÁLKOZÓK (OPTIMALIZÁLT KÉPMÉRETTEL)
 // =========================================================================
 
 safeAddListener('radar-photo-input', 'change', (e) => {
@@ -2987,7 +3227,7 @@ safeAddListener('radar-photo-input', 'change', (e) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const maxDim = 800; // Optimalizált méret: 60 KB alatt marad a Firestore-ban
+      const maxDim = 800; // Optimalizált méret: sosem lépi túl a Firestore 1MB-os limitjét!
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
@@ -3363,7 +3603,7 @@ function listenToMeetups() {
 }
 
 // =========================================================================
-// STATISZTIKA & HŐTÉRKÉP
+// STATISZTIKA & HŐTÉRKÉP (JAVÍTOTT VÁROSKATTINTÁS ÉS ÖSSZES PONT!)
 // =========================================================================
 
 function renderFavoritesRanking() {
@@ -3391,7 +3631,7 @@ function renderFavoritesRanking() {
   if (!container) return;
 
   if (rankedFavs.length === 0) {
-    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.8rem;">Még senki sem jelölt meg kedvencet a profiljában ehhez az albumhoz.</span>';
+    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.8rem;">Még senki sem jelölt meg kedvencet ebben a gyűjteményben.</span>';
     return;
   }
 
@@ -3544,8 +3784,9 @@ function renderCompletionOdds() {
 
   const availablePool = new Set();
   allUsersData.forEach(u => {
-    if (u.id === (currentUser ? currentUser.uid : 'me')) return;
-    ensureArray(u.van).forEach(n => availablePool.add(n));
+    if (u.id !== (currentUser ? currentUser.uid : 'me')) {
+      ensureArray(u.van).forEach(n => availablePool.add(n));
+    }
   });
 
   const matchedMissing = myMissing.filter(n => availablePool.has(n));
@@ -3681,6 +3922,7 @@ function renderHeatmap() {
 
   const sortedCities = Object.values(cityStats).sort((a, b) => getCityHeatData(b).score - getCityHeatData(a).score);
 
+  // Gombostűk kirajzolása mind az 50+ városra!
   const pinsOverlay = document.getElementById('heatmap-overlay-pins');
   if (pinsOverlay) {
     pinsOverlay.innerHTML = '';
@@ -3714,7 +3956,7 @@ function renderHeatmap() {
       const { heatCls, label } = getCityHeatData(c);
       const badgeCls = heatCls === 'fire' ? 'heat-chip-fire' : heatCls === 'warm' ? 'heat-chip-warm' : 'heat-chip-cool';
       return `
-        <div class="stats-ranking-item" onclick="filterMatchesByCityName('${escapeHtml(c.name)}')">
+        <div class="stats-ranking-item" data-action="filter-city-jump" data-city="${escapeHtml(c.name)}">
           <div>
             <strong>#${idx + 1} ${escapeHtml(c.name)}</strong>
             <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">(${c.users} gyűjtő • ${c.duplicates} dupla)</span>
@@ -3725,6 +3967,21 @@ function renderHeatmap() {
     }).join('');
   }
 }
+
+// JAVÍTVA: A hőtérképről kattintva pontosan az adott város gyűjtőit listázza ki!
+function filterMatchesByCityName(cityName) {
+  filterTargetCity = cityName;
+  switchView('cserek');
+  renderMatches();
+  showToast(`Szűrés: ${cityName} cserélői`);
+}
+
+safeAddListener('heatmap-city-list', 'click', (e) => {
+  const item = e.target.closest('[data-action="filter-city-jump"]');
+  if (item && item.dataset.city) {
+    filterMatchesByCityName(item.dataset.city);
+  }
+});
 
 safeAddListener('btn-toggle-all-cities', () => {
   showAllHeatmapCities = !showAllHeatmapCities;
@@ -3762,14 +4019,6 @@ if (quicknavBar) {
   if (quicknavArrowRight) quicknavArrowRight.onclick = () => quicknavBar.scrollBy({ left: 160, behavior: 'smooth' });
   if (quicknavArrowLeft) quicknavArrowLeft.onclick = () => quicknavBar.scrollBy({ left: -160, behavior: 'smooth' });
   setTimeout(updateQuicknavArrows, 300);
-}
-
-function filterMatchesByCityName(cityName) {
-  myProfile.telepules = cityName;
-  switchView('cserek');
-  const cityBtn = document.getElementById('btn-match-city');
-  if (cityBtn) setActiveMatchFilter(cityBtn, 'city');
-  showToast(`Szűrés: ${cityName}`);
 }
 
 function renderStatistics() {
@@ -3980,7 +4229,7 @@ safeAddListener('btn-scanner-copy-list', () => {
 });
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v4.3 ÉLES KIADÁS)
-// 4 / 4. RÉSZ: MESSENGER PIPÁK, ADMIN MIGRÁLÓK, AUTH MOTOR & INDÍTÁS
+// 4 / 4. RÉSZ: MESSENGER PIPÁK, ADMIN AUDIT, AUTH MOTOR & INDÍTÁS
 // =========================================================================
 
 // =========================================================================
@@ -4478,12 +4727,134 @@ safeAddListener('btn-add-location', () => {
 safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
 // =========================================================================
-// ADMINISZTRÁCIÓ: CHUNKED IMPORTŐR, MIGRÁLÁS ÉS SZERKESZTÉS (JAVÍTVA!)
+// ADMINISZTRÁCIÓ: AUDIT TISZTÍTÓ, CHUNKED IMPORTŐR & KÉTÁLLÁSÚ MENTÉS
 // =========================================================================
 
 let adminAlbumCoverBase64 = '';
 
-// 1. MŰKÖDŐ TÖMEGES JSON ALBUM IMPORTŐR (85+ ALBUM FELTÖLTÉSE 500-AS BATCHEKBEN)
+// ISMERT LEKAPART SZEMÉT/MENÜGOMB AZONOSÍTÓK
+const SCRAPER_JUNK_IDS = new Set([
+  'uj-gyujtemeny', 'gyujtemenyek', 'uj-gyujtemeny-hozzaadasa', 'mind-92', 'mind-84',
+  'matricaalbum-56', 'matricaalbum-55', 'kartya-27', 'kartya-20', 'figura-7', 'kisauto-2',
+  'album-megnyitasa', 'gyujtes-inditasa', 'gyujtemeny-bekuldese'
+]);
+
+// 1. ADATBÁZIS AUDIT & TISZTÍTÓ GOMB (83 ALBUM RENDTÉTELE)
+safeAddListener('btn-admin-audit-db', async () => {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
+  const reportBox = document.getElementById('admin-audit-report-box');
+  if (!reportBox) return;
+
+  reportBox.style.display = 'block';
+  reportBox.innerHTML = '<span style="color:var(--amber);">🔍 Adatbázis átvizsgálása folyamatban...</span>';
+
+  try {
+    const snap = await db.collection("albums").get();
+    const allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const junkFound = [];
+    const normalizedMap = new Map();
+    const duplicatePairs = [];
+
+    allDocs.forEach(doc => {
+      // 1. Szemét gombok azonosítása
+      if (SCRAPER_JUNK_IDS.has(doc.id) || /^(mind|kartya|matricaalbum|figura|kisauto)-\d+$/i.test(doc.id)) {
+        junkFound.push(doc.id);
+        return;
+      }
+
+      // 2. Duplikátumok keresése normalizált cím szerint
+      const normTitle = normalizeText(doc.title || doc.id).replace(/\b(panini|spar|topps|album)\b/g, '').replace(/[\s\-_]+/g, '');
+      if (normalizedMap.has(normTitle)) {
+        duplicatePairs.push({ existing: normalizedMap.get(normTitle), duplicate: doc });
+      } else {
+        normalizedMap.set(normTitle, doc);
+      }
+    });
+
+    let html = `
+      <div style="font-size:0.85rem; line-height:1.5;">
+        <strong>Audit Eredmény:</strong> Összesen <strong>${allDocs.length} db</strong> album van a felhőben.<br>
+        <span style="color:${junkFound.length > 0 ? 'var(--danger)' : 'var(--moss-soft)'};">
+          ${junkFound.length > 0 ? `⚠️ <strong>${junkFound.length} db szemét menügomb</strong> található!` : '✓ Nincs menügomb szemét az adatbázisban.'}
+        </span><br>
+        <span style="color:${duplicatePairs.length > 0 ? 'var(--amber)' : 'var(--moss-soft)'};">
+          ${duplicatePairs.length > 0 ? `⚠️ <strong>${duplicatePairs.length} lehetséges duplikáció</strong> észlelve!` : '✓ Nincs név szerinti duplikáció.'}
+        </span>
+      </div>
+    `;
+
+    if (junkFound.length > 0) {
+      html += `
+        <div style="margin-top:10px; padding-top:8px; border-top:1px dashed rgba(243,238,223,0.2);">
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">Törölhető menüelemek: ${junkFound.join(', ')}</div>
+          <button class="btn btn-danger btn-sm" id="btn-purge-junk-albums" style="padding:4px 10px;">
+            🗑️ ${junkFound.length} db szemét gomb azonnali törlése a Firestore-ból
+          </button>
+        </div>
+      `;
+    }
+
+    if (duplicatePairs.length > 0) {
+      html += `
+        <div style="margin-top:10px; padding-top:8px; border-top:1px dashed rgba(243,238,223,0.2);">
+          <strong style="font-size:0.8rem; color:var(--amber);">Észlelt duplikációk:</strong>
+          ${duplicatePairs.map((pair, idx) => `
+            <div style="background:rgba(0,0,0,0.3); padding:6px 8px; border-radius:4px; margin-top:4px; font-size:0.75rem; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                1. <strong>${escapeHtml(pair.existing.title)}</strong> (${escapeHtml(pair.existing.id)})<br>
+                2. <strong>${escapeHtml(pair.duplicate.title)}</strong> (${escapeHtml(pair.duplicate.id)})
+              </div>
+              <button class="btn btn-secondary btn-sm" data-action="delete-specific-duplicate" data-id="${escapeHtml(pair.duplicate.id)}" style="color:var(--danger); border-color:var(--danger); padding:2px 8px; font-size:0.72rem;">
+                2. törlése
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    reportBox.innerHTML = html;
+
+    // Szemét elemek egykattintásos törlése
+    const purgeBtn = document.getElementById('btn-purge-junk-albums');
+    if (purgeBtn) {
+      purgeBtn.onclick = async () => {
+        if (!confirm(`Biztosan törölni szeretnéd ezt a ${junkFound.length} db menüelemet a Firestore-ból?`)) return;
+        purgeBtn.disabled = true;
+        const batch = db.batch();
+        junkFound.forEach(id => {
+          batch.delete(db.collection("albums").doc(id));
+          delete ALBUMS_REGISTRY[id];
+        });
+        await batch.commit();
+        showToast(`${junkFound.length} db szemét sikeresen eltávolítva!`);
+        renderHub();
+        renderAdminAlbumsList();
+        document.getElementById('btn-admin-audit-db')?.click();
+      };
+    }
+  } catch (err) {
+    reportBox.innerHTML = `<span style="color:var(--danger);">Audit hiba: ${err.message}</span>`;
+  }
+});
+
+safeAddListener('admin-audit-report-box', 'click', async (e) => {
+  const btn = e.target.closest('[data-action="delete-specific-duplicate"]');
+  if (!btn) return;
+  const albumId = btn.dataset.id;
+  if (!confirm(`Biztosan törlöd a(z) ${albumId} duplikátumot?`)) return;
+  try {
+    await db.collection("albums").doc(albumId).delete();
+    delete ALBUMS_REGISTRY[albumId];
+    renderHub();
+    renderAdminAlbumsList();
+    showToast("Duplikátum törölve.");
+    document.getElementById('btn-admin-audit-db')?.click();
+  } catch (err) { showToast("Hiba: " + err.message); }
+});
+
+// 2. MŰKÖDŐ TÖMEGES JSON ALBUM IMPORTŐR (INTELLIGENS SZŰRÉSSEL & DEDIKÁLT VÉDELEMMEL!)
 safeAddListener('btn-admin-import-json', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
   const rawJson = document.getElementById('admin-album-json-import')?.value.trim();
@@ -4500,19 +4871,43 @@ safeAddListener('btn-admin-import-json', async () => {
 
   if (statusEl) {
     statusEl.style.display = 'block';
-    statusEl.textContent = `Feldolgozás: 0 / ${albumsList.length} album...`;
+    statusEl.textContent = `Elemzés és szűrés...`;
   }
 
-  const chunkSize = 400; // Mindig a Firestore 500-as batch limitje alatt marad
+  // Automatikus szemétszűrés és duplikáció-ellenőrzés
+  const cleanedList = [];
+  let skippedJunk = 0;
+  let skippedExisting = 0;
+
+  albumsList.forEach(alb => {
+    const rawId = (alb.id || alb.title || '').toLowerCase().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+    // Kiszűrjük a lekapart menügombokat
+    if (SCRAPER_JUNK_IDS.has(rawId) || /^(mind|kartya|matricaalbum|figura|kisauto)-\d+$/i.test(rawId)) {
+      skippedJunk++;
+      return;
+    }
+
+    // A meglévő védett Lidl Lutra albumot sem engedjük felülírni a scraper generic lutra-albumával
+    if (rawId === 'lutra-album' && ALBUMS_REGISTRY['lidl-lutra-2026']) {
+      skippedExisting++;
+      return;
+    }
+
+    // Ha azonos ID-jú album már bent van, frissítjük vagy kihagyjuk
+    cleanedList.push({ ...alb, cleanId: rawId });
+  });
+
+  const chunkSize = 400;
   let savedCount = 0;
 
   try {
-    for (let i = 0; i < albumsList.length; i += chunkSize) {
-      const chunk = albumsList.slice(i, i + chunkSize);
+    for (let i = 0; i < cleanedList.length; i += chunkSize) {
+      const chunk = cleanedList.slice(i, i + chunkSize);
       const batch = db.batch();
 
       chunk.forEach(alb => {
-        const id = (alb.id || alb.title).toLowerCase().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const id = alb.cleanId;
         const totalItems = parseInt(alb.totalItems || alb.total_stickers || '100', 10);
         const year = parseInt(alb.year || '2026', 10);
         const type = alb.type || 'sticker';
@@ -4529,9 +4924,9 @@ safeAddListener('btn-admin-import-json', async () => {
           type,
           typeLabel,
           coverUrl: alb.coverUrl || alb.image || `covers/${id}.webp`,
-          featured: alb.featured === true,
+          featured: false,
           isRetro: alb.isRetro === true || year < 2018,
-          hasFavorites: false, // 100% opcionális
+          hasFavorites: false,
           hasRadar: alb.hasRadar === true,
           radarType: alb.radarType || 'none',
           hasChapters: alb.hasChapters === true,
@@ -4548,21 +4943,21 @@ safeAddListener('btn-admin-import-json', async () => {
       });
 
       await batch.commit();
-      if (statusEl) statusEl.textContent = `Mentve: ${savedCount} / ${albumsList.length} album...`;
+      if (statusEl) statusEl.textContent = `Mentve: ${savedCount} / ${cleanedList.length} album...`;
     }
 
-    showToast(`Siker! ${savedCount} album azonnal élesítve a Firestore-ban.`);
+    showToast(`Siker! ${savedCount} tiszta album élesítve (${skippedJunk} szemét gomb kiszűrve).`);
     renderHub();
     renderAdminAlbumsList();
     if (document.getElementById('admin-album-json-import')) document.getElementById('admin-album-json-import').value = '';
   } catch (err) {
     showToast("Importálási hiba: " + err.message);
   } finally {
-    if (statusEl) setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+    if (statusEl) setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
   }
 });
 
-// 2. ADATBÁZIS INICIALIZÁLÁSA & LUTRA TÁJOLÁSOK/NEVEK FELTÖLTÉSE FIRESTORE-BA (JAVÍTVA!)
+// 3. ADATBÁZIS INICIALIZÁLÁSA: LUTRA 108 TÉTEL/TÁJOLÁSOK & BOLTOK FELTÖLTÉSE
 safeAddListener('btn-admin-seed-database', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
   if (!confirm("Feltöltöd a boltokat és a Lidl Lutra 108 matricájának tájolását/fejezeteit a Firestore-ba?")) return;
@@ -4587,6 +4982,7 @@ safeAddListener('btn-admin-seed-database', async () => {
       customNames: Object.values(STICKER_NAMES),
       stickerOrients: STICKER_ORIENTS,
       hasChapters: true,
+      hasFavorites: false,
       active: true,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
@@ -4611,11 +5007,11 @@ safeAddListener('btn-admin-seed-database', async () => {
   } catch (err) {
     showToast("Hiba: " + err.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Adatbázis inicializálása Firestore-ba most"; }
+    if (btn) { btn.disabled = false; btn.textContent = "Lutra adatok és Boltok feltöltése Firestore-ba"; }
   }
 });
 
-// 3. TELEPÜLÉSTISZTÍTÁS & TÖMEGES E-MAIL BEKAPCSOLÁS (MIND A 809 GYŰJTŐNÉL)
+// 4. TELEPÜLÉSTISZTÍTÁS & TÖMEGES E-MAIL BEKAPCSOLÁS (MIND A 809 GYŰJTŐNÉL)
 safeAddListener('btn-admin-migrate-locations', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
   if (!confirm("Bekapcsolod az automatikus e-mail értesítőket mind a 809 felhasználónál?")) return;
@@ -4654,7 +5050,7 @@ safeAddListener('btn-admin-migrate-locations', async () => {
   }
 });
 
-// 4. UNIVERZÁLIS INTELLIGENS BEEMELŐ (GEMINI AI KÉP OCR + NYERS SZÖVEG)
+// 5. UNIVERZÁLIS INTELLIGENS BEEMELŐ (GEMINI AI KÉP OCR + NYERS SZÖVEG)
 safeAddListener('btn-admin-process-universal', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
   
@@ -4786,7 +5182,6 @@ function resetAdminAlbumForm() {
   document.getElementById('admin-album-custom-chapters').value = '';
   document.getElementById('admin-album-featured').checked = false;
   document.getElementById('admin-album-is-retro').checked = false;
-  document.getElementById('admin-album-has-favorites').checked = false;
   document.getElementById('admin-album-has-chapters').checked = false;
   document.getElementById('admin-album-radar-type').value = 'none';
   document.getElementById('admin-album-cover-input').value = '';
@@ -4801,8 +5196,8 @@ function resetAdminAlbumForm() {
   if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
-// 5. ALBUM MENTÉS (AZ ALBUM ID MÓDOSÍTÁSÁVAL ÉS HIBAMENTESÍTETT PAYLOAD-DAL!)
-safeAddListener('btn-admin-save-album', async () => {
+// 6. KÉTÁLLÁSÚ ALBUM MENTÉS (PISZKOZAT VAGY ÉLESÍTÉS + MÓDOSÍTHATÓ ID!)
+async function executeSaveAlbum(publishActive) {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
 
   const idInput = document.getElementById('admin-album-id');
@@ -4813,7 +5208,7 @@ safeAddListener('btn-admin-save-album', async () => {
   const totalItems = parseInt(document.getElementById('admin-album-total')?.value || '0', 10);
   const type = document.getElementById('admin-album-type')?.value || 'sticker';
   const subtitle = document.getElementById('admin-album-subtitle')?.value.trim() || '';
-  const isFeatured = document.getElementById('admin-album-featured')?.checked || false;
+  const isFeatured = publishActive && (document.getElementById('admin-album-featured')?.checked || false); // Inaktívként nem lehet kiemelt!
   const isRetro = document.getElementById('admin-album-is-retro')?.checked || (year < 2018);
   const radarType = document.getElementById('admin-album-radar-type')?.value || 'none';
   const hasChapters = (type === 'sticker') && (document.getElementById('admin-album-has-chapters')?.checked || false);
@@ -4839,7 +5234,6 @@ safeAddListener('btn-admin-save-album', async () => {
   const existingCover = ALBUMS_REGISTRY[editingAlbumId || newId]?.coverUrl || `covers/${newId}.webp`;
 
   try {
-    // Garantáltan semmi sem undefined, így a Firestore sosem utasítja el!
     const payload = {
       id: newId,
       title: title || '',
@@ -4862,7 +5256,8 @@ safeAddListener('btn-admin-save-album', async () => {
       customNames: customNames || [],
       customChaptersRaw: customChaptersRaw || '',
       customChaptersList: customChaptersList || [],
-      active: true,
+      active: Boolean(publishActive),
+      inactivatedAt: publishActive ? null : firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
@@ -4878,7 +5273,7 @@ safeAddListener('btn-admin-save-album', async () => {
     ALBUMS_REGISTRY[newId] = payload;
     localStorage.setItem('cached_albums_registry', JSON.stringify(ALBUMS_REGISTRY));
 
-    showToast(editingAlbumId ? "Gyűjtemény sikeresen módosítva!" : "Új gyűjtemény élesítve!");
+    showToast(publishActive ? "Gyűjtemény élesítve és közzétéve!" : "Gyűjtemény piszkozatként (inaktívan) mentve!");
     resetAdminAlbumForm();
     editingAlbumId = null;
     renderHub();
@@ -4886,7 +5281,13 @@ safeAddListener('btn-admin-save-album', async () => {
   } catch (err) {
     showToast("Mentési hiba: " + err.message);
   }
-});
+}
+
+// 1. gomb: Mentés piszkozatként (Inaktív marad)
+safeAddListener('btn-admin-save-draft', () => executeSaveAlbum(false));
+
+// 2. gomb: Élesítés (Aktívvá válik)
+safeAddListener('btn-admin-publish-album', () => executeSaveAlbum(true));
 
 // ABC ALBUM KERESÉS, SZERKESZTŐ ÉS AKTIVÁLÁS/INAKTIVÁLÁS
 let adminSelectedLetter = 'ALL';
@@ -5005,8 +5406,11 @@ safeAddListener('admin-albums-list', async (e) => {
     const newActive = !currentActive;
 
     album.active = newActive;
+    if (!newActive) album.featured = false; // Ha inaktiváljuk, kikerül a kiemeltek közül!
+
     await db.collection("albums").doc(albumId).set({
       active: newActive,
+      featured: album.featured,
       inactivatedAt: newActive ? null : firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
@@ -5020,7 +5424,7 @@ safeAddListener('admin-albums-list', async (e) => {
     editingAlbumId = albumId;
     const idInput = document.getElementById('admin-album-id');
     idInput.value = album.id;
-    idInput.disabled = false; // AZ ALBUM ID MOSTANTÓL SZABADON MÓDOSÍTHATÓ!
+    idInput.disabled = false; // SZABADON MÓDOSÍTHATÓ ID!
 
     document.getElementById('admin-album-title').value = album.title;
     document.getElementById('admin-album-publisher').value = album.publisher;
@@ -5033,7 +5437,6 @@ safeAddListener('admin-albums-list', async (e) => {
     document.getElementById('admin-album-custom-chapters').value = album.customChaptersRaw || '';
     document.getElementById('admin-album-featured').checked = album.featured === true;
     document.getElementById('admin-album-is-retro').checked = album.isRetro === true || album.year < 2018;
-    document.getElementById('admin-album-has-favorites').checked = false;
     document.getElementById('admin-album-radar-type').value = album.radarType || (album.hasRadar ? 'lidl' : 'none');
     document.getElementById('admin-album-has-chapters').checked = album.hasChapters === true;
 
@@ -5137,7 +5540,7 @@ safeAddListener('admin-suggested-albums-list', async (e) => {
   }
 });
 
-// VALÓS IDEJŰ FELHŐS ALBUMFIGYELŐ (A 85+ ALBUMOT KÖZVETLENÜL A FIRESTORE-BÓL OLVASSA ÉS GYORSÍTÓTÁRAZZA!)
+// VALÓS IDEJŰ FELHŐS ALBUMFIGYELŐ
 function listenToAlbums() {
   if (!db) return;
   if (albumsUnsubscribe) albumsUnsubscribe();
@@ -5418,7 +5821,7 @@ safeAddListener('btn-save-profile', () => {
   myProfile.locations = validLocs;
   myProfile.geo = myGpsCoords;
 
-  // A kedvencek opcionálisak: csak ha kiválasztotta, mentjük el
+  // A kedvencek 100%-ban opcionálisak
   const f1 = parseInt(document.getElementById('prof-fav-1')?.value || '0', 10);
   const f2 = parseInt(document.getElementById('prof-fav-2')?.value || '0', 10);
   const f3 = parseInt(document.getElementById('prof-fav-3')?.value || '0', 10);

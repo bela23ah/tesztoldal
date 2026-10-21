@@ -1,7 +1,7 @@
 {
-  "name": "Lutra Album Cserebere (Lidl 2026)",
-  "short_name": "Lutra Csere",
-  "description": "Matricacsere platform és közösségi Bolt-Radar a 2026-os Lidl Lutra albumhoz.",
+  "name": "Cserélj Okosan – Közösségi Csereplatform",
+  "short_name": "Cserélj Okosan",
+  "description": "Magyarország legnagyobb ingyenes matrica-, kártya- és figuracsere platformja valós idejű párosítással.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -12,7 +12,7 @@
   "categories": ["social", "utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦦</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230D2E2C' stroke='%23D89B4A' stroke-width='4'/><text x='50' y='65' font-size='50' text-anchor='middle'>🦦</text></svg>",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
