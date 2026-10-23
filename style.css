@@ -1083,3 +1083,77 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   color: var(--sand);
   border-color: var(--amber);
 }
+/* =========================================================================
+   ÚJ FUNKCIÓK STÍLUSAI (v4.4 ÉLES KIADÁS)
+   ========================================================================= */
+
+/* Bejövő csereajánlat felugró kártya kiemelése */
+.incoming-trade-card {
+  background: linear-gradient(135deg, rgba(20, 69, 63, 0.95) 0%, rgba(8, 27, 26, 0.98) 100%);
+  border: 2px solid var(--amber);
+  box-shadow: 0 10px 35px rgba(216, 155, 74, 0.35);
+}
+
+.trade-exchange-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+@media (max-width: 480px) {
+  .trade-exchange-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trade-exchange-col {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  border-left: 3px solid var(--amber);
+}
+.trade-exchange-col.give-col {
+  border-left-color: var(--danger);
+}
+.trade-exchange-col.get-col {
+  border-left-color: var(--moss-soft);
+}
+
+/* Hub albumkártya élő közösségi mutatók */
+.hub-card-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 8px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  font-size: 0.73rem;
+  color: var(--sand);
+}
+.hub-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hub-stat-pill strong {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+/* Aktivitás és megbízhatósági sor az adatlapon */
+.user-profile-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 0.78rem;
+  color: var(--sand);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(243, 238, 223, 0.15);
+}
+.meta-chip-live {
+  color: var(--moss-soft);
+  font-weight: 700;
+}

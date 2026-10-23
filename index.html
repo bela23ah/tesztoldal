@@ -1348,6 +1348,45 @@
   </div>
 </div>
 
+<!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL (FELUGRÓ ELFOGADÁS / ELUTASÍTÁS) -->
+<div id="modal-incoming-trade-prompt" class="modal-overlay" style="z-index: 3100;">
+  <div class="modal-card incoming-trade-card" style="max-width: 480px;">
+    <button class="modal-close" id="btn-close-incoming-prompt">✕</button>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+      <span style="font-size:1.6rem;">🤝</span>
+      <h3 style="margin:0; color:var(--amber);">Új csereajánlatod érkezett!</h3>
+    </div>
+    <p style="font-size:0.83rem; color:var(--sand); margin:0 0 10px;">
+      <strong id="incoming-prompt-sender-name" style="color:#FFF;">Partner</strong> 
+      (<span id="incoming-prompt-sender-city">Település</span>) cserét kezdeményezett veled a(z) 
+      <strong id="incoming-prompt-album-title" style="color:var(--amber);">Gyűjteményben</strong>:
+    </p>
+
+    <div class="trade-exchange-grid">
+      <div class="trade-exchange-col get-col">
+        <strong style="color:var(--moss-soft); font-size:0.8rem; display:block; margin-bottom:4px;">🟢 Ő adná neked:</strong>
+        <div id="incoming-prompt-get-list" style="font-size:0.85rem; font-weight:700; color:#FFF; line-height:1.4;"></div>
+      </div>
+      <div class="trade-exchange-col give-col">
+        <strong style="color:#FFC0BA; font-size:0.8rem; display:block; margin-bottom:4px;">🔒 Tőled kéri (zárolásra):</strong>
+        <div id="incoming-prompt-give-list" style="font-size:0.85rem; font-weight:700; color:#FFF; line-height:1.4;"></div>
+      </div>
+    </div>
+
+    <div id="incoming-prompt-msg-box" style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:6px; font-size:0.8rem; font-style:italic; margin-bottom:14px; color:var(--text-primary); max-height:80px; overflow-y:auto;">
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-contact-green" id="btn-accept-incoming-prompt" style="flex:1; padding:10px; font-weight:800;">
+        ✓ Elfogadom & Tételek zárolása
+      </button>
+      <button class="btn btn-secondary btn-sm" id="btn-reject-incoming-prompt" style="color:var(--danger); border-color:var(--danger);">
+        ✕ Nem kérem
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- =========================================================================
      ÚJ: FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MODAL (SZÖVEG + FOTÓ BEOLVASÓVAL!)
      ========================================================================= -->
