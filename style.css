@@ -46,7 +46,7 @@ body {
 }
 .page { max-width: 760px; margin: 0 auto; padding: 16px 12px 60px; }
 
-/* FELSŐ DÍSZES ÉRTESÍTÉSI SÁVOK */
+/* FELSŐ ÉRTESÍTÉSI SÁVOK */
 .announcement-banner {
   background: linear-gradient(90deg, #8B5E3C 0%, #D89B4A 100%);
   color: #081B1A; border-radius: var(--radius-sm);
@@ -107,10 +107,11 @@ header {
 }
 .social-proof-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
   justify-content: center;
-  padding: 2px 4px;
+  padding: 4px;
+  text-align: center;
 }
 .social-proof-item:not(:last-child) {
   border-right: 1px solid rgba(243, 238, 223, 0.1);
@@ -120,20 +121,20 @@ header {
     border-right: none;
   }
 }
-.sp-icon { font-size: 1.3rem; line-height: 1; }
 .social-proof-item strong {
   display: block;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   color: #FFF;
   font-family: var(--font-display);
   line-height: 1.1;
 }
 .sp-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--sand);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
 /* AKTÍV ALBUM SÁV */
@@ -518,9 +519,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   gap: 4px !important;
 }
 
-/* =========================================================================
-   MESSENGER-STÍLUSÚ PIPÁK (READ RECEIPTS)
-   ========================================================================= */
+/* MESSENGER-STÍLUSÚ PIPÁK */
 .msg-status-pipa {
   font-size: 0.82rem;
   font-weight: 800;
@@ -581,7 +580,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .album-hub-progress-track { background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
 .album-hub-progress-bar { background: var(--amber); height: 100%; border-radius: 999px; transition: width 0.4s ease; }
 
-/* HUB ALBUMKÁRTYA ÉLŐ KÖZÖSSÉGI MUTATÓK */
+/* HUB ALBUMKÁRTYA ÉLŐ STATISZTIKA SÁV */
 .hub-card-stats-row {
   display: flex;
   justify-content: space-between;
@@ -618,7 +617,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   gap: 8px;
 }
 
-/* PROFIL TELEPÜLÉS SOROK & BUDAPEST CHIPEK */
+/* PROFIL TELEPÜLÉS SOROK */
 .location-row {
   display: flex;
   gap: 6px;
@@ -658,21 +657,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 .planner-info { font-size: 0.85rem; color: var(--sand); font-weight: 600; }
-
-/* STATISZTIKA GYORSUGRÓ */
-.stats-quicknav-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 14px; }
-.stats-quicknav { display: flex; overflow-x: auto; gap: 6px; padding: 4px 30px 6px 30px; width: 100%; scrollbar-width: none; scroll-behavior: smooth; }
-.stats-quicknav::-webkit-scrollbar { display: none; }
-.btn-stat-jump {
-  background: var(--water-mid); border: 1px solid rgba(216, 155, 74, 0.35); color: var(--sand);
-  font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 6px 12px;
-  border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s ease;
-}
-.btn-stat-jump:hover { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
-.quicknav-arrow-left, .quicknav-arrow { position: absolute; top: 50%; transform: translateY(-50%); color: var(--amber); font-size: 0.75rem; font-weight: 800; cursor: pointer; z-index: 10; }
-.quicknav-arrow-left { left: 0; padding: 6px 14px 6px 4px; }
-.quicknav-arrow { right: 0; padding: 6px 4px 6px 14px; }
-.stat-section-anchor { scroll-margin-top: 100px; }
 
 /* HŐTÉRKÉP */
 .map-heatmap-container {
@@ -722,7 +706,6 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .btn-danger { background: var(--danger); color: #FFFFFF; }
 .btn-fb { background: #1877F2; color: #FFFFFF; }
 
-/* KIEMELT PULZÁLÓ SZÁMSZKENNER GOMB */
 .btn-scanner-pulse {
   background: linear-gradient(135deg, #FFD166 0%, #D89B4A 100%) !important;
   color: #081B1A !important;
@@ -830,7 +813,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
 }
 
-/* KERESŐ HARMONIKÁK (<details>) */
+/* KERESŐ HARMONIKÁK */
 .search-accordion {
   background: var(--surface-card);
   border: 1px solid rgba(243, 238, 223, 0.15);
@@ -877,7 +860,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   line-height: 1.4;
 }
 
-/* ADMINISZTRÁCIÓS HARMONIKÁK ÉS ABC SÁV */
+/* ADMINISZTRÁCIÓS HARMONIKÁK */
 .admin-accordion {
   background: var(--surface-card);
   border: 1px solid rgba(243, 238, 223, 0.15);
@@ -1024,7 +1007,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   margin-top: 10px;
 }
 
-/* FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MODUL */
+/* FACEBOOK POSZT ELEMZŐ GOMB ÉS PANEL */
 .btn-fb-match {
   background: linear-gradient(135deg, #1877F2 0%, #0D5AC7 100%) !important;
   color: #FFFFFF !important;
@@ -1089,11 +1072,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   border-color: var(--amber);
 }
 
-/* =========================================================================
-   ÚJ ELEMEK (v4.4 ÉLES KIADÁS): BEJÖVŐ CSEREAJÁNLAT MODAL & AKTIVITÁS
-   ========================================================================= */
-
-/* Bejövő csereajánlat felugró kártya kiemelése */
+/* BEJÖVŐ CSEREAJÁNLAT MODAL KÁRTYA */
 .incoming-trade-card {
   background: linear-gradient(135deg, rgba(20, 69, 63, 0.96) 0%, rgba(8, 27, 26, 0.98) 100%) !important;
   border: 2px solid var(--amber) !important;
@@ -1124,7 +1103,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   border-left: 3px solid var(--danger);
 }
 
-/* Aktivitás és megbízhatósági sor az adatlapon */
+/* ADATLAPI AKTIVITÁSI META SÁV */
 .user-profile-meta-row {
   display: flex;
   flex-wrap: wrap;
