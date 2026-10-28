@@ -1,21 +1,35 @@
 {
-  "name": "Cserélj Okosan – Közösségi Csereplatform",
+  "name": "Cserélj Okosan - Matrica és Kártyacsere",
   "short_name": "Cserélj Okosan",
-  "description": "Magyarország legnagyobb ingyenes matrica-, kártya- és figuracsere platformja valós idejű párosítással.",
+  "description": "Magyarország ingyenes közösségi matrica-, kártya- és figuracsere platformja.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0D2E2C",
   "theme_color": "#0D2E2C",
-  "lang": "hu",
-  "categories": ["social", "utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230D2E2C' stroke='%23D89B4A' stroke-width='4'/><text x='50' y='65' font-size='50' text-anchor='middle'>🦦</text></svg>",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
+      "src": "favicon.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo-emblem.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }

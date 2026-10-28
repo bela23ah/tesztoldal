@@ -61,7 +61,7 @@ header {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
   border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 12px; margin-bottom: 14px;
 }
-.wordmark { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; }
+.wordmark { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
 .wordmark span { font-size: 0.85rem; color: var(--amber); font-weight: 400; }
 
 .btn-pwa-install {

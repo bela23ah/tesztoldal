@@ -30,7 +30,7 @@ let ALBUMS_REGISTRY = safeJsonParse('cached_albums_registry', {
     radarType: "lidl",
     hasChapters: true,
     hasFavorites: false,
-    active: true // Garantáltan aktív!
+    active: true
   }
 });
 
@@ -433,19 +433,21 @@ async function touchActive(uid) {
   } catch (e) {}
 }
 
+// 🛡️ LAKAT-SZÁMLÁLÓ: AZ AJÁNLAT ELKÜLDÉSÉNEK PILLANATÁTÓL ZÁROL!
 function getActiveLockedCounts(albumId = currentAlbumId) {
   const counts = {};
   (myProfile.activeTrades || []).forEach(t => {
-    if ((t.status === 'accepted' || t.status === 'shipped') && (t.albumId || 'lidl-lutra-2026') === albumId) {
-      (t.givingItems || []).forEach(num => { counts[num] = (counts[num] || 0) + 1; });
+    const isActiveStatus = ['pending_acceptance', 'pending', 'accepted', 'shipped'].includes(t.status);
+    if (isActiveStatus && (t.albumId || 'lidl-lutra-2026') === albumId) {
+      (t.givingItems || []).forEach(num => {
+        counts[num] = (counts[num] || 0) + 1;
+      });
     }
   });
   return counts;
 }
 
-// =========================================================================
-// 🛡️ JAVÍTVA: ROBUSZTUS ADATKINYERŐ SZIGORÚ LUTRA-LEVÁLASZTÁSSAL!
-// =========================================================================
+// 🛡️ JAVÍTVA: SZIGORÚ ALBUM-SZERINTI SZÉTVÁLASZTÁS
 function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   if (!data) return null;
 
@@ -476,7 +478,7 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     vanCounts = col.vanCounts || {};
     foglalvaCounts = col.foglalvaCounts || {};
   } else if (targetAlbumId === 'lidl-lutra-2026') {
-    // Szigorúan KIZÁRÓLAG a Lutrához olvassuk a gyökér adatokat!
+    // KIZÁRÓLAG a Lutra olvashat a gyökér mezőkből!
     rawVan = data.van || data.duplicates || data.duplak || [];
     rawKell = data.kell || data.missing || data.hianyzo || [];
     rawFoglalva = data.foglalva || data.reserved || [];
@@ -743,9 +745,7 @@ function updateHubSocialProofMetrics() {
   if (tradesEl) tradesEl.textContent = `${Math.max(290, Math.round(totalCollectors * 0.36))}+`;
 }
 
-// =========================================================================
 // 🛡️ JAVÍTVA: KÖZÖSSÉGI GYŰJTŐ- ÉS DUPLASZÁMLÁLÓ (SZIGORÚAN ALBUMONKÉNT!)
-// =========================================================================
 function getAlbumLiveStats(albumId) {
   let collectors = 0;
   let dupes = 0;
@@ -851,7 +851,7 @@ function renderHub() {
     } else {
       toggleBtn.style.display = 'inline-block';
       toggleBtn.innerHTML = showAllHubAlbums 
-        ? '▲ Csak az első 6 album mutatása' 
+        ? '▲ Csak a kiemeltek mutatása (6 db)' 
         : `Összes gyűjtemény listázása (${list.length} db) ▼`;
     }
   }
@@ -863,7 +863,7 @@ function renderHub() {
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
     const collectedCount = albumVan.length;
     const pct = Math.min(100, Math.round((collectedCount / (album.totalItems || 100)) * 100));
-    const cover = album.coverUrl || 'og-image.png';
+    const cover = album.coverUrl || 'logo-emblem.png';
 
     const { collectors, dupes } = getAlbumLiveStats(album.id);
     const collectorsText = collectors > 0 ? `${collectors} gyűjtő` : 'Éledezve';
@@ -993,7 +993,7 @@ function selectAlbum(albumId) {
 
   document.getElementById('active-album-bar').style.display = 'flex';
   document.getElementById('active-album-title').textContent = `${activeAlbum.title} (${activeAlbum.year}) ${isInactive ? '[INAKTÍV]' : ''}`;
-  document.getElementById('active-album-thumb').src = activeAlbum.coverUrl || 'og-image.png';
+  document.getElementById('active-album-thumb').src = activeAlbum.coverUrl || 'logo-emblem.png';
   document.getElementById('count-total-size').textContent = activeAlbum.totalItems;
 
   const noteTitleEl = document.getElementById('prof-note-album-title');
@@ -1088,10 +1088,11 @@ function renderGrid() {
     const fQty = activeLocks[i] || 0;
 
     if (isVan && vQty > 1) badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
-    if (isVan && fQty > 0) badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
-    if (isFog) {
-      const manualFogQty = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) ? myProfile.foglalvaCounts[i] : 1;
-      if (manualFogQty > 1) badgesHtml += `<span class="qty-badge foglalva">×${manualFogQty}</span>`;
+    // GARANTÁLT LAKAT IKON:
+    if (fQty > 0) badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
+    else if (isFog) {
+      const manQty = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[i]) ? myProfile.foglalvaCounts[i] : 1;
+      if (manQty > 1) badgesHtml += `<span class="qty-badge foglalva">×${manQty}</span>`;
     }
 
     const itemLabel = getItemLabel(i, currentAlbumId);
@@ -1368,7 +1369,7 @@ function updateSingleCellDOM(num, state) {
     const fQty = activeLocks[num] || 0;
 
     if (vQty > 1) badgesHtml += `<span class="qty-badge">×${vQty}</span>`;
-    if (fQty > 0 && state === 'van') badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
+    if (fQty > 0) badgesHtml += `<span class="qty-badge locked-badge">🔒${fQty}</span>`;
     else if (state === 'foglalva') {
       const manQty = (myProfile.foglalvaCounts && myProfile.foglalvaCounts[num]) ? myProfile.foglalvaCounts[num] : 1;
       if (manQty > 1) badgesHtml += `<span class="qty-badge foglalva">×${manQty}</span>`;
@@ -2074,7 +2075,7 @@ function computeLoopMatches() {
 }
 
 // =========================================================================
-// PÁROSÍTÁSOK MEGJELENÍTÉSE (AKTÍVAK ELŐRESOROLÁSÁVAL & VAGY-VAGY SZŰRÉSSEL)
+// PÁROSÍTÁSOK MEGJELENÍTÉSE (SZIGORÚ RANGSOROLÁSI HIERARCHIÁVAL)
 // =========================================================================
 
 function renderMatches() {
@@ -2084,6 +2085,7 @@ function renderMatches() {
   const myVanSet = new Set(ensureArray(myProfile.van));
   const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
   const myCoords = myGpsCoords || getUserCoordinates(myProfile);
+  const now = Date.now();
 
   if (filterLoopOnly) {
     const loops = computeLoopMatches();
@@ -2140,11 +2142,29 @@ function renderMatches() {
       const isSameCity = isLocalCityMatch(myProfile.locations || myProfile.telepules, u.locations || u.telepules);
       const isGift = u.isGiftOffering === true;
       const distanceKm = getMinDistanceToUser(myCoords, u);
+
+      const lastActiveMs = u.lastActive?.toDate ? u.lastActive.toDate().getTime() : (typeof u.lastActive === 'number' ? u.lastActive : 0);
+      const listUpdatedMs = u.updatedAt?.toDate ? u.updatedAt.toDate().getTime() : (typeof u.updatedAt === 'number' ? u.updatedAt : 0);
+
+      const daysSinceActive = lastActiveMs ? (now - lastActiveMs) / (1000 * 3600 * 24) : 999;
+      const daysSinceListUpdate = listUpdatedMs ? (now - listUpdatedMs) / (1000 * 3600 * 24) : 999;
+
+      const avgRating = (u.ratingsCount > 0) ? (u.trustScore / u.ratingsCount) : 0;
       const updatedAgo = formatTimeAgo(u.updatedAt);
 
-      const isRecentlyActive = updatedAgo.includes('ma') || updatedAgo.includes('tegnap') || (parseInt(updatedAgo, 10) <= 5);
-
-      return { ...u, give, get, score, isSameCity, isGift, distanceKm, updatedAgo, isRecentlyActive };
+      return {
+        ...u,
+        give,
+        get,
+        score,
+        isSameCity,
+        isGift,
+        distanceKm,
+        updatedAgo,
+        daysSinceActive,
+        daysSinceListUpdate,
+        avgRating
+      };
     })
     .filter(m => m.score > 0 || (m.isGift && m.get.length > 0));
 
@@ -2155,11 +2175,43 @@ function renderMatches() {
     if (filterGiftOnly) matches = matches.filter(m => m.isGift);
   }
 
+  // PÁROSÍTÁSI RANGSOROLÁS (SZIGORÚ HIERARCHIA):
   matches.sort((a, b) => {
+    // 1. Helyi csere mindig előre
     if (b.isSameCity !== a.isSameCity) return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
-    if (b.isRecentlyActive !== a.isRecentlyActive) return (b.isRecentlyActive ? 1 : 0) - (a.isRecentlyActive ? 1 : 0);
-    if (b.score !== a.score) return b.score - a.score;
-    if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
+
+    // 2. Két helyi közül: a frissebben belépett a jobb (1 napos differenciát veszünk alapul)
+    const activeDiff = a.daysSinceActive - b.daysSinceActive;
+    if (Math.abs(activeDiff) >= 1.0) {
+      return activeDiff; // Kisebb napok száma = frissebb belépés
+    }
+
+    // 3. Ha hasonló ideje léptek be: az a jobb, aki a listáját is frissítette nemrég!
+    const listDiff = a.daysSinceListUpdate - b.daysSinceListUpdate;
+    if (Math.abs(listDiff) >= 1.0) {
+      return listDiff;
+    }
+
+    // 4. Ha mindkettő friss: a lezárt cserék értékelése dönt!
+    if (b.avgRating !== a.avgRating) {
+      return b.avgRating - a.avgRating;
+    }
+
+    // 5. Csereérték (minél több megszerezhető matrica)
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+
+    // 6. Ingyenes felajánlók előnye
+    if (b.isGift !== a.isGift) {
+      return (b.isGift ? 1 : 0) - (a.isGift ? 1 : 0);
+    }
+
+    // 7. Légvonalbeli távolság
+    if (a.distanceKm !== null && b.distanceKm !== null) {
+      return a.distanceKm - b.distanceKm;
+    }
+
     return 0;
   });
 
@@ -2172,9 +2224,11 @@ function renderMatches() {
     const isCheckedInPlan = selectedTradePlanUids.has(m.id);
     const distText = m.distanceKm !== null ? `kb. ${m.distanceKm} km` : (m.isSameCity ? 'Helyi gyűjtő' : '');
     const timeText = m.updatedAgo ? `• ${m.updatedAgo}` : '';
+    
+    // "Új gyűjtő" felirat törölve: CSAK akkor van jelvény, ha már van valós értékelése!
     const trustBadge = m.ratingsCount > 0 
-      ? `<span style="font-size:0.75rem; color:var(--gift-gold); font-weight:800;">⭐ ${(m.trustScore / m.ratingsCount).toFixed(1)} (${m.ratingsCount})</span>`
-      : (m.trustScore > 0 ? `<span style="font-size:0.75rem; color:var(--gift-gold); font-weight:800;">⭐ ${m.trustScore}</span>` : '<span style="font-size:0.72rem; color:var(--text-muted);">Új gyűjtő</span>');
+      ? `<span style="font-size:0.75rem; color:var(--gift-gold); font-weight:800;">⭐ ${m.avgRating.toFixed(1)} (${m.ratingsCount})</span>`
+      : '';
 
     return `
     <div class="card ${m.isSameCity ? 'card-local' : ''}">
@@ -2337,7 +2391,6 @@ function renderTradePlannerModal() {
         ${conflicts.map(c => {
           const currentWinnerUid = tradePlanManualOverrides[c.num] || [...c.demandList].sort((a, b) => {
             if (b.totalGivesToMe !== a.totalGivesToMe) return b.totalGivesToMe - a.totalGivesToMe;
-            if (b.isSameCity !== a.isSameCity) return (b.isSameCity ? 1 : 0) - (a.isSameCity ? 1 : 0);
             return 0;
           })[0].user.id;
 
@@ -2345,14 +2398,12 @@ function renderTradePlannerModal() {
 
           return `
             <div style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-              <div>
-                <strong>${escapeHtml(label)}</strong> (Készlet: ${c.myQty} db)
-              </div>
+              <div><strong>${escapeHtml(label)}</strong> (Készlet: ${c.myQty} db)</div>
               <div style="display:flex; gap:8px;">
                 ${c.demandList.map(d => `
                   <label class="radio-label" style="margin:0; font-size:0.75rem; color:${d.user.id === currentWinnerUid ? 'var(--amber)' : 'var(--text-muted)'};">
                     <input type="radio" name="conflict-sticker-${c.num}" value="${d.user.id}" ${d.user.id === currentWinnerUid ? 'checked' : ''} data-action="override-conflict" data-num="${c.num}">
-                    ${escapeHtml(d.user.nev)} ${d.isSameCity ? '(Helyi)' : ''} (+${d.totalGivesToMe} db)
+                    ${escapeHtml(d.user.nev)} (+${d.totalGivesToMe} db)
                   </label>
                 `).join('')}
               </div>
@@ -3705,7 +3756,7 @@ function renderProximityPartners() {
       const timeText = u.updatedAgo ? `• ${u.updatedAgo}` : '';
       const trustText = u.ratingsCount > 0 
         ? `⭐ ${(u.trustScore / u.ratingsCount).toFixed(1)} (${u.ratingsCount})` 
-        : (u.trustScore > 0 ? `⭐ ${u.trustScore}` : '<span style="font-size:0.72rem; color:var(--text-muted);">Új gyűjtő</span>');
+        : '';
 
       return `
         <div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
@@ -3841,7 +3892,7 @@ safeAddListener('partner-search-list', (e) => {
 });
 
 // =========================================================================
-// FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MOTOR (SZÖVEG + FOTÓ BEOLVASÓ)
+// FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MOTOR
 // =========================================================================
 
 safeAddListener('btn-open-fb-crossmatch', () => {
@@ -4011,7 +4062,7 @@ safeAddListener('btn-copy-fb-reply', () => {
 });
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v4.4 ÉLES KIADÁS)
-// 4 / 4. RÉSZ: HŐTÉRKÉP, MESSENGER PIPÁK, ADATLAP, TARTALMI AUDIT & BOOTSTRAP
+// 4 / 4. RÉSZ: HŐTÉRKÉP, KÉTIRÁNYÚ CSERESZINKRON, AUDIT & RENDSZERINDÍTÁS
 // =========================================================================
 
 // =========================================================================
@@ -4239,7 +4290,7 @@ function listenToRadarReports() {
 }
 
 // =========================================================================
-// TALÁLKOZÓK KEZELÉSE
+// TALÁLKOZÓK
 // =========================================================================
 
 safeAddListener('meetup-photo-input', 'change', (e) => {
@@ -4845,7 +4896,7 @@ safeAddListener('btn-refresh-stats', () => {
 });
 
 // =========================================================================
-// BELSŐ ÜZENETEK: MESSENGER PIPÁK
+// BELSŐ ÜZENETEK: MESSENGER PIPÁK (✓/✓✓)
 // =========================================================================
 
 safeAddListener('btn-msg-tab-inbox', () => {
@@ -5022,6 +5073,68 @@ safeAddListener('messages-inbox-list', (e) => {
 });
 
 // =========================================================================
+// KÉTIRÁNYÚ SZERVEROLDALI CSEREFIGYELŐ (NINCS QUERY BLOKKOLÁS!)
+// =========================================================================
+function listenToTrades(uid) {
+  if (!db || !uid) return;
+  if (incomingTradesUnsubscribe) incomingTradesUnsubscribe();
+  if (outgoingTradesUnsubscribe) outgoingTradesUnsubscribe();
+
+  const syncTradesToLocal = (docs) => {
+    if (!myProfile.activeTrades) myProfile.activeTrades = [];
+    docs.forEach(doc => {
+      const t = doc.data();
+      const isInitiator = (t.initiatorUid === uid);
+      const existingIdx = myProfile.activeTrades.findIndex(x => x.tradeId === doc.id);
+      
+      const tradeObj = {
+        tradeId: doc.id,
+        initiatorUid: t.initiatorUid,
+        partnerUid: isInitiator ? t.partnerUid : t.initiatorUid,
+        partnerName: isInitiator ? t.partnerName : t.initiatorName,
+        partnerCity: isInitiator ? t.partnerCity : t.initiatorCity,
+        albumId: t.albumId || 'lidl-lutra-2026',
+        givingItems: isInitiator ? (t.givingItems || []) : (t.receivingItems || []),
+        receivingItems: isInitiator ? (t.receivingItems || []) : (t.givingItems || []),
+        customOffer: t.customOffer || '',
+        message: t.message || '',
+        createdAt: t.createdAt || Date.now(),
+        status: t.status,
+        isInitiator: isInitiator
+      };
+
+      if (existingIdx > -1) {
+        myProfile.activeTrades[existingIdx] = tradeObj;
+      } else {
+        myProfile.activeTrades.unshift(tradeObj);
+      }
+    });
+
+    renderActiveTradesPanel();
+    renderGrid();
+  };
+
+  // 1. Bejövő cserék figyelése (címzett oldal)
+  incomingTradesUnsubscribe = db.collection("trades")
+    .where("partnerUid", "==", uid)
+    .onSnapshot(snap => {
+      syncTradesToLocal(snap.docs);
+      
+      const pendingIncoming = snap.docs.filter(d => d.data().status === 'pending_acceptance');
+      if (pendingIncoming.length > 0) {
+        checkAndPromptIncomingTrade(pendingIncoming[0], pendingIncoming.length);
+      }
+    }, err => console.warn("Bejövő csere figyelő hiba:", err));
+
+  // 2. Kimenő cserék figyelése (feladó oldal valós idejű szinkronja)
+  outgoingTradesUnsubscribe = db.collection("trades")
+    .where("initiatorUid", "==", uid)
+    .onSnapshot(snap => {
+      syncTradesToLocal(snap.docs);
+    }, err => console.warn("Kimenő csere figyelő hiba:", err));
+}
+
+// =========================================================================
 // GYŰJTŐ ADATLAPJA (LASTACTIVE ÉS FRISSÍTÉSI IDŐVEL)
 // =========================================================================
 
@@ -5048,10 +5161,11 @@ async function openUserProfileModal(uid) {
   const tScore = targetUser.trustScore || 0;
   const avg = rCount > 0 ? (tScore / rCount).toFixed(1) : (tScore > 0 ? tScore : '5.0');
 
+  // Új gyűjtő felirat törölve: CSAK akkor van jelvény, ha már van valós értékelése!
   if (ratingBadge) {
     ratingBadge.innerHTML = rCount > 0 
       ? `⭐ ${avg} / 5 (${rCount} értékelés)` 
-      : (tScore > 0 ? `⭐ ${tScore} pont` : `<span style="font-size:0.75rem; color:var(--text-muted);">Új gyűjtő</span>`);
+      : '';
   }
 
   const reviewsDetails = document.getElementById('user-profile-reviews-details');
@@ -5132,7 +5246,6 @@ safeAddListener('btn-close-user-profile-2', () => document.getElementById('modal
 
 function triggerTopNotification(iconOrText, textOrActionFn, actionFn) {
   const banner = document.getElementById('top-notification-banner');
-  const iconEl = document.getElementById('top-banner-icon');
   const textEl = document.getElementById('top-banner-text');
   const actionBtn = document.getElementById('btn-top-banner-action');
   const closeBtn = document.getElementById('btn-top-banner-close');
@@ -5148,7 +5261,6 @@ function triggerTopNotification(iconOrText, textOrActionFn, actionFn) {
     fn = actionFn;
   }
 
-  if (iconEl) iconEl.style.display = 'none';
   textEl.textContent = text;
   banner.style.display = 'flex';
 
@@ -5201,75 +5313,6 @@ function listenToMyMessages(uid) {
   }, err => console.error("messages listener:", err));
 
   messagesUnsubscribe = () => { unsubIn(); unsubOut(); };
-}
-
-// =========================================================================
-// 🛡️ SZERVEROLDALI KÉTIRÁNYÚ CSEREFIGYELŐ (BEJÖVŐ ÉS KIKÜLDÖTT CSERÉK)
-// =========================================================================
-
-function listenToIncomingTrades(uid) {
-  if (!db || !uid) return;
-  if (incomingTradesUnsubscribe) incomingTradesUnsubscribe();
-
-  // 1. Bejövő cserék figyelése (ahol a felhasználó a partnerUid)
-  incomingTradesUnsubscribe = db.collection("trades")
-    .where("partnerUid", "==", uid)
-    .onSnapshot(snap => {
-      const pendingDocs = snap.docs.filter(d => d.data().status === 'pending_acceptance');
-      const totalPending = pendingDocs.length;
-
-      // Szinkronizáljuk a helyi aktív cserék közé a bejövő rekordokat
-      snap.docs.forEach(doc => {
-        const t = doc.data();
-        if (!myProfile.activeTrades) myProfile.activeTrades = [];
-        const existingIdx = myProfile.activeTrades.findIndex(x => x.tradeId === doc.id);
-        const incomingTradeObj = {
-          tradeId: doc.id,
-          initiatorUid: t.initiatorUid,
-          partnerUid: t.initiatorUid,
-          partnerName: t.initiatorName,
-          partnerCity: t.initiatorCity,
-          albumId: t.albumId,
-          givingItems: t.receivingItems || [],
-          receivingItems: t.givingItems || [],
-          customOffer: t.customOffer || '',
-          message: t.message || '',
-          createdAt: t.createdAt || Date.now(),
-          status: t.status,
-          isInitiator: false
-        };
-
-        if (existingIdx > -1) {
-          myProfile.activeTrades[existingIdx] = incomingTradeObj;
-        } else {
-          myProfile.activeTrades.unshift(incomingTradeObj);
-        }
-      });
-
-      renderActiveTradesPanel();
-
-      // Ha van függőben lévő csere, megjelenítjük a felugró jóváhagyó ablakot
-      if (pendingDocs.length > 0) {
-        checkAndPromptIncomingTrade(pendingDocs[0], totalPending);
-      }
-    }, err => console.warn("Incoming trades listener:", err));
-
-  // 2. Kiküldött cserék valós idejű figyelése (ha a partner elfogadta vagy postázta)
-  if (outgoingTradesUnsubscribe) outgoingTradesUnsubscribe();
-  outgoingTradesUnsubscribe = db.collection("trades")
-    .where("initiatorUid", "==", uid)
-    .onSnapshot(snap => {
-      snap.docChanges().forEach(change => {
-        const t = change.doc.data();
-        if (myProfile.activeTrades) {
-          const idx = myProfile.activeTrades.findIndex(x => x.tradeId === change.doc.id);
-          if (idx > -1) {
-            myProfile.activeTrades[idx].status = t.status;
-          }
-        }
-      });
-      renderActiveTradesPanel();
-    }, err => console.warn("Outgoing trades listener:", err));
 }
 
 // =========================================================================
@@ -5394,11 +5437,12 @@ safeAddListener('btn-add-location', () => {
 safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
 // =========================================================================
-// 🛡️ TARTALMI ÉS DARABSZÁM-ALAPÚ DUPLIKÁCIÓ-SZŰRŐ & AUDIT
+// ADMINISZTRÁCIÓS MOTOR (TARTALMI DUPLIKÁCIÓ-SZŰRŐ, AUDIT, JSON IMPORT)
 // =========================================================================
 
 let adminAlbumCoverBase64 = '';
 
+// TARTALMI ÉS DARABSZÁM-ALAPÚ AUDIT
 safeAddListener('btn-admin-audit-db', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
   const reportBox = document.getElementById('admin-audit-report-box');
@@ -5414,44 +5458,52 @@ safeAddListener('btn-admin-audit-db', async () => {
     const junkFound = [];
     const duplicatePairs = [];
 
-    allDocs.forEach(doc => {
-      if (SCRAPER_JUNK_IDS.has(doc.id) || /^(mind|kartya|matricaalbum|figura|kisauto)-\d+$/i.test(doc.id)) {
-        junkFound.push(doc.id);
+    allDocs.forEach((docA, i) => {
+      // 1. Scraper szemét felderítése
+      if (SCRAPER_JUNK_IDS.has(docA.id) || /^(mind|kartya|matricaalbum|figura|kisauto)-\d+$/i.test(docA.id)) {
+        if (!junkFound.includes(docA.id)) junkFound.push(docA.id);
+        return;
       }
-    });
 
-    // Tartalmi és darabszám-alapú páros összehasonlítás
-    for (let i = 0; i < allDocs.length; i++) {
+      // 2. Tartalmi és darabszám-alapú intelligens duplikáció-szűrő
+      const keyA = getNormalizedAlbumTitleKey(docA.title || docA.id);
+
       for (let j = i + 1; j < allDocs.length; j++) {
-        const a = allDocs[i];
-        const b = allDocs[j];
+        const docB = allDocs[j];
+        if (SCRAPER_JUNK_IDS.has(docB.id)) continue;
 
-        if (junkFound.includes(a.id) || junkFound.includes(b.id)) continue;
+        const keyB = getNormalizedAlbumTitleKey(docB.title || docB.id);
 
-        const normA = getNormalizedAlbumTitleKey(a.title || a.id);
-        const normB = getNormalizedAlbumTitleKey(b.title || b.id);
+        // Pontos névazonosság
+        const isNameMatch = keyA && keyB && (keyA === keyB || keyA.includes(keyB) || keyB.includes(keyA));
+        
+        // Tartalmi hasonlóság: azonos évszám + azonos darabszám + azonos típus
+        const isContentMatch = (docA.year === docB.year) && 
+                               (parseInt(docA.totalItems, 10) === parseInt(docB.totalItems, 10)) &&
+                               (docA.type === docB.type);
 
-        const isExactTitle = (normA && normB && normA === normB);
-        const isContentMatch = (a.totalItems === b.totalItems && a.year === b.year && a.type === b.type && (normA.includes(normB) || normB.includes(normA) || normA.slice(0, 5) === normB.slice(0, 5)));
+        if (isNameMatch || isContentMatch) {
+          const reason = isNameMatch 
+            ? "Név szerinti egyezés" 
+            : `Tartalmi azonosság (Év: ${docA.year}, Darab: ${docA.totalItems}, Típus: ${docA.type})`;
 
-        if (isExactTitle || isContentMatch) {
           duplicatePairs.push({
-            albumA: a,
-            albumB: b,
-            reason: isExactTitle ? "Névazonosság" : `Azonos év (${a.year}), darabszám (${a.totalItems} db) és típus`
+            existing: docA,
+            duplicate: docB,
+            reason: reason
           });
         }
       }
-    }
+    });
 
     let html = `
       <div style="font-size:0.85rem; line-height:1.5;">
-        <strong>Audit Eredmény:</strong> Összesen <strong>${allDocs.length} db</strong> album található a felhőben.<br>
+        <strong>Audit Eredmény:</strong> Összesen <strong>${allDocs.length} db</strong> album van a felhőben.<br>
         <span style="color:${junkFound.length > 0 ? 'var(--danger)' : 'var(--moss-soft)'};">
-          ${junkFound.length > 0 ? `⚠️ <strong>${junkFound.length} db szemét menügomb</strong> észlelve!` : 'Nincs menügomb szemét az adatbázisban.'}
+          ${junkFound.length > 0 ? `⚠️ <strong>${junkFound.length} db szemét menügomb</strong> található!` : 'Nincs menügomb szemét az adatbázisban.'}
         </span><br>
         <span style="color:${duplicatePairs.length > 0 ? 'var(--amber)' : 'var(--moss-soft)'};">
-          ${duplicatePairs.length > 0 ? `⚠️ <strong>${duplicatePairs.length} lehetséges tartalmi duplikáció</strong> észlelve!` : 'Nincs észlelt duplikáció.'}
+          ${duplicatePairs.length > 0 ? `⚠️ <strong>${duplicatePairs.length} lehetséges duplikáció / tartalmi egyezés</strong> észlelve!` : 'Nincs észlelt duplikáció.'}
         </span>
       </div>
     `;
@@ -5470,21 +5522,19 @@ safeAddListener('btn-admin-audit-db', async () => {
     if (duplicatePairs.length > 0) {
       html += `
         <div style="margin-top:10px; padding-top:8px; border-top:1px dashed rgba(243,238,223,0.2);">
-          <strong style="font-size:0.8rem; color:var(--amber);">Tartalmi duplikációk:</strong>
+          <strong style="font-size:0.8rem; color:var(--amber);">Észlelt duplikációk:</strong>
           ${duplicatePairs.map((pair) => `
-            <div style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:4px; margin-top:6px; font-size:0.78rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-              <div>
-                <span style="color:var(--amber); font-weight:700;">[${pair.reason}]</span><br>
-                1. <strong>${escapeHtml(pair.albumA.title)}</strong> (${escapeHtml(pair.albumA.id)}, ${pair.albumA.totalItems} db)<br>
-                2. <strong>${escapeHtml(pair.albumB.title)}</strong> (${escapeHtml(pair.albumB.id)}, ${pair.albumB.totalItems} db)
-              </div>
-              <div style="display:flex; gap:4px;">
-                <button class="btn btn-secondary btn-sm" data-action="delete-specific-duplicate" data-id="${escapeHtml(pair.albumA.id)}" style="color:var(--danger); border-color:var(--danger); padding:2px 8px; font-size:0.72rem;">
-                  1. törlése
-                </button>
-                <button class="btn btn-secondary btn-sm" data-action="delete-specific-duplicate" data-id="${escapeHtml(pair.albumB.id)}" style="color:var(--danger); border-color:var(--danger); padding:2px 8px; font-size:0.72rem;">
-                  2. törlése
-                </button>
+            <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:4px; margin-top:6px; font-size:0.75rem;">
+              <div style="color:var(--amber); font-weight:700; margin-bottom:2px;">${pair.reason}:</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                <div>
+                  1. <strong>${escapeHtml(pair.existing.title)}</strong> (${escapeHtml(pair.existing.id)})<br>
+                  2. <strong>${escapeHtml(pair.duplicate.title)}</strong> (${escapeHtml(pair.duplicate.id)})
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <button class="btn btn-secondary btn-sm" data-action="delete-specific-duplicate" data-id="${escapeHtml(pair.existing.id)}" style="color:var(--danger); border-color:var(--danger); padding:2px 6px; font-size:0.7rem;">1. törlése</button>
+                  <button class="btn btn-secondary btn-sm" data-action="delete-specific-duplicate" data-id="${escapeHtml(pair.duplicate.id)}" style="color:var(--danger); border-color:var(--danger); padding:2px 6px; font-size:0.7rem;">2. törlése</button>
+                </div>
               </div>
             </div>
           `).join('')}
@@ -5520,13 +5570,13 @@ safeAddListener('admin-audit-report-box', 'click', async (e) => {
   const btn = e.target.closest('[data-action="delete-specific-duplicate"]');
   if (!btn) return;
   const albumId = btn.dataset.id;
-  if (!confirm(`Biztosan törlöd a(z) ${albumId} gyűjteményt?`)) return;
+  if (!confirm(`Biztosan törlöd a(z) ${albumId} rekordot?`)) return;
   try {
     await db.collection("albums").doc(albumId).delete();
     delete ALBUMS_REGISTRY[albumId];
     renderHub();
     renderAdminAlbumsList();
-    showToast("Gyűjtemény törölve.");
+    showToast("Rekord törölve.");
     document.getElementById('btn-admin-audit-db')?.click();
   } catch (err) { showToast("Hiba: " + err.message); }
 });
@@ -5863,7 +5913,7 @@ function resetAdminAlbumForm() {
   if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
-// 🛡️ KÉTÁLLÁSÚ ALBUM MENTÉS (GARANTÁLTAN NINCS UNDEFINED MEZŐ!)
+// KÉTÁLLÁSÚ MENTÉS UNDEFINED-SZŰRŐVEL
 async function executeSaveAlbum(publishActive) {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
 
@@ -6020,7 +6070,7 @@ function renderAdminAlbumsList() {
       html += `
         <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${a.coverUrl || 'og-image.png'}" style="width:36px; height:36px; border-radius:4px; object-fit:contain; background:#F3EEDF; padding:2px;" alt="Borító">
+            <img src="${a.coverUrl || 'logo-emblem.png'}" style="width:36px; height:36px; border-radius:4px; object-fit:contain; background:#F3EEDF; padding:2px;" alt="Borító">
             <div>
               <strong>${escapeHtml(a.title)}</strong> (${a.year}) — <span style="color:var(--sand); font-size:0.8rem;">${a.totalItems} db (${escapeHtml(a.typeLabel || a.type)})</span>
               ${!isActive ? '<span class="badge-trade-status badge-inactive" style="margin-left:6px;">Inaktív</span>' : ''}
@@ -6078,7 +6128,7 @@ safeAddListener('admin-albums-list', async (e) => {
 
     renderHub();
     renderAdminAlbumsList();
-    showToast(newActive ? `${album.title} aktiválva!` : `${album.title} inaktiválva!`);
+    showToast(newActive ? `${album.title} aktiválva!` : `${album.title} inaktiválva (csak olvasható)!`);
   } else if (btn.dataset.action === 'edit-album') {
     const album = ALBUMS_REGISTRY[albumId];
     if (!album) return;
@@ -6677,7 +6727,7 @@ function initFirebase() {
         document.getElementById('modal-auth')?.classList.remove('open');
         listenToMyProfile(user.uid);
         listenToMyMessages(user.uid);
-        listenToIncomingTrades(user.uid);
+        listenToTrades(user.uid); // KÉTIRÁNYÚ CSEREFIGYELŐ INDÍTÁSA
         listenToAllUsers();
         listenToRadarReports();
         listenToMeetups();
