@@ -30,7 +30,7 @@ let ALBUMS_REGISTRY = safeJsonParse('cached_albums_registry', {
     radarType: "lidl",
     hasChapters: true,
     hasFavorites: false,
-    active: true
+    active: true // Garantáltan aktív!
   }
 });
 
@@ -61,7 +61,6 @@ function expandCustomItemsText(rawText) {
   const items = [];
   
   tokens.forEach(tok => {
-    // Intervallum felismerés: pl. MEX 1-19 vagy HUN 1-20
     const rangeMatch = tok.match(/^([A-Za-z\s\-_]+)\s*(\d+)[\s\-—–]+(\d+)$/);
     if (rangeMatch) {
       const prefix = rangeMatch[1].trim();
@@ -75,7 +74,6 @@ function expandCustomItemsText(rawText) {
       return;
     }
 
-    // Sima számtartomány: pl. 1-50
     const numRange = tok.match(/^(\d+)[\s\-—–]+(\d+)$/);
     if (numRange) {
       const start = parseInt(numRange[1], 10);
@@ -325,7 +323,6 @@ function extractCanonicalCities(locationInput) {
   return [...new Set(result)];
 }
 
-// 🛡️ VAGY-VAGY ALAPÚ TELEPÜLÉSKAPCSOLAT (INGÁZÁS JAVÍTÁSA)
 function isLocalCityMatch(locA, locB) {
   const cleanA = Array.isArray(locA) ? locA.filter(l => (typeof l === 'string' ? l.trim().length > 0 : l?.city?.trim().length > 0)) : locA;
   const cleanB = Array.isArray(locB) ? locB.filter(l => (typeof l === 'string' ? l.trim().length > 0 : l?.city?.trim().length > 0)) : locB;
@@ -338,7 +335,7 @@ function isLocalCityMatch(locA, locB) {
 }
 
 // =========================================================================
-// IDŐBÉLYEG FORMÁZÓK (LISTAFRISSÍTÉS ÉS UTOLSÓ BELÉPÉS)
+// IDŐBÉLYEG FORMÁZÓK
 // =========================================================================
 
 function formatTimeAgo(timestamp) {
@@ -424,7 +421,6 @@ function getFirstValidString(...values) {
   return '';
 }
 
-// 🛡️ NAPI AKTIVITÁSRÖGZÍTÉS (LASTACTIVE)
 async function touchActive(uid) {
   if (!uid || !db) return;
   const today = new Date().toISOString().slice(0, 10);
@@ -449,7 +445,6 @@ function getActiveLockedCounts(albumId = currentAlbumId) {
 
 // =========================================================================
 // 🛡️ JAVÍTVA: ROBUSZTUS ADATKINYERŐ SZIGORÚ LUTRA-LEVÁLASZTÁSSAL!
-// Nem haluzza be a 832 gyűjtőt a többi albumhoz!
 // =========================================================================
 function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   if (!data) return null;
@@ -466,7 +461,6 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
   let vanCounts = {};
   let foglalvaCounts = {};
 
-  // 1. FORMÁTUM: Beágyazott objektum (collections[targetAlbumId])
   if (data.collections && data.collections[targetAlbumId]) {
     const col = data.collections[targetAlbumId];
     rawVan = col.van || [];
@@ -474,18 +468,15 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     rawFoglalva = col.foglalva || [];
     vanCounts = col.vanCounts || {};
     foglalvaCounts = col.foglalvaCounts || {};
-  } 
-  // 2. FORMÁTUM: Pontozott mező ("collections.panini-fifa-365")
-  else if (data[`collections.${targetAlbumId}`]) {
+  } else if (data[`collections.${targetAlbumId}`]) {
     const col = data[`collections.${targetAlbumId}`];
     rawVan = col.van || [];
     rawKell = col.kell || [];
     rawFoglalva = col.foglalva || [];
     vanCounts = col.vanCounts || {};
     foglalvaCounts = col.foglalvaCounts || {};
-  }
-  // 3. FORMÁTUM: Gyökér mezők KIZÁRÓLAG a lidl-lutra-2026-hoz!
-  else if (targetAlbumId === 'lidl-lutra-2026') {
+  } else if (targetAlbumId === 'lidl-lutra-2026') {
+    // Szigorúan KIZÁRÓLAG a Lutrához olvassuk a gyökér adatokat!
     rawVan = data.van || data.duplicates || data.duplak || [];
     rawKell = data.kell || data.missing || data.hianyzo || [];
     rawFoglalva = data.foglalva || data.reserved || [];
@@ -599,6 +590,7 @@ let announcementsUnsubscribe = null;
 let albumsUnsubscribe = null;
 let suggestionsUnsubscribe = null;
 let incomingTradesUnsubscribe = null;
+let outgoingTradesUnsubscribe = null;
 let db = null;
 let auth = null;
 
@@ -752,7 +744,7 @@ function updateHubSocialProofMetrics() {
 }
 
 // =========================================================================
-// 🛡️ JAVÍTVA: KÖZÖSSÉGI GYŰJTŐ- ÉS DUPLASZÁMLÁLÓ (NEM HALUZZA BE A LUTRA SZÁMAIT!)
+// 🛡️ JAVÍTVA: KÖZÖSSÉGI GYŰJTŐ- ÉS DUPLASZÁMLÁLÓ (SZIGORÚAN ALBUMONKÉNT!)
 // =========================================================================
 function getAlbumLiveStats(albumId) {
   let collectors = 0;
@@ -764,7 +756,6 @@ function getAlbumLiveStats(albumId) {
     let userKell = [];
     let vanCounts = {};
 
-    // Szigorú leválasztás: csak akkor vizsgálja, ha tényleg ehhez az albumhoz tartozik!
     if (data.collections && data.collections[albumId]) {
       userVan = data.collections[albumId].van || [];
       userKell = data.collections[albumId].kell || [];
@@ -874,7 +865,6 @@ function renderHub() {
     const pct = Math.min(100, Math.round((collectedCount / (album.totalItems || 100)) * 100));
     const cover = album.coverUrl || 'og-image.png';
 
-    // Valós statisztikák az adott gyűjteményhez
     const { collectors, dupes } = getAlbumLiveStats(album.id);
     const collectorsText = collectors > 0 ? `${collectors} gyűjtő` : 'Éledezve';
     const dupesText = dupes > 0 ? `${dupes.toLocaleString('hu-HU')} db dupla` : '0 dupla';
@@ -2829,7 +2819,7 @@ safeAddListener('contact-msg-input', 'input', () => {
   activeContactTarget.isEdited = true;
 });
 
-// BELSŐ ÜZENET KÜLDÉSE & KÉTOLDALÚ CSEREINDÍTÁS (EGYEDI AJÁNLATTAL)
+// BELSŐ ÜZENET KÜLDÉSE & KÉTOLDALÚ CSEREINDÍTÁS
 safeAddListener('btn-send-message', () => {
   const messageText = document.getElementById('contact-msg-input')?.value.trim() || '';
   if (!messageText) return showToast("Kérlek írj be egy üzenetet!");
@@ -2849,7 +2839,6 @@ safeAddListener('btn-send-message', () => {
     try {
       let tradeId = null;
 
-      // 1. Csere rögzítése a rács alatt
       if (autoCreateTrade && (effectiveGiveNums.length > 0 || effectiveGetNums.length > 0 || customOfferText)) {
         if (!myProfile.activeTrades) myProfile.activeTrades = [];
         tradeId = 'trade_' + Date.now();
@@ -2874,7 +2863,7 @@ safeAddListener('btn-send-message', () => {
 
         myProfile.activeTrades.unshift(newTradeObj);
 
-        // Csak a feladónál zároljuk a felajánlott duplákat
+        // Csak a feladónál zároljuk a felajánlott tételeket
         effectiveGiveNums.forEach(n => {
           if (!myProfile.foglalva.includes(n)) myProfile.foglalva.push(n);
           if (!myProfile.foglalvaCounts) myProfile.foglalvaCounts = {};
@@ -2885,7 +2874,6 @@ safeAddListener('btn-send-message', () => {
         renderActiveTradesPanel();
         renderGrid();
 
-        // Közös csere mentése a Firestore-ba a partner értesítéséhez
         if (db) {
           db.collection("trades").doc(tradeId).set({
             ...newTradeObj,
@@ -2894,7 +2882,6 @@ safeAddListener('btn-send-message', () => {
         }
       }
 
-      // 2. Üzenet mentése a Firestore-ba
       if (db && currentUser) {
         const threadId = [currentUser.uid, activeContactTarget.uid].sort().join('_') + '_' + currentAlbumId;
 
@@ -2921,7 +2908,6 @@ safeAddListener('btn-send-message', () => {
         });
       }
 
-      // 3. E-mail értesítő kiküldése Cloudflare Workerrel
       try {
         const idToken = currentUser ? await currentUser.getIdToken() : '';
         await fetch(WORKER_ENDPOINT_URL, {
@@ -3021,7 +3007,6 @@ function renderActiveTradesPanel() {
         statusBadge = `<span class="badge-trade-status badge-status-reserved">🔒 Mindkét félnél zárolva</span>`;
       }
 
-      // Egyedi ajánlat pontos szövege
       let givingText = t.givingItems && t.givingItems.length ? t.givingItems.map(n => getItemLabel(n)).join(', ') : '';
       let receivingText = t.receivingItems && t.receivingItems.length ? t.receivingItems.map(n => getItemLabel(n)).join(', ') : '';
 
@@ -3174,7 +3159,6 @@ function checkAndPromptIncomingTrade(tradeDoc, totalPendingCount = 1) {
   if (cityEl) cityEl.textContent = data.initiatorCity || '';
   if (albumEl) albumEl.textContent = getAlbumDisplayTitle(data.albumId);
 
-  // A címzett szemszögéből: amit az initiator ad, azt a címzett kapja!
   let receivedItemsStr = (data.givingItems && data.givingItems.length)
     ? data.givingItems.map(n => getItemLabel(n, data.albumId)).join(', ')
     : '';
@@ -4861,7 +4845,7 @@ safeAddListener('btn-refresh-stats', () => {
 });
 
 // =========================================================================
-// BELSŐ ÜZENETEK: MESSENGER PIPÁK (✓/✓✓)
+// BELSŐ ÜZENETEK: MESSENGER PIPÁK
 // =========================================================================
 
 safeAddListener('btn-msg-tab-inbox', () => {
@@ -5219,20 +5203,23 @@ function listenToMyMessages(uid) {
   messagesUnsubscribe = () => { unsubIn(); unsubOut(); };
 }
 
-// 🛡️ KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLATOK VALÓS IDEJŰ FIGYELŐJE
+// =========================================================================
+// 🛡️ SZERVEROLDALI KÉTIRÁNYÚ CSEREFIGYELŐ (BEJÖVŐ ÉS KIKÜLDÖTT CSERÉK)
+// =========================================================================
+
 function listenToIncomingTrades(uid) {
   if (!db || !uid) return;
   if (incomingTradesUnsubscribe) incomingTradesUnsubscribe();
 
+  // 1. Bejövő cserék figyelése (ahol a felhasználó a partnerUid)
   incomingTradesUnsubscribe = db.collection("trades")
     .where("partnerUid", "==", uid)
-    .where("status", "==", "pending_acceptance")
     .onSnapshot(snap => {
-      const pendingDocs = snap.docs;
+      const pendingDocs = snap.docs.filter(d => d.data().status === 'pending_acceptance');
       const totalPending = pendingDocs.length;
 
-      // Szinkronizáljuk a helyi aktív cserék közé is, hogy "Mégse" után se tűnjön el!
-      pendingDocs.forEach(doc => {
+      // Szinkronizáljuk a helyi aktív cserék közé a bejövő rekordokat
+      snap.docs.forEach(doc => {
         const t = doc.data();
         if (!myProfile.activeTrades) myProfile.activeTrades = [];
         const existingIdx = myProfile.activeTrades.findIndex(x => x.tradeId === doc.id);
@@ -5248,7 +5235,7 @@ function listenToIncomingTrades(uid) {
           customOffer: t.customOffer || '',
           message: t.message || '',
           createdAt: t.createdAt || Date.now(),
-          status: 'pending_acceptance',
+          status: t.status,
           isInitiator: false
         };
 
@@ -5261,12 +5248,28 @@ function listenToIncomingTrades(uid) {
 
       renderActiveTradesPanel();
 
+      // Ha van függőben lévő csere, megjelenítjük a felugró jóváhagyó ablakot
+      if (pendingDocs.length > 0) {
+        checkAndPromptIncomingTrade(pendingDocs[0], totalPending);
+      }
+    }, err => console.warn("Incoming trades listener:", err));
+
+  // 2. Kiküldött cserék valós idejű figyelése (ha a partner elfogadta vagy postázta)
+  if (outgoingTradesUnsubscribe) outgoingTradesUnsubscribe();
+  outgoingTradesUnsubscribe = db.collection("trades")
+    .where("initiatorUid", "==", uid)
+    .onSnapshot(snap => {
       snap.docChanges().forEach(change => {
-        if (change.type === 'added') {
-          checkAndPromptIncomingTrade(change.doc, totalPending);
+        const t = change.doc.data();
+        if (myProfile.activeTrades) {
+          const idx = myProfile.activeTrades.findIndex(x => x.tradeId === change.doc.id);
+          if (idx > -1) {
+            myProfile.activeTrades[idx].status = t.status;
+          }
         }
       });
-    }, err => console.warn("Incoming trades listener:", err));
+      renderActiveTradesPanel();
+    }, err => console.warn("Outgoing trades listener:", err));
 }
 
 // =========================================================================
@@ -5391,7 +5394,7 @@ safeAddListener('btn-add-location', () => {
 safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
 // =========================================================================
-// 🛡️ TARTALMI ÉS DARABSZÁM-ALAPÚ INTELLIGENS DUPLIKÁCIÓ-SZŰRŐ & AUDIT
+// 🛡️ TARTALMI ÉS DARABSZÁM-ALAPÚ DUPLIKÁCIÓ-SZŰRŐ & AUDIT
 // =========================================================================
 
 let adminAlbumCoverBase64 = '';
@@ -6685,6 +6688,7 @@ function initFirebase() {
         if (myDocUnsubscribe) myDocUnsubscribe();
         if (messagesUnsubscribe) messagesUnsubscribe();
         if (incomingTradesUnsubscribe) incomingTradesUnsubscribe();
+        if (outgoingTradesUnsubscribe) outgoingTradesUnsubscribe();
         if (suggestionsUnsubscribe) suggestionsUnsubscribe();
         if (adminTab) adminTab.style.display = 'none';
         if (adminTabM) adminTabM.style.display = 'none';
