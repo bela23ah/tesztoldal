@@ -5073,7 +5073,7 @@ safeAddListener('messages-inbox-list', (e) => {
 });
 
 // =========================================================================
-// KÉTIRÁNYÚ SZERVEROLDALI CSEREFIGYELŐ (NINCS QUERY BLOKKOLÁS!)
+// KÉTIRÁNYÚ SZERVEROLDALI CSEREFIGYELŐ
 // =========================================================================
 function listenToTrades(uid) {
   if (!db || !uid) return;
@@ -5114,7 +5114,6 @@ function listenToTrades(uid) {
     renderGrid();
   };
 
-  // 1. Bejövő cserék figyelése (címzett oldal)
   incomingTradesUnsubscribe = db.collection("trades")
     .where("partnerUid", "==", uid)
     .onSnapshot(snap => {
@@ -5126,7 +5125,6 @@ function listenToTrades(uid) {
       }
     }, err => console.warn("Bejövő csere figyelő hiba:", err));
 
-  // 2. Kimenő cserék figyelése (feladó oldal valós idejű szinkronja)
   outgoingTradesUnsubscribe = db.collection("trades")
     .where("initiatorUid", "==", uid)
     .onSnapshot(snap => {
@@ -5442,7 +5440,6 @@ safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 
 let adminAlbumCoverBase64 = '';
 
-// TARTALMI ÉS DARABSZÁM-ALAPÚ AUDIT
 safeAddListener('btn-admin-audit-db', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
   const reportBox = document.getElementById('admin-audit-report-box');
@@ -5459,13 +5456,11 @@ safeAddListener('btn-admin-audit-db', async () => {
     const duplicatePairs = [];
 
     allDocs.forEach((docA, i) => {
-      // 1. Scraper szemét felderítése
       if (SCRAPER_JUNK_IDS.has(docA.id) || /^(mind|kartya|matricaalbum|figura|kisauto)-\d+$/i.test(docA.id)) {
         if (!junkFound.includes(docA.id)) junkFound.push(docA.id);
         return;
       }
 
-      // 2. Tartalmi és darabszám-alapú intelligens duplikáció-szűrő
       const keyA = getNormalizedAlbumTitleKey(docA.title || docA.id);
 
       for (let j = i + 1; j < allDocs.length; j++) {
@@ -5474,10 +5469,7 @@ safeAddListener('btn-admin-audit-db', async () => {
 
         const keyB = getNormalizedAlbumTitleKey(docB.title || docB.id);
 
-        // Pontos névazonosság
         const isNameMatch = keyA && keyB && (keyA === keyB || keyA.includes(keyB) || keyB.includes(keyA));
-        
-        // Tartalmi hasonlóság: azonos évszám + azonos darabszám + azonos típus
         const isContentMatch = (docA.year === docB.year) && 
                                (parseInt(docA.totalItems, 10) === parseInt(docB.totalItems, 10)) &&
                                (docA.type === docB.type);
@@ -5776,7 +5768,7 @@ safeAddListener('btn-admin-process-universal', async () => {
   const statusEl = document.getElementById('admin-universal-status');
 
   if (!file && !rawText) {
-    return showToast("Válassz ki egy fotót VAGY másolj be nyers szöveget!");
+    return showToast("Válassz ki egy képet VAGY másolj be nyers szöveget!");
   }
 
   if (statusEl) {
@@ -5913,7 +5905,6 @@ function resetAdminAlbumForm() {
   if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
-// KÉTÁLLÁSÚ MENTÉS UNDEFINED-SZŰRŐVEL
 async function executeSaveAlbum(publishActive) {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
 
@@ -6727,7 +6718,7 @@ function initFirebase() {
         document.getElementById('modal-auth')?.classList.remove('open');
         listenToMyProfile(user.uid);
         listenToMyMessages(user.uid);
-        listenToTrades(user.uid); // KÉTIRÁNYÚ CSEREFIGYELŐ INDÍTÁSA
+        listenToTrades(user.uid); // KÉTIRÁNYÚ SZINKRON INDÍTÁSA
         listenToAllUsers();
         listenToRadarReports();
         listenToMeetups();
