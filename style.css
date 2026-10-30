@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.4 VÉGLEGES STÍLUSLAP)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.5 VÉGLEGES STÍLUSLAP)
    ========================================================================= */
 
 :root {
@@ -273,7 +273,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .matrica-cell:active { transform: scale(0.94); }
 .matrica-cell.van { background: var(--moss) !important; color: var(--water-deep) !important; font-weight: 700; }
 .matrica-cell.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; font-weight: 700; }
-.matrica-cell.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; font-weight: 700; }
+.matrica-cell.foglalva { background: var(--water-mid) !important; color: var(--text-primary) !important; }
 
 /* KINDERTOJÁS / FIGURA CSEMPÉK */
 .matrica-grid-figures {
@@ -487,8 +487,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .slot.van .sticker-num, .combo-half.van .sticker-num, .slot.van .sticker-name, .combo-half.van .sticker-name { color: var(--water-deep); font-weight: 700; }
 .slot.kell, .combo-half.kell { background: var(--fur-brown) !important; color: var(--text-primary) !important; border-style: solid; border-color: var(--fur-brown-soft); }
 .slot.kell .sticker-num, .combo-half.kell .sticker-num { color: var(--text-primary); }
-.slot.foglalva, .combo-half.foglalva { background: var(--reserved-blue) !important; color: #FFF !important; border-style: solid; border-color: var(--reserved-blue-soft); }
-.slot.foglalva .sticker-num, .combo-half.foglalva .sticker-num { color: #FFF; }
+.slot.foglalva, .combo-half.foglalva { background: var(--water-mid) !important; color: var(--text-primary) !important; border-style: solid; border-color: rgba(243,238,223,0.25); }
 
 /* KÁRTYÁK & ÜZENETEK */
 .card {
@@ -816,7 +815,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 /* KERESŐ HARMONIKÁK */
 .search-accordion {
   background: var(--surface-card);
-  border: 1px solid rgba(243, 238, 223, 0.15);
+  border: 1px solid rgba(243,238,223,0.15);
   border-radius: var(--radius-md);
   overflow: hidden;
   transition: border-color 0.2s ease;
@@ -863,7 +862,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 /* ADMINISZTRÁCIÓS HARMONIKÁK */
 .admin-accordion {
   background: var(--surface-card);
-  border: 1px solid rgba(243, 238, 223, 0.15);
+  border: 1px solid rgba(243,238,223,0.15);
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 12px;
@@ -904,7 +903,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .admin-abc-btn {
   background: transparent;
-  border: 1px solid rgba(243, 238, 223, 0.15);
+  border: 1px solid rgba(243,238,223,0.15);
   color: var(--sand);
   font-size: 0.75rem;
   font-weight: 700;

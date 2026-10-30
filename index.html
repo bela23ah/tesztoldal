@@ -144,7 +144,7 @@
   <div id="system-update-email-banner" class="notice-banner" style="display:none; background:rgba(20,69,63,0.9); border-color:var(--amber);">
     <div style="display:flex; align-items:center; gap:8px;">
       <span style="font-size:0.82rem; line-height:1.4;">
-        <strong>Rendszerfrissítés:</strong> Bekapcsoltuk az azonnali e-mail értesítőket az érkező csereajánlatokhoz, hogy senki ne várjon feleslegesen válaszra! A beállítást bármikor módosíthatod a Profil fülön.
+        <strong>Rendszerfrissítés (v4.5):</strong> Bekapcsoltuk a cseretételek modális szerkesztését, az alkufolyamatot, valamint az archivált cserék szekciót!
       </span>
     </div>
     <button id="btn-dismiss-email-banner" class="announcement-close" style="color:var(--sand);">✕</button>
@@ -355,13 +355,12 @@
       </div>
 
       <div class="legend-box">
-        <div class="legend-item"><span class="legend-chip state-van"></span> 1x = <strong>Dupla (Van)</strong></div>
-        <div class="legend-item"><span class="legend-chip state-kell"></span> 2x = <strong>Hiányzik (Kell)</strong></div>
-        <div class="legend-item"><span class="legend-chip state-foglalva"></span> 3x = <strong>Foglalva (Kék)</strong></div>
-        <div class="legend-item"><span class="legend-chip state-ures"></span> 4x = Üres / Megvan</div>
+        <div class="legend-item"><span class="legend-chip state-van"></span> <strong>Dupla (Zöld)</strong></div>
+        <div class="legend-item"><span class="legend-chip state-kell"></span> <strong>Hiányzik (Barna)</strong></div>
+        <div class="legend-item"><span class="legend-chip state-foglalva"></span> Üres / Megvan</div>
       </div>
       <p class="view-intro" style="font-size:0.8rem; margin-top:4px;">
-        <em>💡 Több darabnál jobb klikk (mobilon hosszú nyomás) a darabszám beállításához. A folyamatban lévő cserék tételeit bal felül kis lakat (🔒) védi a véletlen elállítástól!</em>
+        <em>💡 Több darabnál jobb klikk (mobilon hosszú nyomás) a darabszám beállításához. A folyamatban lévő cserék tételeit bal felül kék háttérrel kis lakat (🔒) védi a véletlen elállítástól!</em>
       </p>
 
       <div style="margin-bottom:14px;">
@@ -393,7 +392,6 @@
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn btn-primary" id="btn-apply-batch-van" style="flex:1;">Mentés Duplákhoz (Van)</button>
           <button class="btn btn-secondary" id="btn-apply-batch-kell" style="flex:1;">Mentés Hiányzókhoz (Kell)</button>
-          <button class="btn btn-blue" id="btn-apply-batch-foglalva" style="flex:1;">Mentés Foglalthoz (Kék)</button>
         </div>
       </div>
 
@@ -403,12 +401,10 @@
             <button class="filter-btn active" data-filter="all">Mind (<span id="count-total-size">108</span>)</button>
             <button class="filter-btn" data-filter="van">Csak Dupla</button>
             <button class="filter-btn" data-filter="kell">Csak Hiányzó</button>
-            <button class="filter-btn" data-filter="foglalva">Csak Foglalt</button>
           </div>
           <div class="stats-badges">
             <span class="stat-chip stat-van">Dupla: <strong id="count-van">0</strong></span>
             <span class="stat-chip stat-kell">Hiányzik: <strong id="count-kell">0</strong></span>
-            <span class="stat-chip stat-foglalva">Foglalt: <strong id="count-foglalva">0</strong></span>
           </div>
         </div>
         <div id="matrica-grid"></div>
@@ -1303,12 +1299,12 @@
   <button class="btn-undo-action" id="btn-undo-click">Visszavonás</button>
 </div>
 
-<!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL (FELUGRÓ ELFOGADÁS / ELUTASÍTÁS SORSZÁMLÁLÓVAL) -->
+<!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL (SZERKESZTÉSI LEHETŐSÉGGEL ÉS SORSZÁMLÁLÓVAL) -->
 <div id="modal-incoming-trade-prompt" class="modal-overlay" style="z-index: 3100;">
-  <div class="modal-card incoming-trade-card" style="max-width: 480px;">
+  <div class="modal-card incoming-trade-card" style="max-width: 500px;">
     <button class="modal-close" id="btn-close-incoming-prompt">✕</button>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
-      <h3 style="margin:0; color:var(--amber);">Új csereajánlatod érkezett!</h3>
+      <h3 style="margin:0; color:var(--amber);">Új csereajánlat érkezett!</h3>
       <span id="incoming-prompt-counter-badge" class="badge-trade-status badge-status-waiting" style="display:none;">1 / 1 ajánlat</span>
     </div>
     
@@ -1318,31 +1314,61 @@
       <strong id="incoming-prompt-album-title" style="color:var(--amber);">Gyűjteményben</strong>:
     </p>
 
-    <div class="trade-exchange-grid">
-      <div class="trade-exchange-col get-col">
-        <strong style="color:var(--moss-soft); font-size:0.8rem; display:block; margin-bottom:4px;">Ő adná neked:</strong>
-        <div id="incoming-prompt-get-list" style="font-size:0.85rem; font-weight:700; color:#FFF; line-height:1.4;"></div>
+    <!-- Hagyományos nézet -->
+    <div id="incoming-prompt-view-mode">
+      <div class="trade-exchange-grid">
+        <div class="trade-exchange-col get-col">
+          <strong style="color:var(--moss-soft); font-size:0.8rem; display:block; margin-bottom:4px;">Ő adná neked:</strong>
+          <div id="incoming-prompt-get-list" style="font-size:0.85rem; font-weight:700; color:#FFF; line-height:1.4;"></div>
+        </div>
+        <div class="trade-exchange-col give-col">
+          <strong style="color:#FFC0BA; font-size:0.8rem; display:block; margin-bottom:4px;">🔒 Tőled kéri (zárolásra):</strong>
+          <div id="incoming-prompt-give-list" style="font-size:0.85rem; font-weight:700; color:#FFF; line-height:1.4;"></div>
+        </div>
       </div>
-      <div class="trade-exchange-col give-col">
-        <strong style="color:#FFC0BA; font-size:0.8rem; display:block; margin-bottom:4px;">🔒 Tőled kéri (zárolásra):</strong>
-        <div id="incoming-prompt-give-list" style="font-size:0.85rem; font-weight:700; color:#FFF; line-height:1.4;"></div>
+
+      <div id="incoming-prompt-msg-box" style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:6px; font-size:0.8rem; margin-bottom:14px; color:var(--text-primary); max-height:80px; overflow-y:auto;"></div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-contact-green" id="btn-accept-incoming-prompt" style="flex:1; padding:10px; font-weight:800;">
+          ✓ Elfogadom & Tételek zárolása
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-open-edit-incoming-trade" style="border-color:var(--amber); color:var(--amber);">
+          ✏️ Szerkesztés & Elfogadás
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-reject-incoming-prompt" style="color:var(--danger); border-color:var(--danger);">
+          ✕ Nem kérem
+        </button>
       </div>
     </div>
 
-    <div id="incoming-prompt-msg-box" style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:6px; font-size:0.8rem; margin-bottom:14px; color:var(--text-primary); max-height:80px; overflow-y:auto;"></div>
+    <!-- Szerkesztő nézet (Ha a partner módosítani akar a tételeken) -->
+    <div id="incoming-prompt-edit-mode" style="display:none;">
+      <div style="background:rgba(0,0,0,0.35); padding:10px; border-radius:6px; border:1px solid var(--amber); margin-bottom:12px;">
+        <div style="font-size:0.78rem; color:var(--sand); margin-bottom:6px;">
+          💡 <em>Koppints a számra, amit kiveszel vagy módosítasz (ha valami már nincs meg):</em>
+        </div>
+        <div style="margin-bottom:8px;">
+          <strong style="font-size:0.78rem; color:var(--moss-soft); display:block; margin-bottom:3px;">Ő adná neked (kattintható a módosításhoz):</strong>
+          <div id="incoming-edit-get-chips" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+        </div>
+        <div>
+          <strong style="font-size:0.78rem; color:#FFC0BA; display:block; margin-bottom:3px;">Tőled kéri (kattintható a módosításhoz):</strong>
+          <div id="incoming-edit-give-chips" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+        </div>
+      </div>
 
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-contact-green" id="btn-accept-incoming-prompt" style="flex:1; padding:10px; font-weight:800;">
-        ✓ Elfogadom & Tételek zárolása
-      </button>
-      <button class="btn btn-secondary btn-sm" id="btn-reject-incoming-prompt" style="color:var(--danger); border-color:var(--danger);">
-        ✕ Nem kérem
-      </button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-contact-green" id="btn-save-and-accept-incoming-trade" style="flex:1; padding:10px; font-weight:800;">
+          ✓ Elfogadás a módosításokkal
+        </button>
+        <button class="btn btn-secondary" id="btn-cancel-edit-incoming-trade">Mégse</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- CSERE VISSZAVONÁSI INDOKLÓ MODAL (AUTOMATA DUPLALEVONÁSSAL!) -->
+<!-- CSERE VISSZAVONÁSI INDOKLÓ MODAL (AUTOMATA DUPLALEVONÁSSAL ÉS FELUGRÓ ABLAKOS ÉRTESÍTÉSSEL!) -->
 <div id="modal-cancel-trade-reason" class="modal-overlay" style="z-index: 2900;">
   <div class="modal-card" style="max-width:440px;">
     <h3 style="margin-top:0; color:var(--danger);">Megállapodás visszavonása</h3>
@@ -1376,6 +1402,17 @@
       </button>
       <button class="btn btn-secondary" id="btn-abort-cancel-trade">Mégse</button>
     </div>
+  </div>
+</div>
+
+<!-- FELUGRÓ ÉRTESÍTŐ ABLAK CSERE VISSZAMONDÁSRÓL VAGY MÓDOSÍTÁSRÓL -->
+<div id="modal-trade-notification" class="modal-overlay" style="z-index: 3150;">
+  <div class="modal-card" style="max-width:420px; text-align:center;">
+    <button class="modal-close" id="btn-close-trade-notif-modal">✕</button>
+    <div style="font-size:2.2rem; margin-bottom:4px;">⚠️</div>
+    <h3 style="margin:0 0 6px; color:var(--amber);" id="trade-notif-modal-title">Csere frissítés</h3>
+    <p id="trade-notif-modal-text" style="font-size:0.85rem; color:var(--sand); line-height:1.5; margin:0 0 16px;"></p>
+    <button class="btn btn-primary" id="btn-close-trade-notif-ok" style="width:100%; padding:9px;">Rendben</button>
   </div>
 </div>
 
@@ -1622,7 +1659,6 @@
       <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
         <button class="btn btn-primary" id="btn-scanner-save-van" style="flex:1; font-size:0.82rem; padding:8px;">Duplákhoz (Van)</button>
         <button class="btn btn-secondary" id="btn-scanner-save-kell" style="flex:1; font-size:0.82rem; padding:8px;">Hiányzókhoz (Kell)</button>
-        <button class="btn btn-blue" id="btn-scanner-save-foglalva" style="flex:1; font-size:0.82rem; padding:8px;">Foglalthoz</button>
       </div>
       <div style="text-align:center; margin:8px 0 6px; font-size:0.75rem; color:var(--text-muted);">— vagy —</div>
       <button class="btn btn-secondary" id="btn-scanner-copy-list" style="width:100%; font-size:0.82rem; padding:8px;">
@@ -1664,7 +1700,7 @@
   </div>
 </div>
 
-<!-- KAPCSOLATFELVÉTELI MODAL (EGYEDI AJÁNLAT RUBRIKÁVAL) -->
+<!-- KAPCSOLATFELVÉTELI MODAL (EGYEDI AJÁNLAT RUBRIKÁVAL ÉS ÜRES KÍNÁLAT TÁMOGATÁSSAL) -->
 <div id="modal-contact" class="modal-overlay">
   <div class="modal-card">
     <button class="modal-close" id="btn-close-contact">✕</button>
@@ -1699,8 +1735,8 @@
 
     <!-- EGYEDI AJÁNLAT RUBRIKA -->
     <div class="custom-offer-box">
-      <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--sand); margin-bottom:4px;">
-        Egyedi felajánlásod / cserealapod (opcionális):
+      <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--amber); margin-bottom:4px;">
+        Egyedi felajánlásod / cserealapod (ha nincs közvetlen tétel):
       </label>
       <input type="text" id="contact-custom-offer" class="input-field" placeholder="Pl. 2 tábla Milka csoki, személyes megbeszélés, vagy egyéb megegyezés...">
       <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:3px;">
@@ -1716,7 +1752,7 @@
     <div class="form-group">
       <label class="checkbox-label" style="font-size:0.8rem; color:var(--sand); font-weight:600;">
         <input type="checkbox" id="contact-auto-create-trade" checked>
-        Rögzítés folyamatban lévő csereként a rács alatt (Tételek zárolása a megegyezésig)
+        Rögzítés folyamatban lévő csereként a rács alatt (Tételek azonnali zárolása)
       </label>
     </div>
 
@@ -1805,7 +1841,6 @@
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn btn-secondary" id="btn-reset-van">Csak a duplák törlése (Van)</button>
       <button class="btn btn-secondary" id="btn-reset-kell">Csak a hiányzók törlése (Kell)</button>
-      <button class="btn btn-secondary" id="btn-reset-foglalva">Csak a foglaltak törlése (Kék)</button>
       <button class="btn btn-danger" id="btn-reset-all">Teljes gyűjtemény törlése</button>
     </div>
   </div>
