@@ -2966,7 +2966,7 @@ function renderActiveTradesPanel() {
 
   let html = '';
 
-  if (pendingTrades.length > 0) {
+ if (pendingTrades.length > 0) {
     html += pendingTrades.map((t) => {
       const originalIdx = allTrades.indexOf(t);
       const isWaitingMyAcceptance = (t.status === 'pending_acceptance' && !t.isInitiator);
@@ -3015,6 +3015,9 @@ function renderActiveTradesPanel() {
               ${isWaitingMyAcceptance ? `
                 <button class="btn btn-contact-green btn-sm" data-action="accept-trade" data-trade-idx="${originalIdx}">
                   ✓ Elfogadom & Tételek zárolása
+                </button>
+                <button class="btn btn-secondary btn-sm" data-action="open-edit-trade" data-trade-idx="${originalIdx}" style="border-color:var(--amber); color:var(--amber);">
+                  ✏️ Szerkesztés & Elfogadás
                 </button>
               ` : ''}
 
