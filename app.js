@@ -1,6 +1,6 @@
 // =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - app.js (v4.5.1 ÉLES HIBAJAVÍTOTT KIADÁS)
-// 1 / 4. RÉSZ: ALAPARCHITEKTÚRA, ADATMODELL, BIZTONSÁGOS ALBUM REGISTRY & RÁCS
+// Cserélj Okosan (csereljokosan.hu) - app.js (v4.5 ÉLES KIADÁS)
+// 1 / 4. RÉSZ: ALAPARCHITEKTÚRA, ADATMODELL, JAVÍTOTT HUB STATISZTIKÁK & RÁCS
 // =========================================================================
 
 const ADMIN_EMAIL = "gyorgy.harkai@gmail.com";
@@ -13,16 +13,8 @@ const SCRAPER_JUNK_IDS = new Set([
   'album-megnyitasa', 'gyujtes-inditasa', 'gyujtemeny-bekuldese'
 ]);
 
-// --- BIZTONSÁGOS JSON PARSER HIBATŰRŐ FALLBACKKEL ---
-function safeJsonParse(key, fallback) {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
-  } catch (e) { return fallback; }
-}
-
-// --- ALAPÉRTELMEZETT BIZTONSÁGOS ALBUMOK (GARANTÁLT HUB MEGJELENÉS) ---
-const DEFAULT_ALBUMS_REGISTRY = {
+// --- DINAMIKUS ALBUMOK & BOLTOK (FIRESTORE ÉS CACHE ELSŐDLEGES) ---
+let ALBUMS_REGISTRY = safeJsonParse('cached_albums_registry', {
   "lidl-lutra-2026": {
     id: "lidl-lutra-2026",
     title: "Lutra Album",
@@ -39,47 +31,8 @@ const DEFAULT_ALBUMS_REGISTRY = {
     hasChapters: true,
     hasFavorites: false,
     active: true
-  },
-  "garfield-2025": {
-    id: "garfield-2025",
-    title: "Garfield Kalandok",
-    subtitle: "A kedvenc lusta macskád kalandjai",
-    publisher: "Panini",
-    year: 2025,
-    totalItems: 160,
-    type: "sticker",
-    typeLabel: "Matricaalbum",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Fgarfield.png&w=3840&q=75",
-    featured: true,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false,
-    active: true
-  },
-  "fifa-365-2025": {
-    id: "fifa-365-2025",
-    title: "FIFA 365 Adrenalyn XL",
-    subtitle: "Hivatalos focis kártyasorozat",
-    publisher: "Panini",
-    year: 2025,
-    totalItems: 450,
-    type: "card",
-    typeLabel: "Kártyagyűjtemény",
-    coverUrl: "https://gyujtoklub.hu/_next/image?url=%2Fuploads%2Fcollections%2Ffifa365.png&w=3840&q=75",
-    featured: true,
-    hasRadar: false,
-    radarType: "none",
-    hasChapters: false,
-    hasFavorites: false,
-    active: true
   }
-};
-
-let ALBUMS_REGISTRY = safeJsonParse('cached_albums_registry', DEFAULT_ALBUMS_REGISTRY);
-if (!ALBUMS_REGISTRY || Object.keys(ALBUMS_REGISTRY).length === 0) {
-  ALBUMS_REGISTRY = DEFAULT_ALBUMS_REGISTRY;
-}
+});
 
 let STORE_DATABASES = safeJsonParse('cached_store_databases', { "lidl": [], "spar": [], "tesco": [], "penny": [] });
 
@@ -2966,7 +2919,7 @@ function renderActiveTradesPanel() {
 
   let html = '';
 
- if (pendingTrades.length > 0) {
+  if (pendingTrades.length > 0) {
     html += pendingTrades.map((t) => {
       const originalIdx = allTrades.indexOf(t);
       const isWaitingMyAcceptance = (t.status === 'pending_acceptance' && !t.isInitiator);
@@ -3015,9 +2968,6 @@ function renderActiveTradesPanel() {
               ${isWaitingMyAcceptance ? `
                 <button class="btn btn-contact-green btn-sm" data-action="accept-trade" data-trade-idx="${originalIdx}">
                   ✓ Elfogadom & Tételek zárolása
-                </button>
-                <button class="btn btn-secondary btn-sm" data-action="open-edit-trade" data-trade-idx="${originalIdx}" style="border-color:var(--amber); color:var(--amber);">
-                  ✏️ Szerkesztés & Elfogadás
                 </button>
               ` : ''}
 
