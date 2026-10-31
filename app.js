@@ -4053,6 +4053,19 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('click', (e) => {
+	// --- ÚJ RÉSZ A BELÉPÉS ÉS SZERKESZTÉSI GOMBHOZ ---
+  const openAuthBtn = e.target.closest('#btn-open-auth');
+  if (openAuthBtn) {
+    document.getElementById('modal-auth')?.classList.add('open');
+    return;
+  }
+
+  const editAcceptBtn = e.target.closest('[data-action="open-edit-accept-modal"]');
+  if (editAcceptBtn) {
+    const idx = parseInt(editAcceptBtn.dataset.tradeIdx, 10);
+    openEditAcceptModal(idx);
+    return;
+  }
   const img = e.target.closest('[data-action="open-lightbox"]');
   if (img) {
     const lightbox = document.getElementById('modal-image-lightbox');

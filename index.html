@@ -1298,6 +1298,33 @@
   <span id="undo-toast-text">Módosítva</span>
   <button class="btn-undo-action" id="btn-undo-click">Visszavonás</button>
 </div>
+<!-- SZERKESZTHETŐ ÉS ELFOGADHATÓ BEJÖVŐ CSERE MODAL -->
+<div id="modal-edit-accept-trade" class="modal-overlay" style="z-index: 3150;">
+  <div class="modal-card" style="max-width: 480px;">
+    <button class="modal-close" id="btn-close-edit-accept">✕</button>
+    <h3 style="margin-top:0; color:var(--amber);">Cseretételek szerkesztése és elfogadása</h3>
+    <p style="font-size:0.83rem; color:var(--sand); margin:0 0 10px;">
+      <strong id="edit-accept-partner-name" style="color:#FFF;">Partner</strong> ajánlatát fogadod el. Ha valamelyik tétel már nincs meg, vedd ki a pipát!
+    </p>
+
+    <div style="margin-bottom:10px;">
+      <strong style="color:var(--moss-soft); font-size:0.8rem; display:block; margin-bottom:4px;">Tőle kapod (jelöld ki, ami megvan):</strong>
+      <div id="edit-accept-getting-chips" style="display:flex; flex-direction:column; gap:4px; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px;"></div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <strong style="color:#FFC0BA; font-size:0.8rem; display:block; margin-bottom:4px;">Te adod neki (zárolás):</strong>
+      <div id="edit-accept-giving-chips" style="display:flex; flex-direction:column; gap:4px; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px;"></div>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-contact-green" id="btn-confirm-edit-accept" style="flex:1; padding:10px; font-weight:800;">
+        ✓ Elfogadás a módosításokkal & Zárolás
+      </button>
+      <button class="btn btn-secondary" id="btn-close-edit-accept-2">Mégse</button>
+    </div>
+  </div>
+</div>
 
 <!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL (SZERKESZTÉSI LEHETŐSÉGGEL ÉS SORSZÁMLÁLÓVAL) -->
 <div id="modal-incoming-trade-prompt" class="modal-overlay" style="z-index: 3100;">
