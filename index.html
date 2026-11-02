@@ -37,8 +37,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Leaflet.js Vektortérkép Stíluslap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
   <!-- Külső CSS Stíluslap -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Leaflet.js Könyvtár -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <!-- Firebase SDK-k (Compat verzió) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -181,7 +187,7 @@
   </div>
 
   <div id="guest-notice" class="notice-banner" style="display:none;">
-    <span>💡 <strong>Vendég mód:</strong> Jelölhetsz szabadon! Ha belépsz, a gyűjteményed a felhőbe szinkronizálódik.</span>
+    <span><strong>Vendég mód:</strong> Jelölhetsz szabadon! Ha belépsz, a gyűjteményed a felhőbe szinkronizálódik.</span>
   </div>
 
   <div id="profile-warning" class="profile-warning-banner" style="display:none;">
@@ -354,6 +360,13 @@
         </div>
       </div>
 
+      <!-- MATRICA GYORSKERESŐ / KIEMELŐ SÁV -->
+      <div style="margin-bottom: 10px; display: flex; gap: 8px; align-items: center;">
+        <input type="search" id="grid-quick-filter" class="input-field"
+               placeholder="Szám azonnali kiemelése a rácson (pl. 42 vagy 3)..."
+               style="padding: 6px 12px; font-size: 0.85rem;" autocomplete="off">
+      </div>
+
       <div class="legend-box">
         <div class="legend-item"><span class="legend-chip state-van"></span> 1x = <strong>Dupla (Van)</strong></div>
         <div class="legend-item"><span class="legend-chip state-kell"></span> 2x = <strong>Hiányzik (Kell)</strong></div>
@@ -361,7 +374,7 @@
         <div class="legend-item"><span class="legend-chip state-ures"></span> 4x = Üres / Megvan</div>
       </div>
       <p class="view-intro" style="font-size:0.8rem; margin-top:4px;">
-        <em>💡 Több darabnál jobb klikk (mobilon hosszú nyomás) a darabszám beállításához. A folyamatban lévő cserék tételeit bal felül kis lakat (🔒) védi a véletlen elállítástól!</em>
+        <em>Több darabnál jobb klikk (mobilon hosszú nyomás) a darabszám beállításához. A folyamatban lévő cserék tételeit bal felül kis lakat (🔒) védi a véletlen elállítástól!</em>
       </p>
 
       <div style="margin-bottom:14px;">
@@ -464,6 +477,7 @@
         <button class="filter-btn active" id="btn-match-all">Legjobb cserék</button>
         <button class="filter-btn" id="btn-match-city">Csak a saját városomban</button>
         <button class="filter-btn" id="btn-match-gift">Csak ingyen felajánlók</button>
+        <button class="filter-btn" id="btn-match-sym">Szimmetrikus (1:1) cserék</button>
         <button class="filter-btn" id="btn-match-loop">Körcserék (3 fős)</button>
       </div>
 
@@ -658,22 +672,14 @@
         </div>
       </div>
 
-      <!-- 3. HELYEN: VÁROSI HŐTÉRKÉP ÉS VÁROSOK LISTÁJA -->
+      <!-- 3. HELYEN: VÁROSI HŐTÉRKÉP ÉS LEAFLET VEKTORTÉRKÉP -->
       <div class="card stat-section-anchor" id="stat-sec-map">
         <h3 style="margin:0 0 6px; font-size:1.05rem; color:var(--amber);">Városi Hőtérkép: Hol izzik a csere?</h3>
         <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px;">
-          Kattints egy városra a térképen vagy a listában a helyi cserepartnerek azonnali szűréséhez!
+          Nagyítható vektortérkép: kattints a városokra a helyi cserepartnerek azonnali szűréséhez!
         </p>
         
-        <div class="map-heatmap-container" id="heatmap-map-box">
-          <svg viewBox="0 0 800 500" class="hungary-svg-map">
-            <path class="map-outline" d="M 90,135 C 120,125 180,120 220,125 C 255,130 300,105 340,110 C 365,115 385,145 400,140 C 415,110 440,95 470,85 C 510,75 550,65 600,55 C 645,45 680,50 720,70 C 755,90 770,125 765,155 C 760,185 730,225 725,255 C 720,285 735,320 705,355 C 675,390 635,405 595,420 C 555,430 515,440 475,450 C 445,475 425,480 395,465 C 350,445 295,430 250,420 C 200,410 150,390 115,360 C 75,325 60,290 65,260 C 70,230 85,200 80,175 Z" />
-            <path class="map-river" d="M 215,125 Q 350,110 400,140 T 425,240 T 435,380 T 445,465" />
-            <path class="map-river" d="M 725,75 Q 640,105 595,150 T 560,260 T 530,370 T 525,440" />
-            <path class="map-lake" d="M 220,295 C 245,280 280,260 315,245 C 335,238 355,230 365,225 C 355,238 325,260 295,275 C 265,290 235,302 220,295 Z" />
-          </svg>
-          <div id="heatmap-overlay-pins"></div>
-        </div>
+        <div id="leaflet-map-container" style="width:100%; height:380px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3); background:#081B1A; margin-bottom:12px; z-index:10;"></div>
 
         <div id="heatmap-city-list" class="stats-ranking-list" style="margin-top:14px;">
           Adatok számítása...
@@ -700,19 +706,6 @@
       </div>
 
       <!-- 5. ÖSSZECSUKOTT HARMONIKÁK: RÉSZLETES STATISZTIKÁK -->
-      <details class="search-accordion" id="stat-acc-favs" style="margin-bottom:12px;">
-        <summary class="search-acc-summary">
-          <span>A Közösség Kedvenc Tételei (Top 5)</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body">
-          <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-            A gyűjtők által megjelölt 1., 2. és 3. legkedvesebb tétel ranglistája:
-          </p>
-          <div id="stats-favorites-ranking" class="stats-ranking-list">Szavazatok számítása...</div>
-        </div>
-      </details>
-
       <details class="search-accordion" id="stat-acc-dist" style="margin-bottom:12px;">
         <summary class="search-acc-summary">
           <span>Hol tart az ország? (Közösségi telítettség)</span>
@@ -743,11 +736,11 @@
 
       <details class="search-accordion" id="stat-acc-rare" style="margin-bottom:12px;">
         <summary class="search-acc-summary">
-          <span>Ritkaságok & Leggyakoribbak (Top 5)</span>
+          <span>Legkeresettebb és leggyakoribb tételek (Top 5)</span>
           <span class="acc-chevron">▾</span>
         </summary>
         <div class="search-acc-body">
-          <h4 style="margin:0 0 4px; font-size:0.95rem; color:var(--amber);">Top 5 legkeresettebb tétel (Legritkábbak):</h4>
+          <h4 style="margin:0 0 4px; font-size:0.95rem; color:var(--amber);">Top 5 legkeresettebb tétel:</h4>
           <div id="stats-rarest-list" class="stats-ranking-list">Adatok számítása...</div>
 
           <h4 style="margin:14px 0 4px; font-size:0.95rem; color:var(--sand);">Top 5 leggyakoribb tétel:</h4>
@@ -825,7 +818,7 @@
         <h2>Közösségi Találkozók</h2>
         <button class="btn btn-secondary" id="btn-refresh-meetups" style="padding:4px 10px; font-size:0.75rem;">Frissítés</button>
       </div>
-      <p class="view-intro">Közös cserenapok, játszótéri cserebere alkalmak, vagy börzék hirdetőtáblája.</p>
+      <p class="view-intro">Közös cserenapok, játszótéri cserebere alkalmak vagy börzék hirdetőtáblája.</p>
 
       <div class="card">
         <h3 style="margin-top:0; font-size:1.05rem;">Új cserealkalom meghirdetése</h3>
@@ -923,29 +916,6 @@
           <input type="email" id="prof-email" class="input-field" placeholder="pelda@freemail.hu" required>
         </div>
 
-        <!-- KEDVENCEK (OPCIONÁLIS) -->
-        <div id="prof-favorites-container" style="background:rgba(0,0,0,0.25); padding:12px; border-radius:var(--radius-sm); margin-bottom:14px; border:1px solid rgba(216,155,74,0.3);">
-          <h4 style="margin:0 0 4px; font-size:0.92rem; color:var(--amber);" id="prof-favorites-title">Top 3 Kedvenc Tételed (Opcionális)</h4>
-          <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 8px;">
-            Ha szeretnéd, megjelölheted a kedvenceidet:
-          </p>
-
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
-            <div>
-              <label style="font-size:0.75rem; color:var(--sand);">1. Kedvenc:</label>
-              <select id="prof-fav-1" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
-            </div>
-            <div>
-              <label style="font-size:0.75rem; color:var(--sand);">2. Kedvenc:</label>
-              <select id="prof-fav-2" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
-            </div>
-            <div>
-              <label style="font-size:0.75rem; color:var(--sand);">3. Kedvenc:</label>
-              <select id="prof-fav-3" class="input-field" style="padding:6px; font-size:0.82rem;"></select>
-            </div>
-          </div>
-        </div>
-
         <div class="form-group">
           <!-- SZÜNETELTETÉS KAPCSOLÓ -->
           <label class="checkbox-label" style="font-weight:700; color:var(--amber); background:rgba(216,155,74,0.12); padding:8px 10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
@@ -990,7 +960,7 @@
 
       <div class="card" id="cert-promo-card" style="text-align:center;">
         <h3 style="margin:0 0 6px; font-size:1rem;">Bolygóvédő Szuperhős Oklevél</h3>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">Ha betelt a Lidl Lutra albumod, itt megtekintheted és letöltheted a névre szóló okleveledet:</p>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">Ha betelt az albumod, itt megtekintheted és letöltheted a névre szóló elismerést:</p>
         <button class="btn btn-secondary" id="btn-view-certificate" style="font-size:0.8rem; padding:6px 14px;">Oklevél megnyitása</button>
       </div>
     </section>
@@ -1010,7 +980,7 @@
           <div style="display:flex; flex-direction:column; gap:10px;">
             <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
               <strong style="color:var(--amber);">Adatbázis Audit & Duplikáció-Szűrő:</strong>
-              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Átvizsgálja a Firestore albumokat, leleplezi a scraper-szemetet és a tartalmi duplikációkat, majd 1 kattintással kitisztítja őket!</p>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Átvizsgálja a Firestore albumokat a címazonosság és szótövek alapján, és kiszűri a duplikációkat.</p>
               <button class="btn btn-primary btn-sm" id="btn-admin-audit-db">Duplikációk és Szemét elemek keresése</button>
               <div id="admin-audit-report-box" class="audit-report-box" style="display:none;"></div>
             </div>
@@ -1023,7 +993,7 @@
 
             <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
               <strong>Településtisztítás & Tömeges E-mail bekapcsolás:</strong>
-              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Minden eddigi felhasználónál (809 fő) aktiválja az e-mail értesítőket és normalizálja a városneveket.</p>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Minden eddigi felhasználónál aktiválja az e-mail értesítőket és normalizálja a városneveket.</p>
               <button class="btn btn-primary btn-sm" id="btn-admin-migrate-locations">Településtisztítás és e-mail bekapcsolása most</button>
             </div>
           </div>
@@ -1303,9 +1273,35 @@
   <button class="btn-undo-action" id="btn-undo-click">Visszavonás</button>
 </div>
 
-<!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL (FELUGRÓ ELFOGADÁS / ELUTASÍTÁS SORSZÁMLÁLÓVAL) -->
+<!-- RÖGZÍTETT MOBIL ALSÓ MENÜSÁV (BOTTOM BAR) -->
+<nav id="mobile-bottom-bar" class="mobile-bottom-nav" style="display: none;">
+  <button class="bottom-nav-btn active" data-bottom-view="matricaim">
+    <span class="bottom-nav-icon">📜</span>
+    <span>Albumom</span>
+  </button>
+  <button class="bottom-nav-btn" data-bottom-view="cserek">
+    <span class="bottom-nav-icon">⇄</span>
+    <span>Cserék</span>
+    <span id="bottom-match-badge" class="bottom-nav-badge" style="display:none;">!</span>
+  </button>
+  <button class="bottom-nav-btn" data-bottom-view="kereso">
+    <span class="bottom-nav-icon">🔍</span>
+    <span>Kereső</span>
+  </button>
+  <button class="bottom-nav-btn" data-bottom-view="uzeneteim">
+    <span class="bottom-nav-icon">💬</span>
+    <span>Üzenetek</span>
+    <span id="bottom-msg-badge" class="bottom-nav-badge" style="display:none;">0</span>
+  </button>
+  <button class="bottom-nav-btn" data-bottom-view="profil">
+    <span class="bottom-nav-icon">👤</span>
+    <span>Profil</span>
+  </button>
+</nav>
+
+<!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL (ELFOGADÁS / SZERKESZTÉS / ELUTASÍTÁS) -->
 <div id="modal-incoming-trade-prompt" class="modal-overlay" style="z-index: 3100;">
-  <div class="modal-card incoming-trade-card" style="max-width: 480px;">
+  <div class="modal-card incoming-trade-card" style="max-width: 490px;">
     <button class="modal-close" id="btn-close-incoming-prompt">✕</button>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
       <h3 style="margin:0; color:var(--amber);">Új csereajánlatod érkezett!</h3>
@@ -1331,14 +1327,73 @@
 
     <div id="incoming-prompt-msg-box" style="background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:6px; font-size:0.8rem; margin-bottom:14px; color:var(--text-primary); max-height:80px; overflow-y:auto;"></div>
 
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-contact-green" id="btn-accept-incoming-prompt" style="flex:1; padding:10px; font-weight:800;">
-        ✓ Elfogadom & Tételek zárolása
-      </button>
-      <button class="btn btn-secondary btn-sm" id="btn-reject-incoming-prompt" style="color:var(--danger); border-color:var(--danger);">
-        ✕ Nem kérem
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-contact-green" id="btn-accept-incoming-prompt" style="flex:1; padding:10px; font-weight:800;">
+          ✓ Elfogadom & Tételek zárolása
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-reject-incoming-prompt" style="color:var(--danger); border-color:var(--danger);">
+          ✕ Nem kérem
+        </button>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-edit-incoming-prompt" style="color:var(--amber); border-color:var(--amber); font-weight:700;">
+        ✏️ Cseretételek szerkesztése (ha már nincs meg a kért tétel)
       </button>
     </div>
+  </div>
+</div>
+
+<!-- INTERAKTÍV AJÁNLATSZERKESZTŐ ÉS ELLENAJÁNLAT MODAL -->
+<div id="modal-counter-offer" class="modal-overlay" style="z-index: 3150;">
+  <div class="modal-card" style="max-width: 500px;">
+    <button class="modal-close" id="btn-close-counter-offer">✕</button>
+    <h3 style="margin-top:0; color:var(--amber);">Csereajánlat módosítása</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 10px;">
+      Vedd ki azokat a tételeket, amik már nincsenek meg, vagy adj hozzá saját felajánlást:
+    </p>
+
+    <div style="margin-bottom:10px; background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
+      <span style="font-size:0.75rem; color:#FFC0BA; font-weight:700; display:block; margin-bottom:4px;">Tőled kért tételek (Koppints a kihúzáshoz):</span>
+      <div id="counter-offer-give-chips" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+    </div>
+
+    <div style="margin-bottom:10px; background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm);">
+      <span style="font-size:0.75rem; color:var(--moss-soft); font-weight:700; display:block; margin-bottom:4px;">Ő adná neked (Koppints a kihúzáshoz):</span>
+      <div id="counter-offer-get-chips" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:12px;">
+      <label style="font-size:0.78rem; font-weight:700; color:var(--sand);">Egyedi ellenajánlat / megjegyzés a módosításhoz:</label>
+      <input type="text" id="counter-offer-custom-note" class="input-field" placeholder="Pl. A #12 sajnos már nincs meg, de adok helyette egy másikat...">
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary" id="btn-submit-counter-offer" style="flex:1; padding:9px; font-weight:800;">
+        Módosított ajánlat küldése & Zárolás
+      </button>
+      <button class="btn btn-secondary btn-sm" id="btn-abort-counter-offer">Mégse</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARTNER LEMONDÁSI ÉRTESÍTŐ MODAL -->
+<div id="modal-trade-cancelled-notice" class="modal-overlay" style="z-index: 3200;">
+  <div class="modal-card" style="max-width:440px; text-align:center;">
+    <button class="modal-close" id="btn-close-cancelled-notice">✕</button>
+    <div style="font-size:2rem; margin-bottom:6px;">⚠️</div>
+    <h3 style="margin:0 0 6px; color:var(--danger);">Egy csereajánlatod visszavonásra került</h3>
+    <p style="font-size:0.85rem; color:var(--sand); margin:0 0 10px;">
+      <strong id="cancelled-notice-partner-name" style="color:#FFF;">Partner</strong> visszavonta vagy elutasította a cserét.
+    </p>
+    <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:var(--radius-sm); margin-bottom:14px; font-size:0.82rem; color:var(--text-primary); text-align:left;">
+      <strong>Indoklás:</strong> <span id="cancelled-notice-reason-text">Meggondolta magát</span>
+    </div>
+    <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 12px;">
+      A lefoglalt tételeid zárolása automatikusan feloldódott a rácsodon.
+    </p>
+    <button class="btn btn-primary" id="btn-ack-cancelled-notice" style="width:100%; padding:9px;">
+      Megértettem
+    </button>
   </div>
 </div>
 
@@ -1379,7 +1434,7 @@
   </div>
 </div>
 
-<!-- FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MODAL (SZÖVEG + FOTÓ BEOLVASÓVAL!) -->
+<!-- FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MODAL -->
 <div id="modal-fb-crossmatch" class="modal-overlay" style="z-index: 2700;">
   <div class="modal-card" style="max-width:560px;">
     <button class="modal-close" id="btn-close-fb-crossmatch">✕</button>
@@ -1462,7 +1517,7 @@
 <div id="modal-donably-support" class="modal-overlay" style="z-index: 2600;">
   <div class="modal-card" style="max-width:440px; text-align:center; border:2px solid var(--amber);">
     <button class="modal-close" id="btn-close-donably-modal">✕</button>
-    <div style="font-size:2.2rem; margin-bottom:6px;">☕ 🦦</div>
+    <div style="font-size:2.2rem; margin-bottom:6px;">☕</div>
     <h3 style="margin:0 0 8px; color:var(--amber); font-size:1.25rem;">Segített az oldal a cserékben?</h3>
     <p style="font-size:0.85rem; color:var(--sand); line-height:1.5; margin:0 0 14px;">
       A Cserélj Okosan teljesen ingyenes és reklámmentes, a felhős adatbázis és a szerverek fenntartása azonban költségekkel jár.
@@ -1645,11 +1700,11 @@
     <div class="form-group" style="margin-bottom:14px;">
       <label style="font-weight:700; color:var(--sand); margin-bottom:6px; display:block;">Értékelés (1–5 csillag):</label>
       <div id="trade-star-rating-box" class="star-rating-row">
-        <span class="star-btn active" data-rating="1">★</span>
-        <span class="star-btn active" data-rating="2">★</span>
-        <span class="star-btn active" data-rating="3">★</span>
-        <span class="star-btn active" data-rating="4">★</span>
-        <span class="star-btn active" data-rating="5">★</span>
+        <span class="star-btn active" data-rating="1">⭐</span>
+        <span class="star-btn active" data-rating="2">⭐</span>
+        <span class="star-btn active" data-rating="3">⭐</span>
+        <span class="star-btn active" data-rating="4">⭐</span>
+        <span class="star-btn active" data-rating="5">⭐</span>
       </div>
     </div>
 
@@ -1685,7 +1740,7 @@
     <!-- KIIKSZELHETŐ TÉTELVÁLASZTÓ CHIPEK -->
     <div id="contact-chips-editor-section" style="margin-bottom:12px; background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
       <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:6px;">
-        💡 <em>Koppints a számra, amit <strong>mégsem adnál oda vagy kérnél</strong> (áthúzódik és azonnal kikerül a szövegből):</em>
+        <em>Koppints a számra, amit <strong>mégsem adnál oda vagy kérnél</strong> (áthúzódik és azonnal kikerül a szövegből):</em>
       </div>
       <div id="contact-give-chips-wrapper" style="margin-bottom:6px;">
         <span style="font-size:0.75rem; color:var(--sand); font-weight:700; display:block; margin-bottom:3px;">Te adnád neki:</span>
@@ -1751,7 +1806,7 @@
   </div>
 </div>
 
-<!-- GYŰJTŐ ADATLAP MODAL (AKTIVITÁSI SÁVVÁL: UTOLSÓ BELÉPÉS & FRISSÍTÉSI IDŐ!) -->
+<!-- GYŰJTŐ ADATLAP MODAL -->
 <div id="modal-user-profile" class="modal-overlay">
   <div class="modal-card" style="max-width:520px;">
     <button class="modal-close" id="btn-close-user-profile">✕</button>
@@ -1816,7 +1871,7 @@
   <div class="modal-card" style="max-width:460px;">
     <button class="modal-close" id="btn-close-cert">✕</button>
     <div class="certificate-card" id="cert-printable-area">
-      <div class="cert-title">🏆 OKLEVÉL 🏆</div>
+      <div class="cert-title">📜 OKLEVÉL 📜</div>
       <p style="font-size:0.8rem; margin:4px 0; text-transform:uppercase; letter-spacing:1px; color:var(--amber);">Bolygóvédő Szuperhős Minősítés</p>
       <div class="cert-name" id="cert-user-name">VidraPanni</div>
       <p style="font-size:0.85rem; margin:10px 0;">
