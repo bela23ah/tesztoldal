@@ -2,26 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://csereljokosan.hu/</loc>
-    <lastmod>2026-10-29</lastmod>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://csereljokosan.hu/lutra-album-matrica-csere.html</loc>
-    <lastmod>2026-10-29</lastmod>
+    <loc>https://csereljokosan.hu/gyik.html</loc>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://csereljokosan.hu/lutra-album-matricak-listaja.html</loc>
-    <lastmod>2026-10-29</lastmod>
+    <loc>https://csereljokosan.hu/facebook-matrica-csere.html</loc>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://csereljokosan.hu/hol-kaphato-lutra-album.html</loc>
-    <lastmod>2026-10-29</lastmod>
+    <loc>https://csereljokosan.hu/lutra-album-matrica-csere.html</loc>
+    <lastmod>2026-11-06</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 </urlset>
