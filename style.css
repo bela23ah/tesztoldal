@@ -645,3 +645,38 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 @media (min-width: 681px) {
   .mobile-bottom-nav { display: none !important; }
 }
+/* =========================================================================
+   KINDER ÉS FIGURA GYŰJTEMÉNYEK: VALÓDI TOJÁS ALAKÚ CSEMPÉK
+   ========================================================================= */
+.matrica-cell.cell-figure {
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40% !important;
+  aspect-ratio: 1 / 1.25 !important;
+  min-height: 58px;
+  border-width: 1.5px;
+  background: radial-gradient(circle at 35% 30%, var(--water-light) 0%, var(--water-mid) 100%) !important;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.15), 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.matrica-cell.cell-figure.van {
+  background: radial-gradient(circle at 35% 30%, var(--moss-soft) 0%, var(--moss) 100%) !important;
+}
+
+.matrica-cell.cell-figure.kell {
+  background: radial-gradient(circle at 35% 30%, var(--fur-brown-soft) 0%, var(--fur-brown) 100%) !important;
+}
+
+.matrica-cell.cell-figure.foglalva {
+  background: radial-gradient(circle at 35% 30%, var(--reserved-blue-soft) 0%, var(--reserved-blue) 100%) !important;
+}
+
+/* Családi füzetválasztó sáv az aktív albumban */
+.family-sub-selector {
+  display: flex; gap: 6px; align-items: center; margin-top: 6px; font-size: 0.78rem;
+}
+.family-pill {
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(243,238,223,0.2); color: var(--sand);
+  padding: 3px 8px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600;
+}
+.family-pill.active {
+  background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 800;
+}

@@ -141,18 +141,30 @@
   </header>
 
   <!-- 1. HIERARCHIA: AKTÍV GYŰJTEMÉNY SÁV -->
-  <div id="active-album-bar" class="active-album-banner" style="display:none;">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <img id="active-album-thumb" src="logo-emblem.png" style="width:46px; height:46px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító">
-      <div>
-        <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Aktív Gyűjtemény</span>
-        <strong id="active-album-title" style="color:#FFF; font-size:1rem;">Lutra Album 2026</strong>
+  <div id="active-album-bar" class="active-album-banner" style="display:none; flex-direction:column; gap:8px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img id="active-album-thumb" src="logo-emblem.png" style="width:46px; height:46px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító">
+        <div>
+          <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block;">Aktív Gyűjtemény</span>
+          <strong id="active-album-title" style="color:#FFF; font-size:1rem;">Lutra Album 2026</strong>
+        </div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-secondary btn-sm" id="btn-open-charity-pool" title="Matricák felajánlása rászoruló osztályoknak és ovisoknak" style="font-size:0.75rem; border-color:var(--gift-gold); color:var(--gift-gold);">
+          Közös Kalap
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-switch-album" style="font-size:0.78rem; padding:5px 12px;">
+          Összes album
+        </button>
       </div>
     </div>
-    <div style="display:flex; gap:6px;">
-      <button class="btn btn-secondary btn-sm" id="btn-switch-album" style="font-size:0.78rem; padding:5px 12px;">
-        Összes album
-      </button>
+
+    <!-- CSALÁDI PÁRHUZAMOS FÜZETVÁLASZTÓ (TESTVÉREKNEK) -->
+    <div id="family-sub-bar" class="family-sub-selector">
+      <span style="color:var(--text-muted); font-size:0.75rem;">Füzet:</span>
+      <div id="family-sub-pills" style="display:flex; gap:4px; flex-wrap:wrap;"></div>
+      <button class="family-pill" id="btn-add-family-sub" style="border-style:dashed;">+ Új füzet</button>
     </div>
   </div>
 
@@ -1227,6 +1239,13 @@
             <label>Külső link (opcionális):</label>
             <input type="url" id="admin-msg-link" class="input-field" placeholder="https://facebook.com/events/...">
           </div>
+		  <div class="form-group">
+            <label>Plakát / Kép csatolása (Opcionális):</label>
+            <input type="file" id="admin-msg-photo-input" accept="image/*" class="input-field" style="padding:4px;">
+            <div id="admin-msg-photo-preview-box" style="display:none; margin-top:6px;">
+              <img id="admin-msg-photo-preview" style="max-height:100px; border-radius:6px; border:1px solid var(--amber);" alt="Kép előnézet">
+            </div>
+          </div>
           <div class="form-group">
             <label>Lejárati dátum és időpont:</label>
             <input type="datetime-local" id="admin-msg-expiry" class="input-field">
@@ -1337,7 +1356,39 @@
     </div>
   </div>
 </div>
+<!-- KÖZÖS KALAP MODAL (ISKOLAI & ÓVODAI CSOPORTOK MEGSEGÍTÉSE) -->
+<div id="modal-charity-pool" class="modal-overlay" style="z-index: 3250;">
+  <div class="modal-card" style="max-width: 480px;">
+    <button class="modal-close" id="btn-close-charity-pool">✕</button>
+    <div style="font-size: 2rem; margin-bottom: 4px; text-align: center;">🎁</div>
+    <h3 style="margin: 0 0 6px; color: var(--gift-gold); text-align: center;">Közös Kalap – Iskolák & Óvodák</h3>
+    <p style="font-size: 0.82rem; color: var(--sand); line-height: 1.5; margin: 0 0 12px; text-align: center;">
+      Jelenleg <strong>8 iskolás osztálynak és 4 óvodás csoportnak</strong> gyűjtünk közösen! Ha vannak olyan dupláid, amiket szívesen felajánlasz a gyerekeknek, add meg őket itt:
+    </p>
 
+    <div class="form-group">
+      <label style="font-weight:700; color:var(--sand);">Felajánlott számaid (pl. 4, 12, 45, 88):</label>
+      <input type="text" id="charity-pool-numbers" class="input-field" placeholder="Számok bemásolása...">
+      <div style="margin-top:6px;">
+        <button class="btn btn-secondary btn-sm" id="btn-charity-use-all-van" style="font-size:0.75rem;">
+          Minden mostani duplám felajánlása
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Megjegyzés / Üzenet az átadáshoz (opcionális):</label>
+      <input type="text" id="charity-pool-note" class="input-field" placeholder="Pl. Személyesen át tudom adni a sulinál, vagy postázom...">
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary" id="btn-submit-charity-pool" style="flex:1; padding:10px; font-weight:700;">
+        Felajánlás küldése a koordinátornak
+      </button>
+      <button class="btn btn-secondary btn-sm" id="btn-close-charity-pool-2">Mégse</button>
+    </div>
+  </div>
+</div>
 <!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL -->
 <div id="modal-incoming-trade-prompt" class="modal-overlay" style="z-index: 3100;">
   <div class="modal-card incoming-trade-card" style="max-width: 490px;">
