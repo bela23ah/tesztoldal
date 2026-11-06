@@ -1,5 +1,5 @@
 /* =========================================================================
-   Cserélj Okosan (csereljokosan.hu) - style.css (v4.5 ÉLES KIADÁS)
+   Cserélj Okosan (csereljokosan.hu) - style.css (v4.6 ÉLES KIADÁS)
    ========================================================================= */
 
 :root {
@@ -57,7 +57,7 @@ body {
 .announcement-content { display: flex; align-items: center; gap: 8px; }
 .announcement-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #081B1A; }
 
-/* FEJLÉC: TELEPÍTÉS BALRA, NÉV & KILÉPÉS JOBBRA */
+/* FEJLÉC: TELEPÍTÉS ÉS FŐMENÜ BALRA, NÉV ÉS KILÉPÉS JOBBRA */
 .app-header {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
   border-bottom: 1px solid rgba(243,238,223,0.15); padding-bottom: 12px; margin-bottom: 14px;
@@ -138,7 +138,7 @@ body {
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* FŐNAVIGÁCIÓ */
+/* FŐNAVIGÁCIÓ (ASZTALI) */
 .primary-nav {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; position: relative;
 }
@@ -223,7 +223,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .mode-btn.active { background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 700; }
 
-/* KOMPAKT SZEGMENS SZŰRŐ A RÁCS FELETT (EGY SORBAN ELMÉRETVE) */
+/* KOMPAKT SZEGMENS SZŰRŐ A RÁCS FELETT (EGY SORBAN, HELYTAKARÉKOSAN) */
 .grid-controls { margin-bottom: 12px; }
 .segmented-control {
   display: flex; width: 100%; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(243,238,223,0.18);
@@ -301,6 +301,10 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 .badge-status-completed { background: rgba(147, 179, 130, 0.2); color: var(--moss-soft); border: 1px solid var(--moss-soft); }
 .badge-status-cancelled { background: rgba(232, 90, 79, 0.2); color: #FFC0BA; border: 1px solid var(--danger); }
 
+/* ARCHÍVUM LENYITHATÓ RÉSZ */
+.archived-trades-details summary::-webkit-details-marker { display: none; }
+.archived-trades-details[open] summary { margin-bottom: 6px; color: var(--sand); }
+
 /* CSILLAGOS ÉRTÉKELŐ SÁV */
 .star-rating-row {
   display: flex; justify-content: center; gap: 8px; font-size: 2rem; cursor: pointer; user-select: none;
@@ -370,7 +374,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 /* LEBEGŐ CSERE-TERVEZŐ ALSÓ SÁV */
 .trade-planner-bar {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%);
   max-width: 720px; width: calc(100% - 24px); background: rgba(8, 27, 26, 0.95);
   backdrop-filter: blur(10px); border: 1.5px solid var(--amber); border-radius: var(--radius-md);
   padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -467,6 +471,26 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 }
 .modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
 
+/* ALULRÓL FELNYÍLÓ MOBIL MENÜ (BOTTOM SHEET) */
+@media (max-width: 680px) {
+  .bottom-sheet-card {
+    position: fixed; bottom: 0; left: 0; right: 0; max-width: 100% !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    margin: 0 !important; max-height: 80vh !important;
+    animation: slideUpSheet 0.25s ease;
+  }
+}
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.bottom-sheet-grid {
+  display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
+}
+.bottom-sheet-btn {
+  width: 100%; padding: 12px; font-size: 0.9rem; text-align: left; justify-content: flex-start;
+}
+
 .certificate-card { background: #081B1A; border: 2px solid var(--amber); border-radius: var(--radius-md); padding: 24px 16px; text-align: center; color: var(--sand); margin-bottom: 14px; }
 .cert-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--amber); margin: 0 0 6px; }
 .cert-name { font-size: 1.3rem; font-weight: 700; color: #FFF; margin: 8px 0; border-bottom: 1px dashed var(--amber); padding-bottom: 6px; }
@@ -481,7 +505,7 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   padding: 10px 22px; text-decoration: none; border-radius: var(--radius-sm); box-shadow: 0 4px 14px rgba(232, 90, 79, 0.45); display: inline-flex;
 }
 .toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--amber);
+  position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%); background: var(--amber);
   color: var(--water-deep); padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
   display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; text-align: center;
 }
@@ -591,24 +615,24 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
 
 /* RÖGZÍTETT MOBIL ALSÓ MENÜSÁV (BOTTOM BAR - HANGSÚLYOS, EMOJI-MENTES) */
 @media (max-width: 680px) {
-  body { padding-bottom: 70px; }
+  body { padding-bottom: 74px; }
   .mobile-bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 56px;
+    position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
     background: #081B1A; border-top: 2px solid var(--amber);
     display: grid !important; grid-template-columns: repeat(5, 1fr); align-items: center;
-    z-index: 2400; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6); padding: 0 2px;
+    z-index: 2400; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.65); padding: 0 2px;
   }
   .bottom-nav-btn {
     background: transparent; border: none; color: var(--sand);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; position: relative; padding: 8px 2px; user-select: none;
+    cursor: pointer; position: relative; padding: 10px 2px; user-select: none;
     -webkit-tap-highlight-color: transparent; transition: all 0.15s ease;
   }
   .bottom-nav-label {
-    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
+    font-size: 0.74rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
   }
   .bottom-nav-btn.active {
-    color: var(--amber); background: rgba(216, 155, 74, 0.12); border-radius: 6px;
+    color: var(--amber); background: rgba(216, 155, 74, 0.14); border-radius: 6px;
   }
   .bottom-nav-badge {
     position: absolute; top: 4px; right: calc(50% - 18px); background: var(--danger);

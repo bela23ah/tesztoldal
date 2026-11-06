@@ -14,17 +14,23 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cserélj Okosan">
   <title>Lutra album matrica csere – Cserélj okosan!</title>
-  <meta name="description" content="Magyarország legnagyobb, 809+ gyűjtős ingyenes matrica- és kártyacsere platformja. Valós idejű párosítás, körcserék, 221 Lidl áruház készletradarja.">
+  <meta name="description" content="Magyarország legnagyobb, 880+ gyűjtős ingyenes matrica- és kártyacsere platformja. Valós idejű párosítás, körcserék, 221 Lidl áruház készletradarja.">
   <link rel="canonical" href="https://csereljokosan.hu/">
 
   <!-- Közösségi Megosztási Meta Tagek (Open Graph) -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://csereljokosan.hu/">
   <meta property="og:title" content="Lutra album matrica csere – Cserélj okosan!">
-  <meta property="og:description" content="Több mint 809 regisztrált gyűjtő, intelligens 0 ms-os párosítás, 3 fős körcserék és valós idejű bolti készletradar.">
+  <meta property="og:description" content="Több mint 880 regisztrált gyűjtő, intelligens 0 ms-os párosítás, 3 fős körcserék és valós idejű bolti készletradar.">
   <meta property="og:image" content="https://csereljokosan.hu/logo-emblem.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+
+  <!-- Twitter Megosztás -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lutra album matrica csere – Cserélj okosan!">
+  <meta name="twitter:description" content="Több mint 880 regisztrált gyűjtő, valós idejű párosítás és bolti készletradar.">
+  <meta name="twitter:image" content="https://csereljokosan.hu/logo-emblem.png">
 
   <!-- Betűtípusok -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -117,13 +123,13 @@
     <button id="btn-dismiss-email-banner" class="announcement-close" style="color:var(--sand);">✕</button>
   </div>
 
-  <!-- FEJLÉC: BALRA A TELEPÍTÉS, JOBBRA A NÉV ÉS KILÉPÉS -->
+  <!-- FEJLÉC: BALRA A TELEPÍTÉS ÉS VIDRÁS FŐMENÜ, JOBBRA A NÉV ÉS KILÉPÉS -->
   <header class="app-header">
     <div class="header-left">
       <button id="btn-pwa-install" class="btn btn-pwa-install" style="display:none;">
         Telepítés
       </button>
-      <button class="btn-brand-home" id="btn-brand-home" title="Vissza az összes gyűjteményhez">
+      <button class="btn-brand-home" id="btn-brand-home" title="Vissza az összes gyűjteményhez (Hub)">
         <img src="logo-mark.png" alt="Cserélj Okosan" class="brand-logo-img">
         <span class="brand-text">Cserélj Okosan</span>
       </button>
@@ -244,7 +250,7 @@
       <div id="hub-social-proof-bar" class="social-proof-bar" style="margin-bottom:16px;">
         <div class="social-proof-item">
           <div>
-            <strong id="sp-collectors-count">809+</strong>
+            <strong id="sp-collectors-count">880+</strong>
             <span class="sp-label">regisztrált gyűjtő</span>
           </div>
         </div>
@@ -553,7 +559,7 @@
         </summary>
         <div class="search-acc-body">
           <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 10px;">
-            Emlékszel egy korábbi cserepartneredre? Keress rá a nevére a 809 regisztrált tag között:
+            Emlékszel egy korábbi cserepartneredre? Keress rá a nevére a 880 regisztrált tag között:
           </p>
           <div style="display:flex; gap:8px;">
             <input type="search" id="search-partner-input" class="input-field" placeholder="Írd be a gyűjtő nevét (pl. VidraPanni vagy Tamás)..." autocomplete="off">
@@ -574,6 +580,13 @@
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
         <h2>Belső Üzenetek & Csevegések</h2>
         <button class="btn btn-secondary btn-sm" id="btn-refresh-inbox">Frissítés</button>
+      </div>
+
+      <!-- ALBUMVÁLASZTÓ SZŰRŐ A CSEVEGŐSZÁLAK FELETT -->
+      <div style="margin-bottom:12px;">
+        <select id="msg-album-filter-select" class="input-field" style="padding:6px 10px; font-size:0.85rem; font-weight:600;">
+          <option value="all">Minden gyűjtemény üzenetei</option>
+        </select>
       </div>
 
       <!-- Kétpaneles Messenger nézet -->
@@ -650,7 +663,7 @@
         </p>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:8px; border-top:1px solid rgba(243,238,223,0.1); padding-top:10px; font-size:0.8rem; color:var(--text-muted);">
-          <div>Regisztrált gyűjtők: <strong id="stats-users-count" style="color:var(--text-primary); display:block; font-size:1rem;">809 fő</strong></div>
+          <div>Regisztrált gyűjtők: <strong id="stats-users-count" style="color:var(--text-primary); display:block; font-size:1rem;">880 fő</strong></div>
           <div>Átlagos duplikátum: <strong id="stats-avg-dupes" style="color:var(--text-primary); display:block; font-size:1rem;">0 db/fő</strong></div>
           <div>Átlagos telítettség: <strong id="stats-avg-progress" style="color:var(--text-primary); display:block; font-size:1rem;">0%</strong></div>
           <div>Leginkább halmozódó: <strong id="stats-hoarding-sticker" style="color:var(--amber); display:block; font-size:0.95rem;">Számítás...</strong></div>
@@ -867,7 +880,7 @@
           <input type="text" id="prof-nev" class="input-field" maxlength="25" placeholder="Pl. VidraPanni" required>
         </div>
 
-        <!-- CSERE-MÓD PREFERENCIA (GYŰJTŐKLUB ELEMZÉSBŐL ÁTVÉVE) -->
+        <!-- CSERE-MÓD PREFERENCIA -->
         <div class="form-group">
           <label for="prof-trade-mode">Átadási és postázási módod:</label>
           <select id="prof-trade-mode" class="input-field">
@@ -953,9 +966,10 @@
         </div>
       </div>
 
-      <div class="card" id="cert-promo-card" style="text-align:center;">
+      <!-- OKLEVÉL: CSAK A LUTRA 2026-NÁL JELENIK MEG -->
+      <div class="card" id="cert-promo-card" style="text-align:center; display:none;">
         <h3 style="margin:0 0 6px; font-size:1rem;">Bolygóvédő Szuperhős Oklevél</h3>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">Ha betelt az albumod, itt megtekintheted és letöltheted a névre szóló elismerést:</p>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 10px;">Ha betelt a 2026-os Lidl Lutra albumod, itt megtekintheted és letöltheted a névre szóló elismerést:</p>
         <button class="btn btn-secondary" id="btn-view-certificate" style="font-size:0.8rem; padding:6px 14px;">Oklevél megnyitása</button>
       </div>
     </section>
@@ -975,7 +989,7 @@
           <div style="display:flex; flex-direction:column; gap:10px;">
             <div style="background:rgba(0,0,0,0.25); padding:10px; border-radius:var(--radius-sm); border:1px solid rgba(216,155,74,0.3);">
               <strong style="color:var(--amber);">Adatbázis Audit & Duplikáció-Szűrő:</strong>
-              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Átvizsgálja a Firestore albumokat a címazonosság és szótövek alapján, és kiszűri a duplikációkat.</p>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 8px;">Átvizsgálja a Firestore albumokat a címazonosság és szótövek alapján, és felkínálja a mellőzést vagy törlést.</p>
               <button class="btn btn-primary btn-sm" id="btn-admin-audit-db">Duplikációk és Szemét elemek keresése</button>
               <div id="admin-audit-report-box" class="audit-report-box" style="display:none;"></div>
             </div>
@@ -1028,7 +1042,7 @@
           
           <div style="display:flex; flex-direction:column; gap:10px;">
             <div>
-              <label style="font-size:0.78rem; color:var(--sand); font-weight:700; display:block; margin-bottom:4px;">A) Fotó / Képernyőkép feltöltése (Gemini Vision AI):</label>
+              <label style="font-size:0.78rem; color:var(--sand); font-weight:700; display:block; margin-bottom:4px;">A) Fotó / Képernyőkép feltöltése (Gemini / Groq Vision AI):</label>
               <input type="file" id="admin-ai-ocr-file" accept="image/*" class="input-field" style="padding:4px;">
             </div>
 
@@ -1291,10 +1305,38 @@
     <span class="bottom-nav-label">ÜZENETEK</span>
     <span id="bottom-msg-badge" class="bottom-nav-badge" style="display:none;">0</span>
   </button>
-  <button class="bottom-nav-btn" data-bottom-view="profil">
-    <span class="bottom-nav-label">PROFIL</span>
+  <button class="bottom-nav-btn" id="btn-bottom-more">
+    <span class="bottom-nav-label">PROFIL +</span>
   </button>
 </nav>
+
+<!-- MOBIL "PROFIL +" ALULRÓL FELNYÍLÓ GYORSMENÜ MODAL -->
+<div id="modal-bottom-menu" class="modal-overlay" style="z-index: 3300;">
+  <div class="modal-card bottom-sheet-card">
+    <button class="modal-close" id="btn-close-bottom-menu">✕</button>
+    <h3 style="margin:0 0 12px; color:var(--amber);">További funkciók</h3>
+    <div class="bottom-sheet-grid">
+      <button class="btn btn-secondary bottom-sheet-btn" data-jump-view="statisztika">
+        Városi Térkép & Hőtérkép
+      </button>
+      <button class="btn btn-secondary bottom-sheet-btn" data-jump-view="statisztika">
+        Befejezési Esélyek & Adatok
+      </button>
+      <button class="btn btn-secondary bottom-sheet-btn" data-jump-view="radar">
+        Közösségi Készletradar
+      </button>
+      <button class="btn btn-secondary bottom-sheet-btn" data-jump-view="meetups">
+        Cserebere Találkozók
+      </button>
+      <button class="btn btn-primary bottom-sheet-btn" data-jump-view="profil">
+        Saját Profil & Beállítások
+      </button>
+      <button class="btn btn-secondary bottom-sheet-btn" id="btn-sheet-admin" data-jump-view="admin" style="display:none; color:var(--amber); border-color:var(--amber);">
+        Vezérlőpult (Admin)
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- KÉTOLDALÚ BEJÖVŐ CSEREAJÁNLAT MODAL -->
 <div id="modal-incoming-trade-prompt" class="modal-overlay" style="z-index: 3100;">
@@ -1431,7 +1473,7 @@
   </div>
 </div>
 
-<!-- FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MODAL -->
+<!-- FACEBOOK POSZT ELEMZŐ & ÖSSZEVETŐ MODAL (BEMÁSOLÁS, FOTÓZÁS & FELTÖLTÉS) -->
 <div id="modal-fb-crossmatch" class="modal-overlay" style="z-index: 2700;">
   <div class="modal-card" style="max-width:560px;">
     <button class="modal-close" id="btn-close-fb-crossmatch">✕</button>
@@ -1439,12 +1481,12 @@
       <h3 style="margin:0; color:#63B3ED;">Facebook Poszt Elemző & Összevető</h3>
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px;">
-      Másold be a csoporttag posztjának szövegét, <strong>VAGY</strong> tölts fel egy fotót a kézzel írt listájáról. A rendszer azonnal kiszámolja, mit cserélhettek!
+      Másold be a csoporttag posztjának szövegét, készíts azonnal egy fotót a cetlijéről, vagy tölts fel egy képet. A rendszer kiszámolja a cserét:
     </p>
 
     <div class="filter-group" style="margin-bottom:12px;">
       <button class="filter-btn active" id="btn-fb-tab-text">Szöveg bemásolása</button>
-      <button class="filter-btn" id="btn-fb-tab-photo">Fotó / Fecni feltöltése</button>
+      <button class="filter-btn" id="btn-fb-tab-photo">Fotó készítése / Kép feltöltése</button>
     </div>
 
     <div id="fb-match-text-container">
@@ -1452,15 +1494,30 @@
     </div>
 
     <div id="fb-match-photo-container" style="display:none;">
-      <label class="scanner-method-card scanner-card-primary" style="margin-bottom:8px;">
-        <input type="file" id="fb-match-file-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
-        <div class="scanner-card-inner">
-          <div>
-            <strong style="display:block; color:#FFF; font-size:0.9rem;">Kézzel írt lista / Képernyőkép kiválasztása</strong>
-            <span style="font-size:0.75rem; color:var(--sand);">A Gemini AI kiolvassa a Van/Kell oszlopokat és a darabszámokat</span>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
+        <!-- NATÍV KAMERÁS FOTÓZÁS -->
+        <label class="scanner-method-card scanner-card-primary">
+          <input type="file" id="fb-match-camera-input" accept="image/*" capture="environment" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
+          <div class="scanner-card-inner">
+            <div>
+              <strong style="display:block; color:#FFF; font-size:0.9rem;">Fotó készítése kamerával azonnal</strong>
+              <span style="font-size:0.75rem; color:var(--sand);">Fényképezd le a papírfecnit vagy a képernyőt</span>
+            </div>
           </div>
-        </div>
-      </label>
+        </label>
+
+        <!-- KÉP FELTÖLTÉSE GALÉRIÁBÓL -->
+        <label class="scanner-method-card scanner-card-secondary">
+          <input type="file" id="fb-match-file-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;">
+          <div class="scanner-card-inner">
+            <div>
+              <strong style="display:block; color:#FFF; font-size:0.9rem;">Kép kiválasztása a galériából</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Már meglévő fotó vagy képernyőkép elemzése</span>
+            </div>
+          </div>
+        </label>
+      </div>
+
       <div id="fb-match-photo-preview" style="display:none; text-align:center; margin-bottom:8px;">
         <img id="fb-photo-preview-img" style="max-height:100px; border-radius:6px; border:1px solid var(--amber);" alt="Feltöltött fotó">
       </div>
@@ -1813,7 +1870,7 @@
   <div class="modal-card" style="max-width:520px;">
     <button class="modal-close" id="btn-close-user-profile">✕</button>
     
-    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; flex-wrap:wrap; gap:6px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; flex-wrap:gap:6px;">
       <h3 id="user-profile-modal-name" style="margin:0;">Gyűjtő adatlapja</h3>
       <span id="user-profile-rating-badge" style="font-size:0.85rem; font-weight:800; color:var(--gift-gold);"></span>
     </div>
@@ -1921,7 +1978,7 @@
     <button class="modal-close" id="btn-close-privacy">✕</button>
     <h3 style="margin-top:0; color:var(--amber);">Adatkezelési Tájékoztató</h3>
     <div style="font-size:0.82rem; line-height:1.6; color:var(--text-primary); max-height:65vh; overflow-y:auto; padding-right:6px;">
-      <p><strong>1. Adatkezelő:</strong> Cserélj Okosan Platform (Kapcsolat: gyorgy.harkai@gmail.com).</p>
+      <p><strong>1. Adatkezelő:</strong> Cserélj Okosan Platform (Kapcsolat: kecskemeti.fiatalok.tarsasaga@gmail.com).</p>
       <p><strong>2. Kezelt adatok köre:</strong> Megjelenő név (becenév), e-mail cím (értesítésekhez), megadott település és hozzávetőleges GPS koordináta (1-2 km-re kerekítve a helyi cserékhez), valamint az aktív albumok számlistái (duplák és hiányzók).</p>
       <p><strong>3. Adatfeldolgozók és infrastruktúra:</strong>
         <br>• Google Firebase Firestore & Authentication (Felhőtárhely és bejelentkezés / EU szerverek).
