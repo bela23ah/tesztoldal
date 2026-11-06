@@ -1122,31 +1122,321 @@ function updateRadarStoreDatalist() {
   }
 }
 // =========================================================================
-// CSALÁDI MÓD / PÁRHUZAMOS FÜZETEK KEZELÉSE (TESTVÉREKNEK)
+// CSALÁDI MÓD / PÁRHUZAMOS FÜZETEK TELJESEN SZAPORÍTOTT ADATBÁZISA
 // =========================================================================
-let currentSubAlbumIdx = 1;
 
+let currentSubAlbumId = 1; // 1 = Fő füzet
+
+// Visszaadja a füzethez tartozó egyedi tárhelykulcsot (pl. "lidl-lutra-2026" vagy "lidl-lutra-2026_sub2")
 function getEffectiveAlbumKey() {
-  return currentSubAlbumIdx > 1 ? `${currentAlbumId}_sub${currentSubAlbumIdx}` : currentAlbumId;
+  return currentSubAlbumId > 1 ? `${currentAlbumId}_sub${currentSubAlbumId}` : currentAlbumId;
 }
 
+// XSS védelem: kiszűri a HTML címkéket és veszélyes karaktereket a névből
+function sanitizeFamilyName(input) {
+  if (!input) return '';
+  return String(input)
+    .replace(/<[^>]*>/g, '') // HTML tagek törlése
+    .replace(/[\"\'\`\<\>]/g, '') // Idézőjelek és kacsacsőrök eldobása
+    .trim()
+    .slice(0, 20); // Max 20 karakter
+}
+
+// Családi füzetlista betöltése az aktív albumhoz
+function getFamilySubsForActiveAlbum() {
+  const subs = safeJsonParse(`family_subs_${currentAlbumId}`, [
+    { id: 1, name: "1. Fő füzet" }
+  ]);
+  // Garantáljuk, hogy az 1. füzet mindig létezzen
+  if (!subs.find(s => s.id === 1)) {
+    subs.unshift({ id: 1, name: "1. Fő füzet" });
+  }
+  return subs;
+}
+
+function saveFamilySubsForActiveAlbum(subs) {
+  localStorage.setItem(`family_subs_${currentAlbumId}`, JSON.stringify(subs));
+}
+
+// =========================================================================
+// FÜZET-PILLJEK RENDERELÉSE (ALAPESETBEN CSAK A + ÚJ FÜZET GOMB LÁTSZIK!)
+// =========================================================================
 function renderFamilySubPills() {
-  const container = document.getElementById('family-sub-pills');
-  if (!container) return;
+  const pillsContainer = document.getElementById('family-sub-pills');
+  const addBtn = document.getElementById('btn-add-family-sub');
+  if (!pillsContainer || !addBtn) return;
 
-  const savedSubs = safeJsonParse(`family_subs_${currentAlbumId}`, [1]);
-  container.innerHTML = savedSubs.map(subIdx => `
-    <button class="family-pill ${subIdx === currentSubAlbumIdx ? 'active' : ''}" data-sub-idx="${subIdx}">
-      ${subIdx}. füzet ${subIdx === 1 ? '(Fő)' : `(Testvér ${subIdx})`}
-    </button>
-  `).join('');
+  const subs = getFamilySubsForActiveAlbum();
+
+  // Ha csak 1 füzet van: a lista üres, és CSAK a [+ Új füzet] gomb látszik!
+  if (subs.length <= 1) {
+    pillsContainer.innerHTML = '';
+    addBtn.style.display = 'inline-block';
+    addBtn.textContent = '+ Új füzet (Testvér)';
+    return;
+  }
+
+  // Ha 2 vagy több füzet van: megjelennek az 1. főfüzet és a testvér-füzetek is elnevezhetően!
+  addBtn.textContent = '+ Újabb füzet';
+
+  pillsContainer.innerHTML = subs.map(sub => {
+    const isActive = (sub.id === currentSubAlbumId);
+    const isMain = (sub.id === 1);
+    const cleanName = escapeHtml(sub.name || `${sub.id}. füzet`);
+
+    return `
+      <div class="family-pill ${isActive ? 'active' : ''}" data-sub-id="${sub.id}">
+        <span class="family-pill-title" title="Kattints a kiválasztáshoz">${cleanName}</span>
+        <span class="family-pill-action edit" data-action="rename-sub" data-sub-id="${sub.id}" title="Átnevezés">✎</span>
+        ${!isMain ? `<span class="family-pill-action del" data-action="delete-sub" data-sub-id="${sub.id}" title="Füzet törlése">✕</span>` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
+// Füzet kiválasztása, átnevezése és törlése kattintáskezelő
 safeAddListener('family-sub-pills', (e) => {
-  const pill = e.target.closest('[data-sub-idx]');
-  if (!pill) return;
-  currentSubAlbumIdx = parseInt(pill.dataset.subIdx, 10);
+  // 1. Átnevezés
+  const renameBtn = e.target.closest('[data-action="rename-sub"]');
+  if (renameBtn) {
+    e.stopPropagation();
+    const subId = parseInt(renameBtn.dataset.subId, 10);
+    const subs = getFamilySubsForActiveAlbum();
+    const target = subs.find(s => s.id === subId);
+    if (!target) return;
+
+    const rawInput = prompt(`Add meg a(z) ${subId}. füzet új nevét (pl. Peti vagy Lili):`, target.name);
+    if (rawInput === null) return; // Mégse
+
+    const clean = sanitizeFamilyName(rawInput);
+    if (!clean) return showToast("A füzet neve nem lehet üres!");
+
+    target.name = clean;
+    saveFamilySubsForActiveAlbum(subs);
+    renderFamilySubPills();
+    updateActiveAlbumTitleWithSubName();
+    showToast(`Füzet átnevezve: ${clean}`);
+    return;
+  }
+
+  // 2. Törlés (csak a 2., 3., stb. füzeteknél)
+  const delBtn = e.target.closest('[data-action="delete-sub"]');
+  if (delBtn) {
+    e.stopPropagation();
+    const subId = parseInt(delBtn.dataset.subId, 10);
+    if (subId === 1) return showToast("Az 1. Fő füzet nem törölhető!");
+
+    const subs = getFamilySubsForActiveAlbum();
+    const target = subs.find(s => s.id === subId);
+    const targetName = target?.name || `${subId}. füzet`;
+
+    if (!confirm(`Biztosan törölni szeretnéd a(z) „${targetName}” füzetet és az összes benne lévő matricát?`)) {
+      return;
+    }
+
+    const effKeyToDelete = `${currentAlbumId}_sub${subId}`;
+
+    // Helyi adatok törlése a törölt füzethez
+    localStorage.removeItem(`lutra_van_${effKeyToDelete}`);
+    localStorage.removeItem(`lutra_van_counts_${effKeyToDelete}`);
+    localStorage.removeItem(`lutra_kell_${effKeyToDelete}`);
+    localStorage.removeItem(`lutra_foglalva_${effKeyToDelete}`);
+    localStorage.removeItem(`lutra_foglalva_counts_${effKeyToDelete}`);
+    localStorage.removeItem(`lutra_active_trades_${effKeyToDelete}`);
+    localStorage.removeItem(`private_note_${effKeyToDelete}`);
+
+    // Felhőből való törlés, ha be van lépve
+    if (currentUser && db) {
+      db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(effKeyToDelete).delete().catch(() => {});
+      db.collection("users").doc(currentUser.uid).collection("collections").doc(effKeyToDelete).delete().catch(() => {});
+    }
+
+    // Eltávolítás a listából
+    const updatedSubs = subs.filter(s => s.id !== subId);
+    saveFamilySubsForActiveAlbum(updatedSubs);
+
+    // Visszaváltás az 1. Fő füzetre
+    currentSubAlbumId = 1;
+    renderFamilySubPills();
+    loadAlbumState(currentAlbumId);
+    showToast(`A(z) „${targetName}” törölve lett. Visszaváltva a Fő füzetre.`);
+    return;
+  }
+
+  // 3. Kiválasztás (füzetváltás)
+  const pill = e.target.closest('.family-pill');
+  if (pill) {
+    const subId = parseInt(pill.dataset.subId, 10);
+    if (subId === currentSubAlbumId) return;
+
+    currentSubAlbumId = subId;
+    renderFamilySubPills();
+    loadAlbumState(currentAlbumId); // Betölti az adott füzet KÜLÖN matricáit!
+    updateActiveAlbumTitleWithSubName();
+    showToast(`Átváltva: ${pill.querySelector('.family-pill-title')?.textContent || subId + '. füzet'}`);
+  }
+});
+
+// [+ Új füzet] gomb kattintáskezelője
+safeAddListener('btn-add-family-sub', () => {
+  const subs = getFamilySubsForActiveAlbum();
+  
+  // A következő szabad sorszám megkeresése
+  const maxId = subs.reduce((max, s) => s.id > max ? s.id : max, 1);
+  const nextId = maxId + 1;
+
+  const defaultName = subs.length === 1 ? "2. Testvér füzet" : `${nextId}. füzet`;
+  const rawInput = prompt("Add meg az új füzet nevét (pl. Kati vagy 2. füzet):", defaultName);
+  if (rawInput === null) return; // Mégse
+
+  const clean = sanitizeFamilyName(rawInput) || defaultName;
+
+  subs.push({ id: nextId, name: clean });
+  saveFamilySubsForActiveAlbum(subs);
+
+  // Azonnal átváltunk az új füzetre, ami teljesen üres matricakészlettel indul
+  currentSubAlbumId = nextId;
   renderFamilySubPills();
+  loadAlbumState(currentAlbumId); // Tiszta, üres rács betöltése!
+  updateActiveAlbumTitleWithSubName();
+  showToast(`Új füzet létrehozva és megnyitva: ${clean}!`);
+});
+
+function updateActiveAlbumTitleWithSubName() {
+  const titleEl = document.getElementById('active-album-title');
+  if (!titleEl) return;
+  const activeAlbum = getActiveAlbum();
+  const subs = getFamilySubsForActiveAlbum();
+  const currentSub = subs.find(s => s.id === currentSubAlbumId);
+
+  const subLabel = (subs.length > 1 && currentSub) ? ` [${escapeHtml(currentSub.name)}]` : '';
+  titleEl.textContent = `${activeAlbum.title} (${activeAlbum.year || 2026})${subLabel}`;
+}
+
+// =========================================================================
+// JAVÍTOTT LOAD ÉS SAVE MOTOR (MINDIG AZ EFFEKTÍV FÜZET KULCSÁT HASZNÁLJA!)
+// =========================================================================
+
+function loadAlbumState(albumId) {
+  try {
+    const effKey = getEffectiveAlbumKey(); // pl. "lidl-lutra-2026" VAGY "lidl-lutra-2026_sub2"
+
+    // Külön-külön adatbázis betöltése!
+    myProfile.van = ensureArray(safeJsonParse(`lutra_van_${effKey}`, [])).sort((a, b) => a - b);
+    myProfile.vanCounts = safeJsonParse(`lutra_van_counts_${effKey}`, {});
+    myProfile.kell = ensureArray(safeJsonParse(`lutra_kell_${effKey}`, [])).sort((a, b) => a - b);
+    myProfile.foglalva = ensureArray(safeJsonParse(`lutra_foglalva_${effKey}`, [])).sort((a, b) => a - b);
+    myProfile.foglalvaCounts = safeJsonParse(`lutra_foglalva_counts_${effKey}`, {});
+    myProfile.activeTrades = safeJsonParse(`lutra_active_trades_${effKey}`, []);
+
+    // Öngyógyító lakat-tisztítás
+    if (typeof getActiveLockedCounts === 'function') {
+      const activeLocks = getActiveLockedCounts(albumId);
+      myProfile.foglalva = myProfile.foglalva.filter(n => (activeLocks[n] || 0) > 0);
+      Object.keys(myProfile.foglalvaCounts).forEach(k => {
+        if (!activeLocks[k]) delete myProfile.foglalvaCounts[k];
+      });
+    }
+
+    let savedNote = localStorage.getItem(`private_note_${effKey}`) || '';
+    myProfile.privateNote = (savedNote || '').slice(0, 250);
+
+    const noteInput = document.getElementById('prof-private-note');
+    if (noteInput) {
+      noteInput.value = myProfile.privateNote;
+      const countEl = document.getElementById('note-char-count');
+      if (countEl) countEl.textContent = `${myProfile.privateNote.length}/250`;
+    }
+
+    currentChapterIndex = 0;
+
+    renderGrid();
+    renderActiveTradesPanel();
+    if (getActiveAlbum().type === 'sticker' && getActiveAlbum().hasChapters) renderAlbumChapter();
+    renderMatches();
+    updateActiveAlbumTitleWithSubName();
+  } catch (err) {
+    console.error("Hiba a loadAlbumState-ben:", err);
+  }
+}
+
+function saveMyStateFast() {
+  const effKey = getEffectiveAlbumKey(); // Szigorúan az adott füzet kulcsa!
+  const now = Date.now();
+  lastLocalEditTimestamp = now;
+
+  localStorage.setItem(`lutra_updated_at_${effKey}`, now);
+  localStorage.setItem(`lutra_van_${effKey}`, JSON.stringify(myProfile.van));
+  localStorage.setItem(`lutra_van_counts_${effKey}`, JSON.stringify(myProfile.vanCounts || {}));
+  localStorage.setItem(`lutra_kell_${effKey}`, JSON.stringify(myProfile.kell));
+  localStorage.setItem(`lutra_foglalva_${effKey}`, JSON.stringify(myProfile.foglalva));
+  localStorage.setItem(`lutra_foglalva_counts_${effKey}`, JSON.stringify(myProfile.foglalvaCounts || {}));
+
+  // Kompatibilitás a legelső fő Lutra albumhoz
+  if (effKey === 'lidl-lutra-2026') {
+    localStorage.setItem('lutra_van', JSON.stringify(myProfile.van));
+    localStorage.setItem('lutra_van_counts', JSON.stringify(myProfile.vanCounts || {}));
+    localStorage.setItem('lutra_kell', JSON.stringify(myProfile.kell));
+    localStorage.setItem('lutra_foglalva', JSON.stringify(myProfile.foglalva));
+    localStorage.setItem('lutra_foglalva_counts', JSON.stringify(myProfile.foglalvaCounts || {}));
+  }
+
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(() => {
+    refreshMatchesIfVisible();
+    if (typeof renderCompletionOdds === 'function') renderCompletionOdds();
+    syncLutraDualSave(effKey);
+  }, 450);
+}
+
+// Felhőmentés füzet-támogatással
+function syncLutraDualSave(effKey) {
+  if (!currentUser || !db) return;
+  const isRootLutra = (effKey === 'lidl-lutra-2026');
+
+  // Mentés a felhasználó al-kollekciójába (külön dokumentumként a füzethez!)
+  db.collection("public_profiles").doc(currentUser.uid).collection("collections").doc(effKey).set({
+    albumId: currentAlbumId,
+    effKey: effKey,
+    subId: currentSubAlbumId,
+    van: myProfile.van,
+    vanCounts: myProfile.vanCounts || {},
+    kell: myProfile.kell,
+    foglalva: myProfile.foglalva,
+    foglalvaCounts: myProfile.foglalvaCounts || {},
+    localUpdatedAt: Date.now(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true }).catch(() => {});
+
+  const publicPayload = {
+    collections: {
+      [effKey]: {
+        van: myProfile.van,
+        vanCounts: myProfile.vanCounts || {},
+        kell: myProfile.kell,
+        foglalva: myProfile.foglalva,
+        foglalvaCounts: myProfile.foglalvaCounts || {},
+        updatedAt: Date.now()
+      }
+    },
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (isRootLutra) {
+    publicPayload.van = myProfile.van;
+    publicPayload.vanCounts = myProfile.vanCounts || {};
+    publicPayload.kell = myProfile.kell;
+    publicPayload.foglalva = myProfile.foglalva;
+    publicPayload.foglalvaCounts = myProfile.foglalvaCounts || {};
+  }
+
+  db.collection("public_profiles").doc(currentUser.uid).set(publicPayload, { merge: true }).catch(() => {});
+}
+
+// Az albumválasztásnál (selectAlbum) reseteljük a füzetsorszámot és kirajzoljuk a sávot:
+// A selectAlbum(albumId) függvény törzsébe tegyük be:
+// currentSubAlbumId = 1;
+// renderFamilySubPills();
   loadAlbumState(currentAlbumId);
   renderGrid();
   showToast(`Átváltva: ${currentSubAlbumIdx}. füzet`);

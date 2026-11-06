@@ -669,14 +669,77 @@ h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 0 0 6px; }
   background: radial-gradient(circle at 35% 30%, var(--reserved-blue-soft) 0%, var(--reserved-blue) 100%) !important;
 }
 
-/* Családi füzetválasztó sáv az aktív albumban */
+/* =========================================================================
+   CSALÁDI MÓD / TESTVÉR FÜZETEK STÍLUSAI
+   ========================================================================= */
 .family-sub-selector {
-  display: flex; gap: 6px; align-items: center; margin-top: 6px; font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(243, 238, 223, 0.15);
 }
+
 .family-pill {
-  background: rgba(0,0,0,0.3); border: 1px solid rgba(243,238,223,0.2); color: var(--sand);
-  padding: 3px 8px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(243, 238, 223, 0.2);
+  color: var(--sand);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
 }
+
+.family-pill:hover {
+  border-color: var(--amber);
+  color: #FFF;
+}
+
 .family-pill.active {
-  background: var(--amber); color: var(--water-deep); border-color: var(--amber); font-weight: 800;
+  background: var(--amber);
+  color: var(--water-deep);
+  border-color: var(--amber);
+  font-weight: 800;
+}
+
+.family-pill-action {
+  opacity: 0.65;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 2px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.family-pill-action:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.family-pill-action.del:hover {
+  color: var(--danger);
+}
+
+.btn-add-sub-pill {
+  background: transparent;
+  border: 1.5px dashed var(--amber);
+  color: var(--amber);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-add-sub-pill:hover {
+  background: rgba(216, 155, 74, 0.15);
+  color: #FFF;
 }
