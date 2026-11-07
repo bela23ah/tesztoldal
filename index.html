@@ -140,9 +140,9 @@
     </div>
   </header>
 
-<!-- 1. HIERARCHIA: AKTÍV GYŰJTEMÉNY SÁV -->
+  <!-- 1. HIERARCHIA: AKTÍV GYŰJTEMÉNY SÁV -->
   <div id="active-album-bar" class="active-album-banner" style="display:none; flex-direction:column; gap:8px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:8px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
       <div style="display:flex; align-items:center; gap:12px;">
         <img id="active-album-thumb" src="logo-emblem.png" style="width:46px; height:46px; border-radius:6px; object-fit:contain; background:#F3EEDF; padding:2px; border:1px solid var(--amber);" alt="Borító">
         <div>
@@ -150,7 +150,7 @@
           <strong id="active-album-title" style="color:#FFF; font-size:1rem;">Lutra Album 2026</strong>
         </div>
       </div>
-      <div style="display:flex; gap:6px; align-items:center;">
+      <div style="display:flex; gap:6px;">
         <button class="btn btn-secondary btn-sm" id="btn-open-charity-pool" title="Matricák felajánlása rászoruló osztályoknak és ovisoknak" style="font-size:0.75rem; border-color:var(--gift-gold); color:var(--gift-gold);">
           Közös Kalap
         </button>
@@ -160,10 +160,11 @@
       </div>
     </div>
 
-    <!-- DINAMIKUS CSALÁDI FÜZETVÁLASZTÓ (ALAPESETBEN CSAK A + GOMB LÁTSZIK) -->
+    <!-- CSALÁDI PÁRHUZAMOS FÜZETVÁLASZTÓ (TESTVÉREKNEK) -->
     <div id="family-sub-bar" class="family-sub-selector">
-      <div id="family-sub-pills" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"></div>
-      <button class="btn-add-sub-pill" id="btn-add-family-sub" type="button">+ Új füzet (Testvér)</button>
+      <span style="color:var(--text-muted); font-size:0.75rem;">Füzet:</span>
+      <div id="family-sub-pills" style="display:flex; gap:4px; flex-wrap:wrap;"></div>
+      <button class="family-pill" id="btn-add-family-sub" style="border-style:dashed;">+ Új füzet</button>
     </div>
   </div>
 
@@ -2056,5 +2057,6 @@
 
 <!-- Fő JavaScript fájl beemelése -->
 <script src="app.js"></script>
+<script src="read-layer_v2.js"></script>
 </body>
 </html>
