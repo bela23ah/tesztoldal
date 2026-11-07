@@ -1,393 +1,470 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0D2E2C">
-  <title>Gyakori Kérdések & Válaszok – Cserélj Okosan (csereljokosan.hu)</title>
-  <meta name="description" content="Minden kérdés és válasz a Cserélj Okosan ingyenes csereplatformról: Többpartneres Csere-Tervező, 3 fős körcsere, lakatvédelem, családi füzetek, készletradar és Közös Kalap.">
-  <link rel="canonical" href="https://csereljokosan.hu/gyik.html">
-
-  <!-- Betűtípusok -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-
-  <!-- GOOGLE STRUCTURED DATA (Schema.org / FAQPage Rich Snippet) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Mi az a Többpartneres Csere-Tervező Szimulátor és hogyan akadályozza meg a kettős odaígérést?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Ha este egyszerre több gyűjtővel egyeztetnél, a Csere-Tervező Szimulátor a legnagyobb biztonsági hálód. Csak pipálj ki legalább 2 kiszemelt partnert a listán, és a szimulátor azonnal átvizsgálja az igényeket: ha ugyanazt a ritka dupládat ketten is kérik, de csak 1 van belőle, pirossal figyelmeztet az ütközésre. Kiszámolja a legoptimálisabb elosztást úgy, hogy te a legtöbb hiányzódat kapd vissza, megelőzve a kellemetlen magyarázkodást és a csalódást."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Mennyibe kerül a matricák és kártyák cseréje? Vannak rejtett díjak vagy fizetős kreditek?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A Cserélj Okosan 100%-ban ingyenes és reklámmentes közösségi platform. Nincsenek kreditek, zsetonok, szintek, előfizetések vagy virtuális boltok. A gyűjtők közvetlenül és szabadon cserélnek egymással személyesen vagy postán."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan működik a Szimmetrikus (1:1) Csereajánló?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A párosítások tetején lévő [ Szimmetrikus (1:1) cserék ] gomb egyetlen kattintással leszűri a partnereket azokra, akikkel pontosan ugyanannyi tételt tudtok átadni egymásnak (pl. 2-ért 2, 4-ért 4). Ezzel teljesen megszűnik az alkudozás, a számolgatás és a hezitálás."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Mi az a „Több Album – Egy Boríték” Keresztcsere és hogyan spórol pénzt a szülőknek?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A családokban gyakran több füzet is fut párhuzamosan (pl. Lutra és Garfield vagy FIFA). Amikor egy gyűjtővel egyeztetsz az aktív albumban, a rendszer a háttérben megvizsgálja a többi közös gyűjteményt is. Ha van átfedés, kiemeli a cserekártyán, hogy érdemes a két különböző album tételeit egyetlen közös borítékban vagy Foxpost csomagban feladni, megfelezve a postaköltséget."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan oldja meg a ritka matricák holtpontját a 3 fős Körcsere?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Amikor már csak pár ritka matrica hiányzik, a közvetlen 1:1 csere gyakran elakad: találsz valakit, akinél megvan a hiányzód, de neki már semmi sem kell a te készletedből. Az algoritmus ilyenkor megkeresi a 3. hiányzó láncszemet: Te adsz B-nek, B ad C-nek, C pedig postázza neked a vágyott matricát. Zárt körben mindhárom család egyszerre kapja meg a hiányzóját."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Mit jelent a kék lakat (🔒) a matricáimon és mikor kerül fel a dupláimra?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A lakatvédelem nem az ajánlatküldés pillanatában lép érvénybe, hanem akkor, amikor mindkét fél kölcsönösen elfogadta a megegyezést. Ekkor a rendszer zárolja a megegyezett tételeket a rácson, így nem tudod véletlenül elállítani, és más sem tudja elvinni őket a csomag megérkezéséig."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Mit tegyek, ha a partner olyan tételt kér, ami már nincs meg nálam? (Ellenajánlat)",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Nem kell elutasítanod a cserét! A bejövő ajánlat ablakában kattints a [ Cseretételek szerkesztése ] gombra. Itt egyetlen érintéssel kiikszelheted a hiányzó tételt, felajánlhatsz helyette másikat, vagy beírhatsz egyedi megjegyzést. A partnerhez egy módosított ajánlat fut be, amit ő is jóváhagyhat."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Mi történik, ha egy partner meggondolja magát vagy nem ér rá cserélni? Kapok büntetést?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Nem! Nálunk nincsenek szankciók, 10 napos tiltások vagy fiókfelfüggesztések. Ha a partner lemondja a cserét, a felajánlott tételek lakatjai azonnal feloldódnak a rácson, a megállapodás pedig átkerül az összecsukható Archívumba. A frissen belépő aktív tagok automatikusan előrébb kerülnek a keresőkben."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan működik a Családi Mód, ha a testvéreknek külön füzetük van ugyanabból az albumból?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Nem kell külön fiókokat regisztrálni! Az album fejlécében a [+ Új füzet] gombbal egyetlen fiókon belül létrehozható 1. füzet, 2. füzet, stb. Minden füzet külön saját rácsot kap, így a szülő egy kézből kezelheti a testvérek gyűjteményeit."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan működik a Fotós Számszkenner és a Facebook poszt elemző?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Készíts egy éles fotót a matricák hátoldaláról vagy a kézzel írt kockás lapról közvetlenül telefonos kamerával. A mesterséges intelligencia látásmotorja másodpercek alatt felismeri a számokat és beemeli a gyűjteményedbe. Ha a Facebook csoportokban látsz egy posztot, másold be vagy fotózd le: a rendszer összeveti a te füzeteddel, és kész udvarias választ fogalmaz a kommentedhez."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan működik a Tömeges számbemásoló?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A rács feletti Tömeges bevitel mezőbe egyszerre bemásolhatsz vesszővel tagolt számsorokat, intervallumokat (pl. 1-15) és darabszám-szorzókat is (pl. 42*3 vagy 1-5*2), amiket a rendszer egy gombnyomással elment a Duplákhoz vagy Hiányzókhoz."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan találhatom meg a legközelebbi cserepartnereket GPS távolság vagy város szerint?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A Kereső fülön légvonalbeli távolság szerint (5 km, 10 km, 25 km, saját város) vagy konkrét településnév beírásával is szűrhetsz. Az adatvédelem érdekében a pontos lakcímedet sosem mutatjuk, a koordináták hozzávetőlegesek és anonimak."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan működik a bolti Készletradar a 221 Lidl áruházhoz?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A gyűjtők valós időben jelentik be, hogy az adott boltban még kapható-e a Lutra album és a matricacsomag, vagy épp készlethiány van. A bejelentésekhez fotó is csatolható a bolti polcról."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Mi az a Közös Kalap és hogyan jutnak el a matricák az óvodákba és iskolákba?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A platform koordinátora jelenleg 8 iskolás osztálynak és 4 óvodás csoportnak segít összegyűjteni a füzeteket. Ha vannak olyan dupláid, amikért nem kérsz cserét, a Közös Kalap gombbal felajánlhatod őket, és a koordinátor eljuttatja a gyerekekhez."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hogyan kezeli a platform a személyes adataimat? Törölhetem magam?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Szigorúan a GDPR szerint járunk el. Nem adunk el adatokat, nincsenek követőkódok. A Profil fül alján lévő [Adatlapom és felhős adataim végleges törlése] gombbal egyetlen kattintással bármikor megsemmisítheted a fiókodat és az összes nyilvántartott adatodat."
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GYIK – Cserélj Okosan matrica- és kártyacsere</title>
+<meta name="description" content="Gyakori kérdések a Cserélj Okosan matrica-, kártya- és figuracsere platformról: jelölés, párosítás, csere, fotós beolvasás, adatvédelem.">
+<link rel="canonical" href="https://csereljokosan.hu/gyik.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GYIK – Cserélj Okosan">
+<meta property="og:description" content="Válaszok a jelölésről, a párosításról, a cseréről és az adataidról.">
+<meta property="og:image" content="https://csereljokosan.hu/og-image.png">
+<meta name="theme-color" content="#0D2E2C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Mennyibe kerül? Vannak fizetős kreditek vagy szintek?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A használat ingyenes. Nincsenek kreditek, szintek, előfizetések vagy virtuális boltok. Aki szeretné, önkéntesen támogathatja az oldalt, de ez semmihez nem szükséges."
       }
-    ]
-  }
-  </script>
+    },
+    {
+      "@type": "Question",
+      "name": "Kell hozzá regisztráció?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A jelölést kipróbálhatod belépés nélkül is, ilyenkor az adataid csak a böngésződben vannak. A csereajánlatokhoz, üzenetekhez és ahhoz, hogy mások is lássanak, belépés és kitöltött profil kell."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hogyan működik a Családi Mód, ha a testvéreknek külön füzetük van?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nem kell külön fiókot regisztrálni. Az album fejlécében az Új füzet gombbal létrehozhatsz egy második füzetet is. Minden füzet külön rácsot és külön hiányzólistát kap."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mi az a Közös Kalap?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ha vannak dupláid, amikért nem kérsz cserét, a Közös Kalap gombbal felajánlhatod őket. A felajánlás után belső üzenetszál nyílik a koordinátorral, aki egyeztet az átadásról."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hogyan jelölöm a tételeket?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Koppints egy tételre: a jelölés körbejár dupla, hiányzik, foglalt, üres sorrendben. A jelöletlen tételt az app nem tekinti hiányzónak, ezért nem kapsz olyan ajánlatot, amire nincs szükséged."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hogyan jelöljek sok tételt egyszerre?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A rács feletti Tömeges bevitelnél számokat és tartományokat írhatsz, például 1-15, és darabszámot is megadhatsz, például 42*2 vagy 1-5*3. Egy gombbal mentheted a Duplákhoz, a Hiányzókhoz vagy a Foglalthoz."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hogyan működik a fotós számszkenner?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Fotózd le a számokat. A felismert számokat átnézheted és javíthatod, majd elmented a duplákhoz vagy a hiányzókhoz. Csak a felismert számok kerülnek a listádba, mentés előtt te hagyod jóvá őket."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mit tud a Facebook poszt elemző?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Egy csoportban talált csereposzt szövegét bemásolhatod, vagy lefotózhatod a cetlit. Az app összeveti a listát a te hiányzóiddal és dupláiddal, és udvarias választ fogalmaz."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hogyan talál partnert az app?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A Cserék nézetben azokat a gyűjtőket látod, akiknek kell valamid a duplák közül, és/vagy van valamijük, ami neked hiányzik. Szűrhetsz szimmetrikus cserékre, 3 fős körcserékre, helyi vagy ajándékozó partnerekre."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mi az a Szimmetrikus (1:1) csere?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A Szimmetrikus (1:1) szűrő azokat a partnereket mutatja, akikkel pontosan ugyanannyi tételt tudtok átadni egymásnak. Így nincs alkudozás és számolgatás."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mire jó a többpartneres Csere-Tervező?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ha több partnernek is küldenél ajánlatot, kipipálhatod őket, és az Ütközések ellenőrzése gombbal az app megmutatja, ha ugyanazt a duplát többen is kérik. Az ütköző tételnél te döntöd el, kinek adod."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mi az a 3 fős körcsere?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Amikor ketten nem tudtok közvetlenül cserélni, de hárman igen: te adsz B-nek, B ad C-nek, C pedig neked. Az app megkeresi ezeket a köröket, és koordinációs üzenetsablont is készít."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mi az a „Több album, egy boríték” jelzés?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ha a partnerrel egy másik közös albumban is tudtok cserélni, az app jelzi a cserekártyán. Így a tételeket egy közös borítékban vagy csomagban is feladhatjátok."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mit jelent a kék lakat (🔒) a dupláimon?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A lakat azt jelzi, hogy a tétel egy mindkét fél által elfogadott cserében szerepel. Az ajánlat elküldésekor még nincs zárolás, csak az elfogadás után. A csere lezárásakor vagy lemondásakor a lakat megszűnik."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mit tegyek, ha a partner olyan tételt kér, ami már nincs meg nálam?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nem kell elutasítanod az egész ajánlatot. A bejövő ajánlatnál a Cseretételek szerkesztése gombbal kihúzhatod az elfogyott tételt, felajánlhatsz másikat, vagy megjegyzést írhatsz. A partnerhez módosított ajánlat érkezik."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Odaadhatom a dupláimat ingyen?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Igen. A profilodban beállíthatod, hogy a dupláidat ingyen is odaadod. A Cserék nézetben az ajándékozókra külön szűrhetsz."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mi az a készletradar és a térkép?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A készletradar a boltokban még kapható csomagokat jelzi közösségi bejelentések alapján, fotó is csatolható. A bejelentésekre lájkot is adhatsz."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mit jelent az „aktív” jelzés a partnernél?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Azt mutatja, mikor járt utoljára az oldalon. A nemrég aktív gyűjtő nagyobb eséllyel válaszol."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Milyen adataim látszanak másoknak?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A megjelenő neved vagy becenéved, a településed, a duplák és a hiányzók listája, valamint az értékeléseid. A pontos lakcímedet nem tároljuk, a GPS-koordináta kerekítve, hozzávetőlegesen kerül a profilba."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hogyan cseréljek biztonságosan?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Személyes cserénél válassz nyilvános, forgalmas helyet. Postán követhető küldeményt használj. Soha ne küldj pénzt előre, és a lakcímedet csak akkor add meg, ha megbíztál a partnerben. Nézd meg a partner értékeléseit is."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Törölhetem a fiókomat és az adataimat?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Igen. A Profil fül alján az Adatlapom és felhős adataim végleges törlése gombbal bármikor törölheted a profilodat és az adataidat."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hová írjak, ha hibát találok vagy kérdésem van?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Írj a kecskemeti.fiatalok.tarsasaga@gmail.com címre. Hiányzó albumot az Új gyűjtemény javaslata gombbal is beküldhetsz."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Miért nem látnak a többiek a partnerlistán?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Amíg a profilod nincs kitöltve és nem fogadtad el az adatkezelést, a listáid csak a böngésződben vannak. A Profil fülön töltsd ki az adatokat, utána megjelensz másoknak."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Elfelejtettem a jelszavam.",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A Belépés ablakban add meg az e-mail címedet, és használd az Elfelejtett jelszó? gombot. A levelet a spam mappában is keresd meg."
+      }
+    }
+  ]
+}
+</script>
+<style>
+:root {
+  --deep:#0D2E2C; --mid:#14453F; --light:#1D5750; --amber:#D89B4A; --amber-h:#E5A855; --gold:#FFD166;
+  --text:#F3EEDF; --muted:#9FB3A3; --sand:#E3D5B8; --moss:#93B382; --line:rgba(227,213,184,.18);
+  --r:14px; --disp:'Fraunces',Georgia,serif; --body:'Work Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--body);color:var(--text);line-height:1.6;
+  background:radial-gradient(900px 500px at 85% -10%,rgba(216,155,74,.16),transparent 60%),
+             radial-gradient(700px 500px at -10% 10%,rgba(29,87,80,.55),transparent 60%),var(--deep);min-height:100vh}
+a{color:var(--amber)} a:hover{color:var(--amber-h)}
+.top{position:sticky;top:0;z-index:5;backdrop-filter:blur(10px);background:rgba(13,46,44,.82);border-bottom:1px solid var(--line)}
+.top-in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--disp);font-weight:700;font-size:1.15rem;color:var(--text);text-decoration:none;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--amber);color:#2a1c06;font-weight:700;text-decoration:none;
+  padding:9px 16px;border-radius:999px;font-size:.9rem;transition:transform .15s,background .15s;border:0;cursor:pointer}
+.btn:hover{background:var(--amber-h);color:#2a1c06;transform:translateY(-1px)}
+.hero{max-width:860px;margin:0 auto;padding:44px 16px 10px}
+.eyebrow{color:var(--amber);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.74rem}
+h1{font-family:var(--disp);font-size:clamp(2rem,5vw,3.1rem);line-height:1.1;margin:.3em 0 .35em}
+.lead{color:var(--sand);max-width:60ch;margin:0}
+.tools{max-width:860px;margin:22px auto 0;padding:0 16px;position:sticky;top:57px;z-index:4}
+.tools-in{background:rgba(20,69,63,.92);border:1px solid var(--line);border-radius:var(--r);padding:12px;backdrop-filter:blur(8px)}
+.search{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 14px 11px 40px;font:inherit;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%239FB3A3' stroke-width='2'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m13 13 4 4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:13px 50%}
+.search:focus{outline:2px solid var(--amber);outline-offset:1px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-top:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--sand);border-radius:999px;padding:6px 13px;font:600 .8rem var(--body);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--amber);color:#fff}
+.chip.on{background:var(--amber);border-color:var(--amber);color:#2a1c06}
+main{max-width:860px;margin:0 auto;padding:10px 16px 60px}
+.cat{margin-top:30px}
+.cat h2{font-family:var(--disp);font-size:1.45rem;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+.ic{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:11px;background:var(--mid);border:1px solid var(--line);font-size:1.1rem}
+.q{background:linear-gradient(180deg,rgba(29,87,80,.55),rgba(20,69,63,.6));border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.q[open]{border-color:var(--amber)}
+.q summary{list-style:none;cursor:pointer;padding:15px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:600}
+.q summary::-webkit-details-marker{display:none}
+.chev{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(216,155,74,.15);color:var(--amber);font-weight:700;transition:transform .25s}
+.q[open] .chev{transform:rotate(45deg)}
+.a{padding:0 16px 15px;color:var(--sand)}
+.a p{margin:0 0 8px} .a code{background:rgba(0,0,0,.3);padding:1px 7px;border-radius:6px;color:var(--gold);font-size:.92em}
+.perma{font-size:.78rem;color:var(--muted);text-decoration:none} .perma:hover{color:var(--amber)}
+.hit mark{background:var(--gold);color:#2a1c06;border-radius:3px;padding:0 2px}
+.none{display:none;text-align:center;padding:40px 10px;color:var(--muted)}
+.none.show{display:block}
+.cta{margin-top:44px;padding:26px 22px;border-radius:18px;border:1px solid var(--amber);
+  background:linear-gradient(135deg,rgba(216,155,74,.18),rgba(20,69,63,.7))}
+.cta h3{font-family:var(--disp);margin:0 0 6px;font-size:1.4rem} .cta p{margin:0 0 14px;color:var(--sand)}
+footer{max-width:860px;margin:0 auto;padding:10px 16px 40px;color:var(--muted);font-size:.82rem;text-align:center}
+@media(max-width:560px){.tools{top:53px} .top .btn span{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important} html{scroll-behavior:auto}}
+</style>
 </head>
 <body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="https://csereljokosan.hu/">🦦 Cserélj Okosan</a>
+  <a class="btn" href="https://csereljokosan.hu/">Megnyitom az appot <span>→</span></a>
+</div></header>
 
-<div class="page" style="max-width: 840px;">
-  <header class="app-header">
-    <div class="header-left">
-      <a href="index.html" class="btn-brand-home" title="Vissza a kezdőlapra">
-        <img src="logo-mark.png" alt="Cserélj Okosan" class="brand-logo-img">
-        <span class="brand-text">Cserélj Okosan</span>
-      </a>
-    </div>
-    <div class="header-right">
-      <a href="index.html" class="btn btn-primary btn-sm">Belépés a Cserékhez ➔</a>
-    </div>
-  </header>
-
-  <main>
-    <div style="text-align: center; margin: 20px 0 28px;">
-      <h1 style="font-family: var(--font-display); font-size: 2.2rem; color: var(--amber); margin: 0 0 10px;">
-        Gyakori Kérdések & Válaszok
-      </h1>
-      <p style="color: var(--sand); font-size: 0.95rem; max-width: 640px; margin: 0 auto 16px;">
-        Minden fontos tudnivaló a technológiai fegyvereinkről, az ütközésmentes csere-tervezésről, az adatvédelemről és a családbarát működésről.
-      </p>
-
-      <!-- HELYI GYORSKERESŐ MEZŐ A KÉRDÉSEKHEZ -->
-      <div style="max-width: 480px; margin: 0 auto;">
-        <input type="search" id="faq-search-input" class="input-field" placeholder="Keresés a kérdések és válaszok között (pl. lakat, tervező, posta)..." autocomplete="off" style="padding: 8px 14px; font-size: 0.88rem;">
-      </div>
-    </div>
-
-    <!-- GYIK LISTA HARMONIKÁK -->
-    <div id="faq-accordion-list" style="display: flex; flex-direction: column; gap: 12px;">
-
-      <!-- 1. KIEMELT: TÖBB PARTNERES CSERE-TERVEZŐ -->
-      <details class="search-accordion faq-item" open style="border-left: 5px solid var(--amber);">
-        <summary class="search-acc-summary">
-          <span style="color: #FFF;">Mi az a Többpartneres Csere-Tervező Szimulátor és hogyan véd a kettős odaígéréstől?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          <p style="margin-top: 0;">
-            <strong>A leghasznosabb technológiai fegyverünk a szülők kezében!</strong> Amikor leülsz cserélni, gyakran találsz 3–4 olyan gyűjtőt is, akikkel érdemes lenne boltolni. Ha mindegyiknek külön-külön küldesz ajánlatot, de mondjuk a #45-ösből csak 1 db duplád van, az első elfogadás után a többieknek már nem tudod odaadni: megbízhatatlanná válsz, magyarázkodnod kell, vagy elbukod a megegyezést.
-          </p>
-          <p style="margin-bottom: 0;">
-            A <strong>Csere-Tervező Szimulátor</strong> ezt oldja meg: pipálj ki legalább 2 partnert a kártyáikon lévő jelölőnégyzettel, és koppints a lebegő <em>[Ütközések ellenőrzése]</em> gombra. A szimulátor azonnal összeveti az igényeket:
-            <br>• <strong>Kiszűri az ütközéseket:</strong> Ha egy dupládat többen is kérik, pirossal figyelmeztet, és kiválaszthatod, kinek adod oda (alapból annak ítéli, akitől te több hiányzót kapsz vissza, vagy közelebb lakik).
-            <br>• <strong>Kiszámolja a végösszeget:</strong> Pontosan megmutatja, hány új tétel kerül az albumodba, 0 db ütköző odaígéréssel!
-          </p>
-        </div>
-      </details>
-
-      <!-- 2. INGYENESSÉG, KREDITEK HIÁNYA -->
-      <details class="search-accordion faq-item" open style="border-left: 4px solid var(--moss-soft);">
-        <summary class="search-acc-summary">
-          <span>Mennyibe kerül a cserélés? Vannak fizetős kreditek vagy szintek?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          <strong>100%-ban ingyenes!</strong> A Cserélj Okosan a családok és gyerekek szívességi csereoldala. Nálunk nincsenek vásárolható virtuális kreditek, pontboltok, szerencsekerekek vagy előfizetések. A rendszert a közösség támogatja a Donably-n egy kávé árával, így minden jelenlegi és jövőbeli funkció örökre ingyenes és reklámmentes marad.
-        </div>
-      </details>
-
-      <!-- 3. SZIMMETRIKUS 1:1 CSÉRÉK -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--amber);">
-        <summary class="search-acc-summary">
-          <span>Hogyan működik a Szimmetrikus (1:1) Csereajánló?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A szülők leggyakrabban a teljesen egyensúlyos cseréket szeretik: 3-at adok, 3-at kapok. A Cserék fül tetején lévő <strong>[Szimmetrikus (1:1) cserék]</strong> gombra kattintva a rendszer kizárólag azokat a partnereket mutatja, akikkel pontosan ugyanannyi matricát tudtok egymásnak átadni. Ezzel megspórolod az alkudozást, nem kell számolgatni, ki tartozik kinek, a felkínált ajánlat egyetlen kattintással elküldhető.
-        </div>
-      </details>
-
-      <!-- 4. TÖBB ALBUM – EGY BORÍTÉK -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--reserved-blue-soft);">
-        <summary class="search-acc-summary">
-          <span>Mi az a „Több Album – Egy Boríték” Keresztcsere és hogyan spórol postaköltséget?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A családokban ritkán fut csak egyféle album: párhuzamosan gyűlhet a Lutra mellett a Garfield, a Disney vagy a FIFA 365 kártya is. Amikor a rendszer megnézi két partner cserelistáját, a háttérben automatikusan megvizsgálja a többi aktív albumot is. Ha van átfedés, a cserekártyán kiemeli: <em>„Figyelem: Ezzel a partnerrel a Garfield albumban is tudtok cserélni (4 db tétel). Vonjátok össze egyetlen borítékba vagy Foxpostba!”</em>. Így nem kell kétszer kifizetni a drága postaköltséget.
-        </div>
-      </details>
-
-      <!-- 5. 3 FŐS KÖRCSERE -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--amber);">
-        <summary class="search-acc-summary">
-          <span>Hogyan oldja meg a ritka matricák holtpontját a 3 fős Körcsere?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          Amikor a füzet már 85-90%-ban teli van, a sima 1:1 csere gyakran elakad: találsz valakit, akinél megvan az utolsó hiányzód, de neki már semmi sem kell a te dupláidból. A Körcsere algoritmus megkeresi a 3. hiányzó láncszemet: <strong>Te adsz B partnernek, B ad C partnernek, C pedig elküldi neked a vágyott ritkaságot</strong>. A rendszer automatikusan megfogalmazza a koordinációs sablonlevelet, így mindhárom fél biztonságban célba ér.
-        </div>
-      </details>
-
-      <!-- 6. LAKATVÉDELEM -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--reserved-blue-soft);">
-        <summary class="search-acc-summary">
-          <span>Mit jelent a kék lakat (🔒) a matricáimon és mikor kerül fel a dupláimra?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A lakatvédelem a kettős elígérés elleni mechanizmusunk. A lakat <strong>kizárólag akkor jelenik meg, amikor mindkét fél kölcsönösen elfogadta a cserét</strong>. Ekkor a megegyezett matricákra kék lakat kerül a rácson, így véletlenül sem tudod elállítani vagy másnak is odaígérni, amíg a csomag átadása vagy postázása meg nem történik.
-        </div>
-      </details>
-
-      <!-- 7. INTERAKTÍV ELLENAJÁNLAT (COUNTER-OFFER) -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--gift-gold);">
-        <summary class="search-acc-summary">
-          <span>Mit tegyek, ha a partner olyan matricát kér tőlem, ami már nincs meg? (Ellenajánlat)</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A konkurenciával ellentétben nálunk nem kell durván elutasítanod az egész ajánlatot! A bejövő csereablakban kattints a <strong>[Cseretételek szerkesztése]</strong> gombra. Itt a megjelenő chipekre koppintva áthúzhatod az időközben elfogyott matricákat, vagy hozzáadhatsz mást. A partnerhez egy módosított ajánlat fut be, amit ő is ellenőrizhet és elfogadhat.
-        </div>
-      </details>
-
-      <!-- 8. NINCSEK BÜNTETÉSEK, SZANKCIÓK -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--moss-soft);">
-        <summary class="search-acc-summary">
-          <span>Mi történik, ha egy partner meggondolja magát vagy nem ér rá? Kapok büntetést?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          <strong>Soha nem zárunk ki és nem büntetünk senkit!</strong> Az anyukák és gyerekek szórakozásból gyűjtenek; ha valaki elutazik egy hétvégére vagy megbetegszik, nem szabad szankcionálni. Ha egy csere meghiúsul, a felajánlott tételek lakatjai azonnal feloldódnak a rácson, a megállapodás pedig átkerül az Archívumba. A frissen belépő aktív tagok automatikusan előrébb sorolódnak a keresőben.
-        </div>
-      </details>
-
-      <!-- 9. CSALÁDI MÓD / TESTVÉREK FÜZETEI -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--amber);">
-        <summary class="search-acc-summary">
-          <span>Hogyan működik a Családi Mód, ha a testvéreknek külön füzetük van ugyanabból az albumból?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          Nem kell külön e-mail címekkel több fiókot regisztrálni! Az aktív album tetején lévő <strong>[+ Új füzet]</strong> gombra kattintva a családon belül pillanatok alatt létrehozható a <em>2. füzet (Testvér)</em>. Mindegyik füzet teljesen különálló rácsot és hiányzólistát kap, így a szülő egyetlen bejelentkezéssel, kényelmesen kezelheti az összes gyermek füzetét.
-        </div>
-      </details>
-
-      <!-- 10. FOTÓS SZÁMSZKENNER & FB ELEMZŐ -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--reserved-blue-soft);">
-        <summary class="search-acc-summary">
-          <span>Hogyan működik a Fotós Számszkenner és a Facebook poszt elemző?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          Felejtsd el a hosszú percekig tartó kézi számpötyögést! Fektesd le a dupláidat a hátoldalukkal felfelé, vagy készíts fotót a kockás füzetből kitépett papírfecnidről a beépített kamerával. A mesterséges intelligencia (Gemini AI és Groq Vision) másodpercek alatt kiolvassa a számokat és a Duplákhoz menti. A Facebook csoportokban talált posztokat pedig egyszerűen másold be vagy fotózd le: a rendszer kiszámolja a cserét, és kész udvarias válaszkommentet fogalmaz a kezed alá.
-        </div>
-      </details>
-
-      <!-- 11. TÖMEGES SZÁMBEMÁSOLÓ -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--gift-gold);">
-        <summary class="search-acc-summary">
-          <span>Hogyan működik a Tömeges számbemásoló (intervallumok és szorzók)?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A rács feletti <em>[Tömeges bevitel]</em> mező intelligens szövegértelmezővel rendelkezik. Bemásolhatsz vesszővel vagy szóközzel elválasztott számokat, intervallumokat (pl. <code>1-15</code>) és darabszám-szorzókat is (pl. <code>42*2</code> vagy <code>1-5*3</code>). Egyetlen gombnyomással mentheted őket a Duplákhoz (Van), Hiányzókhoz (Kell) vagy Foglalthoz.
-        </div>
-      </details>
-
-      <!-- 12. GPS & TÁVOLSÁGI KERESÉS -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--moss-soft);">
-        <summary class="search-acc-summary">
-          <span>Hogyan találhatom meg a legközelebbi cserepartnereket GPS távolság vagy város szerint?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A Kereső fülön légvonalbeli GPS távolság alapján (5 km, 10 km, 25 km, saját város) szűrhetsz a legközelebbi gyűjtőtársakra, vagy beírhatod a nagyszülők, rokonok városát is a településkeresőbe. A személyes biztonság és a gyermekvédelem miatt a pontos lakcímedet nem tároljuk: a koordináták hozzávetőlegesek és anonimak.
-        </div>
-      </details>
-
-      <!-- 13. KÉSZLETRADAR -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--amber);">
-        <summary class="search-acc-summary">
-          <span>Hogyan működik a 221 Lidl áruház valós idejű Készletradarja?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A közösségi radar segít elkerülni a felesleges bolti köröket. A gyűjtők valós időben jelentik be, hogy az adott áruházban még kapható-e a Lutra album és a matricacsomag (🟢 Még kapható), vagy már elfogyott a készlet (🔴 Elfogyott). A bejelentésekhez a kasszánál vagy a polcnál készült fotó is csatolható.
-        </div>
-      </details>
-
-      <!-- 14. KÖZÖS KALAP -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--gift-gold);">
-        <summary class="search-acc-summary">
-          <span>Mi az a Közös Kalap és hogyan jutnak el a matricák az óvodákba és iskolákba?</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          A Cserélj Okosan koordinátora jelenleg <strong>8 iskolás osztálynak és 4 óvodás csoportnak</strong> segít a füzetek közös befejezésében. Ha maradtak olyan felesleges dupláid, amikért nem kérsz cserét, a fejlécben lévő <em>[Közös Kalap]</em> gombbal felajánlhatod őket. A felajánlásról közvetlen admin-szál nyílik, a matricákat pedig eljuttatjuk a gyerekekhez.
-        </div>
-      </details>
-
-      <!-- 15. ADATVÉDELEM & FIÓKTÖRLÉS -->
-      <details class="search-accordion faq-item" style="border-left: 4px solid var(--moss-soft);">
-        <summary class="search-acc-summary">
-          <span>Hogyan kezeli a platform az adataimat? Törölhetem magam véglegesen? (GDPR)</span>
-          <span class="acc-chevron">▾</span>
-        </summary>
-        <div class="search-acc-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);">
-          Maximálisan betartjuk az európai adatvédelmi előírásokat (GDPR). Nem használunk harmadik féltől származó reklámkövetőket, nem értékesítünk adatokat. Ha bármikor úgy döntesz, a Profil fül alján található <strong>[Adatlapom és felhős adataim végleges törlése]</strong> gombbal egyetlen kattintással véglegesen megsemmisítheted a profilodat, a cseretörténetedet és az összes adatodat.
-        </div>
-      </details>
-
-    </div>
-
-    <!-- ALSÓ CSEREINDÍTÓ FELHÍVÁS -->
-    <div class="card" style="margin-top: 36px; text-align: center; border: 2px solid var(--amber); background: linear-gradient(180deg, rgba(216,155,74,0.18) 0%, rgba(20,69,63,0.85) 100%); padding: 26px 18px;">
-      <h3 style="margin: 0 0 8px; font-size: 1.35rem; color: #FFF;">Készen állsz a villámgyors és biztonságos cserére?</h3>
-      <p style="font-size: 0.88rem; color: var(--sand); margin: 0 0 18px;">
-        Nyisd meg az albumodat, és találd meg a hiányzó matricáidat még ma!
-      </p>
-      <a href="index.html" class="btn btn-primary" style="padding: 12px 30px; font-size: 1rem; font-weight: 800;">
-        Gyűjteményem megnyitása ➔
-      </a>
-    </div>
-  </main>
-
-  <footer class="support-footer" style="margin-top: 40px;">
-    <div style="font-size: 0.78rem; color: var(--text-muted);">
-      Cserélj Okosan &copy; 2026 • Ingyenes közösségi csereplatform • <a href="index.html" style="color: var(--sand);">Főoldal</a> • <a href="facebook-matrica-csere.html" style="color: var(--sand);">Facebook Elemző</a> • <a href="lutra-album-matrica-csere.html" style="color: var(--sand);">Lutra 2026</a>
-    </div>
-  </footer>
+<div class="hero">
+  <div class="eyebrow">Súgó</div>
+  <h1>Gyakori kérdések</h1>
+  <p class="lead">Itt találod a válaszokat a jelölésről, a párosításról, a cseréről és az adataidról. 24 kérdés, kereshetően.</p>
 </div>
 
-<!-- AZONNALI KÉRDÉSKERESŐ SZŰRŐ SZKRIPT -->
-<script>
-  const searchInput = document.getElementById('faq-search-input');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      const items = document.querySelectorAll('.faq-item');
-      items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        const matches = text.includes(q);
-        item.style.display = matches ? 'block' : 'none';
-        if (q && matches) {
-          item.open = true; // Kereséskor automatikusan kinyitja a találatokat
-        }
-      });
-    });
-  }
-</script>
+<div class="tools"><div class="tools-in">
+  <input class="search" id="s" type="search" placeholder="Keress a kérdések között (pl. dupla, fotó, jelszó)" aria-label="Keresés a kérdések között" autocomplete="off">
+  <div class="chips" role="group" aria-label="Kategóriák"><button class="chip on" data-cat="all">Mind</button><button class="chip" data-cat="kezdes">🌱 Kezdés</button><button class="chip" data-cat="jeloles">🖍️ Jelölés</button><button class="chip" data-cat="csere">🤝 Párosítás és csere</button><button class="chip" data-cat="adat">🔒 Biztonság és adatok</button><button class="chip" data-cat="fiok">👤 Fiók és profil</button></div>
+</div></div>
 
+<main>
+<section class="cat" data-cat="kezdes" aria-labelledby="h-kezdes"><h2 id="h-kezdes"><span class="ic">🌱</span>Kezdés</h2>
+<details class="q" id="mennyibe-kerul-vannak-fizetos-kreditek-vagy-szintek" data-cat="kezdes" data-text="mennyibe kerül? vannak fizetős kreditek vagy szintek? a használat ingyenes. nincsenek kreditek, szintek, előfizetések vagy virtuális boltok. aki szeretné, önkéntesen támogathatja az oldalt, de ez semmihez nem szükséges.">
+  <summary><span class="qt">Mennyibe kerül? Vannak fizetős kreditek vagy szintek?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A használat ingyenes. Nincsenek kreditek, szintek, előfizetések vagy virtuális boltok. Aki szeretné, a láblécben a Donably hivatkozáson önkéntesen támogathatja az oldalt, de ez semmihez nem szükséges.</p><a class="perma" href="#mennyibe-kerul-vannak-fizetos-kreditek-vagy-szintek" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="kell-hozza-regisztracio" data-cat="kezdes" data-text="kell hozzá regisztráció? a jelölést kipróbálhatod belépés nélkül is, ilyenkor az adataid csak a böngésződben vannak. a csereajánlatokhoz, üzenetekhez és ahhoz, hogy mások is lássanak, belépés és kitöltött profil kell.">
+  <summary><span class="qt">Kell hozzá regisztráció?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A jelölést kipróbálhatod belépés nélkül is, ilyenkor az adataid csak a böngésződben vannak. A csereajánlatokhoz, üzenetekhez és ahhoz, hogy mások is lássanak, belépés és kitöltött profil kell.</p><a class="perma" href="#kell-hozza-regisztracio" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="hogyan-mukodik-a-csaladi-mod-ha-a-testvereknek-kulon-fuzetuk" data-cat="kezdes" data-text="hogyan működik a családi mód, ha a testvéreknek külön füzetük van? nem kell külön fiókot regisztrálni. az album fejlécében az új füzet gombbal létrehozhatsz egy második füzetet is. minden füzet külön rácsot és külön hiányzólistát kap.">
+  <summary><span class="qt">Hogyan működik a Családi Mód, ha a testvéreknek külön füzetük van?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Nem kell külön fiókot regisztrálni. Az album fejlécében a <strong>+ Új füzet</strong> gombbal létrehozhatsz egy második füzetet is. Minden füzet külön rácsot és külön hiányzólistát kap, egyetlen bejelentkezéssel kezelheted őket.</p><a class="perma" href="#hogyan-mukodik-a-csaladi-mod-ha-a-testvereknek-kulon-fuzetuk" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mi-az-a-kozos-kalap" data-cat="kezdes" data-text="mi az a közös kalap? ha vannak dupláid, amikért nem kérsz cserét, a közös kalap gombbal felajánlhatod őket. a felajánlás után belső üzenetszál nyílik a koordinátorral, aki egyeztet az átadásról.">
+  <summary><span class="qt">Mi az a Közös Kalap?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Ha vannak dupláid, amikért nem kérsz cserét, a Közös Kalap gombbal felajánlhatod őket. A felajánlás után belső üzenetszál nyílik a koordinátorral, aki egyeztet az átadásról. Részletek: <a href="kozos-kalap.html">Közös Kalap oldal</a>.</p><a class="perma" href="#mi-az-a-kozos-kalap" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+</section>
+<section class="cat" data-cat="jeloles" aria-labelledby="h-jeloles"><h2 id="h-jeloles"><span class="ic">🖍️</span>Jelölés</h2>
+<details class="q" id="hogyan-jelolom-a-teteleket" data-cat="jeloles" data-text="hogyan jelölöm a tételeket? koppints egy tételre: a jelölés körbejár dupla, hiányzik, foglalt, üres sorrendben. a jelöletlen tételt az app nem tekinti hiányzónak, ezért nem kapsz olyan ajánlatot, amire nincs szükséged.">
+  <summary><span class="qt">Hogyan jelölöm a tételeket?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Koppints egy tételre: a jelölés körbejár <strong>dupla → hiányzik → foglalt → üres</strong> sorrendben. A jelöletlen (üres) tételt az app nem tekinti hiányzónak, ezért nem kapsz olyan ajánlatot, amire nincs szükséged.</p><a class="perma" href="#hogyan-jelolom-a-teteleket" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="hogyan-jeloljek-sok-tetelt-egyszerre" data-cat="jeloles" data-text="hogyan jelöljek sok tételt egyszerre? a rács feletti tömeges bevitelnél számokat és tartományokat írhatsz, például 1-15, és darabszámot is megadhatsz, például 42*2 vagy 1-5*3. egy gombbal mentheted a duplákhoz, a hiányzókhoz vagy a foglalthoz.">
+  <summary><span class="qt">Hogyan jelöljek sok tételt egyszerre?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A rács feletti Tömeges bevitelnél számokat és tartományokat írhatsz, például <code>1-15</code>, és darabszámot is megadhatsz, például <code>42*2</code> vagy <code>1-5*3</code>. Egy gombbal mentheted a Duplákhoz, a Hiányzókhoz vagy a Foglalthoz.</p><a class="perma" href="#hogyan-jeloljek-sok-tetelt-egyszerre" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="hogyan-mukodik-a-fotos-szamszkenner" data-cat="jeloles" data-text="hogyan működik a fotós számszkenner? fotózd le a számokat. a felismert számokat átnézheted és javíthatod, majd elmented a duplákhoz vagy a hiányzókhoz. csak a felismert számok kerülnek a listádba, mentés előtt te hagyod jóvá őket.">
+  <summary><span class="qt">Hogyan működik a fotós számszkenner?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Fotózd le a számokat (a matricák számos oldalát vagy a kézzel írt listát). A felismert számokat átnézheted és javíthatod, majd elmented a duplákhoz vagy a hiányzókhoz. Csak a felismert számok kerülnek a listádba, mentés előtt te hagyod jóvá őket. Részletek: <a href="fotos-matrica-szkenner.html">Fotós szkenner</a>.</p><a class="perma" href="#hogyan-mukodik-a-fotos-szamszkenner" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mit-tud-a-facebook-poszt-elemzo" data-cat="jeloles" data-text="mit tud a facebook poszt elemző? egy csoportban talált csereposzt szövegét bemásolhatod, vagy lefotózhatod a cetlit. az app összeveti a listát a te hiányzóiddal és dupláiddal, és udvarias választ fogalmaz.">
+  <summary><span class="qt">Mit tud a Facebook poszt elemző?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Egy csoportban talált csereposzt szövegét bemásolhatod, vagy lefotózhatod a cetlit. Az app összeveti a listát a te hiányzóiddal és dupláiddal, és udvarias választ fogalmaz, amit bemásolhatsz a komment alá. Részletek: <a href="facebook-matrica-csere.html">Facebook elemző</a>.</p><a class="perma" href="#mit-tud-a-facebook-poszt-elemzo" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+</section>
+<section class="cat" data-cat="csere" aria-labelledby="h-csere"><h2 id="h-csere"><span class="ic">🤝</span>Párosítás és csere</h2>
+<details class="q" id="hogyan-talal-partnert-az-app" data-cat="csere" data-text="hogyan talál partnert az app? a cserék nézetben azokat a gyűjtőket látod, akiknek kell valamid a duplák közül, és/vagy van valamijük, ami neked hiányzik. szűrhetsz szimmetrikus cserékre, 3 fős körcserékre, helyi vagy ajándékozó partnerekre.">
+  <summary><span class="qt">Hogyan talál partnert az app?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A Cserék nézetben azokat a gyűjtőket látod, akiknek kell valamid a duplák közül, és/vagy van valamijük, ami neked hiányzik. Szűrhetsz szimmetrikus (1:1) cserékre, 3 fős körcserékre, helyi vagy ajándékozó partnerekre.</p><a class="perma" href="#hogyan-talal-partnert-az-app" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mi-az-a-szimmetrikus-1-1-csere" data-cat="csere" data-text="mi az a szimmetrikus (1:1) csere? a szimmetrikus (1:1) szűrő azokat a partnereket mutatja, akikkel pontosan ugyanannyi tételt tudtok átadni egymásnak. így nincs alkudozás és számolgatás.">
+  <summary><span class="qt">Mi az a Szimmetrikus (1:1) csere?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A Szimmetrikus (1:1) szűrő azokat a partnereket mutatja, akikkel pontosan ugyanannyi tételt tudtok átadni egymásnak (például 3-at 3-ért). Így nincs alkudozás és számolgatás.</p><a class="perma" href="#mi-az-a-szimmetrikus-1-1-csere" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mire-jo-a-tobbpartneres-csere-tervezo" data-cat="csere" data-text="mire jó a többpartneres csere-tervező? ha több partnernek is küldenél ajánlatot, kipipálhatod őket, és az ütközések ellenőrzése gombbal az app megmutatja, ha ugyanazt a duplát többen is kérik. az ütköző tételnél te döntöd el, kinek adod.">
+  <summary><span class="qt">Mire jó a többpartneres Csere-Tervező?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Ha több partnernek is küldenél ajánlatot, pipáld ki őket, és az Ütközések ellenőrzése gombbal az app megmutatja, ha ugyanazt a dupláidat többen is kérik. Az ütköző tételnél te döntöd el, kinek adod. Így nem ígéred oda ugyanazt kétszer. Részletek: <a href="csere-tervezo-szimulator.html">Csere-Tervező</a>.</p><a class="perma" href="#mire-jo-a-tobbpartneres-csere-tervezo" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mi-az-a-3-fos-korcsere" data-cat="csere" data-text="mi az a 3 fős körcsere? amikor ketten nem tudtok közvetlenül cserélni, de hárman igen: te adsz b-nek, b ad c-nek, c pedig neked. az app megkeresi ezeket a köröket, és koordinációs üzenetsablont is készít.">
+  <summary><span class="qt">Mi az a 3 fős körcsere?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Amikor ketten nem tudtok közvetlenül cserélni, de hárman igen: te adsz B-nek, B ad C-nek, C pedig neked. Az app megkeresi ezeket a köröket, és koordinációs üzenetsablont is készít. Részletek: <a href="korcsere-kalkulator.html">Körcsere</a>.</p><a class="perma" href="#mi-az-a-3-fos-korcsere" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mi-az-a-tobb-album-egy-boritek-jelzes" data-cat="csere" data-text="mi az a „több album, egy boríték” jelzés? ha a partnerrel egy másik közös albumban is tudtok cserélni, az app jelzi a cserekártyán. így a tételeket egy közös borítékban vagy csomagban is feladhatjátok.">
+  <summary><span class="qt">Mi az a „Több album, egy boríték” jelzés?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Ha a partnerrel egy másik közös albumban is tudtok cserélni, az app jelzi a cserekártyán. Így a tételeket egy közös borítékban vagy csomagban is feladhatjátok, és kevesebb a postaköltség.</p><a class="perma" href="#mi-az-a-tobb-album-egy-boritek-jelzes" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mit-jelent-a-kek-lakat-a-duplaimon" data-cat="csere" data-text="mit jelent a kék lakat (🔒) a dupláimon? a lakat azt jelzi, hogy a tétel egy mindkét fél által elfogadott cserében szerepel. az ajánlat elküldésekor még nincs zárolás, csak az elfogadás után. a csere lezárásakor vagy lemondásakor a lakat megszűnik.">
+  <summary><span class="qt">Mit jelent a kék lakat (🔒) a dupláimon?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A lakat azt jelzi, hogy a tétel egy <strong>mindkét fél által elfogadott</strong> cserében szerepel. Az ajánlat elküldésekor még nincs zárolás, csak az elfogadás után. Így nem ígéred oda véletlenül másnak ugyanazt a darabot. A csere lezárásakor vagy lemondásakor a lakat megszűnik.</p><a class="perma" href="#mit-jelent-a-kek-lakat-a-duplaimon" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mit-tegyek-ha-a-partner-olyan-tetelt-ker-ami-mar-nincs-meg-n" data-cat="csere" data-text="mit tegyek, ha a partner olyan tételt kér, ami már nincs meg nálam? nem kell elutasítanod az egész ajánlatot. a bejövő ajánlatnál a cseretételek szerkesztése gombbal kihúzhatod az elfogyott tételt, felajánlhatsz másikat, vagy megjegyzést írhatsz. a partnerhez módosított ajánlat érkezik.">
+  <summary><span class="qt">Mit tegyek, ha a partner olyan tételt kér, ami már nincs meg nálam?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Nem kell elutasítanod az egész ajánlatot. A bejövő ajánlatnál a Cseretételek szerkesztése gombbal kihúzhatod az elfogyott tételt, felajánlhatsz másikat, vagy megjegyzést írhatsz. A partnerhez módosított ajánlat érkezik.</p><a class="perma" href="#mit-tegyek-ha-a-partner-olyan-tetelt-ker-ami-mar-nincs-meg-n" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="odaadhatom-a-duplaimat-ingyen" data-cat="csere" data-text="odaadhatom a dupláimat ingyen? igen. a profilodban beállíthatod, hogy a dupláidat ingyen is odaadod. a cserék nézetben az ajándékozókra külön szűrhetsz.">
+  <summary><span class="qt">Odaadhatom a dupláimat ingyen?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Igen. A profilodban beállíthatod, hogy a dupláidat ingyen is odaadod. A Cserék nézetben az ajándékozókra külön szűrhetsz.</p><a class="perma" href="#odaadhatom-a-duplaimat-ingyen" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mi-az-a-keszletradar-es-a-terkep" data-cat="csere" data-text="mi az a készletradar és a térkép? a készletradar a boltokban még kapható csomagokat jelzi közösségi bejelentések alapján, fotó is csatolható. a bejelentésekre lájkot is adhatsz.">
+  <summary><span class="qt">Mi az a készletradar és a térkép?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A készletradar a boltokban még kapható csomagokat jelzi közösségi bejelentések alapján, fotó is csatolható. A bejelentésekre lájkot is adhatsz.</p><a class="perma" href="#mi-az-a-keszletradar-es-a-terkep" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="mit-jelent-az-aktiv-jelzes-a-partnernel" data-cat="csere" data-text="mit jelent az „aktív” jelzés a partnernél? azt mutatja, mikor járt utoljára az oldalon. a nemrég aktív gyűjtő nagyobb eséllyel válaszol.">
+  <summary><span class="qt">Mit jelent az „aktív” jelzés a partnernél?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Azt mutatja, mikor járt utoljára az oldalon. A nemrég aktív gyűjtő nagyobb eséllyel válaszol.</p><a class="perma" href="#mit-jelent-az-aktiv-jelzes-a-partnernel" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+</section>
+<section class="cat" data-cat="adat" aria-labelledby="h-adat"><h2 id="h-adat"><span class="ic">🔒</span>Biztonság és adatok</h2>
+<details class="q" id="milyen-adataim-latszanak-masoknak" data-cat="adat" data-text="milyen adataim látszanak másoknak? a megjelenő neved vagy becenéved, a településed, a duplák és a hiányzók listája, valamint az értékeléseid. a pontos lakcímedet nem tároljuk, a gps-koordináta kerekítve, hozzávetőlegesen kerül a profilba.">
+  <summary><span class="qt">Milyen adataim látszanak másoknak?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A megjelenő neved vagy becenéved, a településed, a duplák és a hiányzók listája, valamint az értékeléseid. A pontos lakcímedet nem tároljuk, a GPS-koordináta kerekítve, hozzávetőlegesen kerül a profilba. Az adatkezelési tájékoztató a főoldal láblécében olvasható.</p><a class="perma" href="#milyen-adataim-latszanak-masoknak" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="hogyan-csereljek-biztonsagosan" data-cat="adat" data-text="hogyan cseréljek biztonságosan? személyes cserénél válassz nyilvános, forgalmas helyet. postán követhető küldeményt használj. soha ne küldj pénzt előre, és a lakcímedet csak akkor add meg, ha megbíztál a partnerben. nézd meg a partner értékeléseit is.">
+  <summary><span class="qt">Hogyan cseréljek biztonságosan?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Személyes cserénél válassz nyilvános, forgalmas helyet. Postán követhető küldeményt használj. Soha ne küldj pénzt előre, és a lakcímedet csak akkor add meg, ha megbíztál a partnerben. Nézd meg a partner értékeléseit is.</p><a class="perma" href="#hogyan-csereljek-biztonsagosan" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="torolhetem-a-fiokomat-es-az-adataimat" data-cat="adat" data-text="törölhetem a fiókomat és az adataimat? igen. a profil fül alján az adatlapom és felhős adataim végleges törlése gombbal bármikor törölheted a profilodat és az adataidat.">
+  <summary><span class="qt">Törölhetem a fiókomat és az adataimat?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Igen. A Profil fül alján az <strong>Adatlapom és felhős adataim végleges törlése</strong> gombbal bármikor törölheted a profilodat és az adataidat.</p><a class="perma" href="#torolhetem-a-fiokomat-es-az-adataimat" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="hova-irjak-ha-hibat-talalok-vagy-kerdesem-van" data-cat="adat" data-text="hová írjak, ha hibát találok vagy kérdésem van? írj a kecskemeti.fiatalok.tarsasaga@gmail.com címre. hiányzó albumot az új gyűjtemény javaslata gombbal is beküldhetsz.">
+  <summary><span class="qt">Hová írjak, ha hibát találok vagy kérdésem van?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Írj az <a href="mailto:kecskemeti.fiatalok.tarsasaga@gmail.com">kecskemeti.fiatalok.tarsasaga@gmail.com</a> címre. Hiányzó albumot az Új gyűjtemény javaslata gombbal is beküldhetsz.</p><a class="perma" href="#hova-irjak-ha-hibat-talalok-vagy-kerdesem-van" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+</section>
+<section class="cat" data-cat="fiok" aria-labelledby="h-fiok"><h2 id="h-fiok"><span class="ic">👤</span>Fiók és profil</h2>
+<details class="q" id="miert-nem-latnak-a-tobbiek-a-partnerlistan" data-cat="fiok" data-text="miért nem látnak a többiek a partnerlistán? amíg a profilod nincs kitöltve és nem fogadtad el az adatkezelést, a listáid csak a böngésződben vannak. a profil fülön töltsd ki az adatokat, utána megjelensz másoknak.">
+  <summary><span class="qt">Miért nem látnak a többiek a partnerlistán?</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>Amíg a profilod nincs kitöltve (név, település, e-mail) és nem fogadtad el az adatkezelést, a listáid csak a böngésződben vannak. A Profil fülön töltsd ki az adatokat, utána megjelensz másoknak.</p><a class="perma" href="#miert-nem-latnak-a-tobbiek-a-partnerlistan" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+<details class="q" id="elfelejtettem-a-jelszavam" data-cat="fiok" data-text="elfelejtettem a jelszavam. a belépés ablakban add meg az e-mail címedet, és használd az elfelejtett jelszó? gombot. a levelet a spam mappában is keresd meg.">
+  <summary><span class="qt">Elfelejtettem a jelszavam.</span><span class="chev" aria-hidden="true">+</span></summary>
+  <div class="a"><p>A Belépés ablakban add meg az e-mail címedet, és használd az <strong>Elfelejtett jelszó?</strong> gombot. A levelet a spam mappában is keresd meg.</p><a class="perma" href="#elfelejtettem-a-jelszavam" aria-label="Link erre a kérdésre">🔗 Link</a></div>
+</details>
+</section>
+<p class="none" id="none">Nincs találat. Próbálj másik szót, vagy válaszd a „Mind” kategóriát.</p>
+
+<div class="cta">
+  <h3>Nem találtad meg, amit kerestél?</h3>
+  <p>Hiányzó album vagy hibás adat esetén használd az app <strong>Új gyűjtemény javaslata</strong> gombját a Gyűjtemények oldalon.</p>
+  <a class="btn" href="https://csereljokosan.hu/">Irány az app →</a>
+</div>
+</main>
+<footer>© Cserélj Okosan · <a href="index.html">Főoldal</a> · <a href="okos-funkciok.html">Okos funkciók</a> · <a href="lutra-album-matrica-csere.html">Lutra 2026</a> · <a href="kozos-kalap.html">Közös Kalap</a></footer>
+
+<script>
+(function () {
+  var qs = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var cats = Array.prototype.slice.call(document.querySelectorAll('.cat'));
+  var input = document.getElementById('s');
+  var none = document.getElementById('none');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var activeCat = 'all';
+
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function apply() {
+    var term = input.value.trim().toLowerCase();
+    var shown = 0;
+    qs.forEach(function (q) {
+      var okCat = activeCat === 'all' || q.getAttribute('data-cat') === activeCat;
+      var okTxt = !term || q.getAttribute('data-text').indexOf(term) > -1;
+      var show = okCat && okTxt;
+      q.style.display = show ? '' : 'none';
+      if (show) shown++;
+      var qt = q.querySelector('.qt');
+      var raw = qt.getAttribute('data-raw') || qt.textContent;
+      qt.setAttribute('data-raw', raw);
+      if (term && show) {
+        var i = raw.toLowerCase().indexOf(term);
+        qt.innerHTML = i > -1 ? esc(raw.slice(0, i)) + '<mark>' + esc(raw.slice(i, i + term.length)) + '</mark>' + esc(raw.slice(i + term.length)) : esc(raw);
+      } else { qt.textContent = raw; }
+      if (term && show && qs.length && shown === 1) q.open = true;
+    });
+    cats.forEach(function (c) {
+      var any = Array.prototype.some.call(c.querySelectorAll('.q'), function (q) { return q.style.display !== 'none'; });
+      c.style.display = any ? '' : 'none';
+    });
+    none.classList.toggle('show', shown === 0);
+  }
+
+  input.addEventListener('input', apply);
+  chips.forEach(function (ch) {
+    ch.addEventListener('click', function () {
+      activeCat = ch.getAttribute('data-cat');
+      chips.forEach(function (c) { c.classList.toggle('on', c === ch); });
+      apply();
+    });
+  });
+
+  // csak egyet tart nyitva
+  qs.forEach(function (q) {
+    q.addEventListener('toggle', function () {
+      if (q.open && !input.value) qs.forEach(function (o) { if (o !== q) o.open = false; });
+    });
+  });
+
+  // mélylink: #kerdes-azonosito megnyitja a kérdést
+  function openHash() {
+    var id = decodeURIComponent((location.hash || '').slice(1));
+    var el = id && document.getElementById(id);
+    if (el && el.classList.contains('q')) { el.open = true; setTimeout(function () { el.scrollIntoView({block: 'center'}); }, 50); }
+  }
+  window.addEventListener('hashchange', openHash);
+  openHash();
+})();
+</script>
 </body>
 </html>
