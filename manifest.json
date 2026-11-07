@@ -1,17 +1,18 @@
 {
-  "name": "Cserélj Okosan - Matrica és Kártyacsere",
+  "name": "Cserélj Okosan – Matrica és Kártyacsere",
   "short_name": "Cserélj Okosan",
-  "description": "Magyarország ingyenes közösségi matrica-, kártya- és figuracsere platformja.",
+  "description": "Magyarország leggyorsabb, ingyenes matrica- és kártyacsere platformja. Valós idejű párosítás, körcserék és bolti készletradar.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0D2E2C",
   "theme_color": "#0D2E2C",
+  "background_color": "#0D2E2C",
+  "lang": "hu",
   "icons": [
     {
       "src": "favicon.png",
-      "sizes": "48x48",
+      "sizes": "64x64",
       "type": "image/png"
     },
     {
@@ -25,11 +26,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "logo-emblem.png",
-      "sizes": "512x512",
-      "type": "image/png"
     }
-  ]
+  ],
+  "categories": ["shopping", "social", "lifestyle"]
 }
