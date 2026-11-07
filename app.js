@@ -1309,7 +1309,6 @@ function renderGrid() {
   const activeAlbum = getActiveAlbum();
   const totalSize = getActiveAlbumSize();
   const isFigure = activeAlbum.type === 'figure' || activeAlbum.type === 'kinder' || /kinder|figura/i.test(activeAlbum.title);
-if (isFigure) cls += ' cell-figure';
   let html = '';
   const vanSet = new Set(ensureArray(myProfile.van));
   const kellSet = new Set(ensureArray(myProfile.kell));
