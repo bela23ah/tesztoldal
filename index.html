@@ -392,6 +392,15 @@
         </div>
       </div>
 
+      <!-- BLOKKOK + „TOVÁBBIAK” (leírás, nyomtatható lista, megosztható kép) -->
+      <div class="album-more-wrap">
+        <div class="album-more-bar">
+          <button class="btn btn-secondary btn-sm" id="btn-album-more" aria-expanded="false" aria-controls="album-more-panel">Továbbiak ▾</button>
+          <button class="btn btn-secondary btn-sm" id="btn-toggle-grid-blocks" style="display:none;" title="Rács fejezetekre bontva">▦ Blokkok</button>
+        </div>
+        <div id="album-more-panel" class="album-more-panel" hidden></div>
+      </div>
+
       <div id="grid-view-container">
         <!-- KOMPAKT EGYMÁS MELLETTI SZŰRŐSÁV (SEGMENTED CONTROL) -->
         <div class="grid-controls">
@@ -1130,17 +1139,36 @@
           </div>
 
           <div class="form-group">
+            <label>Rövid ismertető / leírás (a gyűjtemény „Továbbiak” paneljében és a Google-oldalakon jelenik meg, 2–4 mondat):</label>
+            <textarea id="admin-album-description" class="input-field" rows="3" maxlength="1200" placeholder="pl. A Moomin – The Creative World of Moomin a Panini 2026-os, 225 kártyás gyűjtése: ..."></textarea>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-admin-gen-description" style="margin-top:6px;">✨ Leírás-javaslat a megadott adatokból</button>
+          </div>
+
+          <details class="admin-accordion" id="admin-import-box" style="margin:0 0 12px; border-left:4px solid var(--moss-soft);">
+            <summary style="cursor:pointer; font-weight:700; color:var(--moss-soft); padding:6px 0;">📥 Gyorsfelvitel: lista beillesztése vagy PDF beolvasása</summary>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin:6px 0;">
+              Másold be a tétellistát (soronként <code>12 Tételnév</code>, kódokkal is: <code>LE1 Név</code>, <code>MEX 3 Név</code>), vagy tölts fel egy nyomtatható lista PDF-et, szöveges fájlt vagy fényképet / képernyőképet (a képet az AI olvassa, ezért érdemes átnézni az eredményt).
+              Fejezetcím: nagybetűs sor, vagy <code># Cím</code>, vagy <code>Cím: 1-72</code>. Név nélküli tartomány: <code>1-72</code>, <code>HUN 1-20</code>.
+              A felismerés kitölti a kódok, nevek és fejezetek mezőit, a darabszámot és (ha üres) a címet, kiadót, évet.
+            </p>
+            <textarea id="admin-import-text" class="input-field" rows="5" placeholder="1 Első tétel&#10;2 Második tétel&#10;..."></textarea>
+            <input type="file" id="admin-import-file" accept=".pdf,.txt,.csv,.jpg,.jpeg,.png,.webp,text/plain,application/pdf,image/*" class="input-field" style="padding:4px; margin-top:6px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-admin-import-run" style="margin-top:6px;">Felismerés</button>
+            <div id="admin-import-preview" style="display:none; margin-top:6px;"></div>
+          </details>
+
+          <div class="form-group">
             <label>1. Egyedi tételkódok (a csempékre kerül, pl. <code>MEX 1-19, HUN 1-20, LE 1-5</code>):</label>
             <textarea id="admin-album-custom-items" class="input-field" rows="2" placeholder="pl. MEX 1-19, HUN 1-20, LE 1-5&#10;(Ha üres, sima 1-től N-ig számozást kap)"></textarea>
           </div>
 
           <div class="form-group">
-            <label>2. Sorszámozott tételnevek (lebegő tooltip és kedvencek):</label>
+            <label>2. Sorszámozott tételnevek (soronként <code>pozíció: név</code>; tooltip, nyomtatott lista, album nézet):</label>
             <textarea id="admin-album-custom-names" class="input-field" rows="3" placeholder="Példák:&#10;1: Garfield csoportkép   2: Garfield és Ubul..."></textarea>
           </div>
 
           <div class="form-group">
-            <label>Könyvlapozó oldalbeosztás (Matricaalbumokhoz):</label>
+            <label>Fejezetek / blokkok (soronként: <code>Cím: első – utolsó</code> pozíció):</label>
             <textarea id="admin-album-custom-chapters" class="input-field" rows="3" placeholder="Példa:&#10;Bevezető: 1 – 4&#10;Az Óceán: 5 – 28..."></textarea>
           </div>
 
@@ -1171,7 +1199,7 @@
 
             <label class="checkbox-label" style="margin-top:6px;">
               <input type="checkbox" id="admin-album-has-chapters">
-              Könyv lapozó nézet engedélyezése (Csak matricaalbumokhoz)
+              Fejezetek engedélyezése (blokkos rács és lapozós album nézet)
             </label>
           </div>
 
@@ -2067,6 +2095,6 @@
 
 <!-- Fő JavaScript fájl beemelése -->
 <script src="app.js"></script>
-<script src="read-layer_v2.js"></script>
+<script src="read-layer_v4.js"></script>
 </body>
 </html>

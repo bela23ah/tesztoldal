@@ -1,7 +1,7 @@
 {
   "name": "Cserélj Okosan – Matrica és Kártyacsere",
   "short_name": "Cserélj Okosan",
-  "description": "Magyarország leggyorsabb, ingyenes matrica- és kártyacsere platformja. Valós idejű párosítás, körcserék és bolti készletradar.",
+  "description": "Ingyenes matrica- és kártyacsere platform: jelöld a dupláidat és a hiányzókat, találd meg a hozzád illő cserepartnert, nyomtatható listák és körcserék.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -28,5 +28,10 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["shopping", "social", "lifestyle"]
+  "categories": [
+    "shopping",
+    "social",
+    "lifestyle"
+  ],
+  "id": "./index.html"
 }

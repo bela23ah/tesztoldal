@@ -1,85 +1,50 @@
-// =========================================================================
-// Cserélj Okosan (csereljokosan.hu) - sw.js (v4.6 ÉLES KIADÁS)
-// Network-First frissülésvédelem + PWA Offline működés
-// =========================================================================
+// sw_v1.js – Cserélj Okosan service worker. Telepítéskor másold sw.js néven a gyökérbe.
+// Stratégia: kód/HTML/CSS = hálózat-első (mindig a friss verzió, offline a cache), képek = cache-első.
+// Idegen eredetű kéréseket (Firebase, Firestore, Worker, térkép, betűtípus) NEM érint és nem tárol.
+// Új kiadásnál növeld a CACHE értékét (v1 -> v2), a régi cache törlődik.
+try { importScripts("/push-sw.js"); } catch (e) { /* a push-sw.js még nincs feltöltve: nem baj */ }
 
-const CACHE_NAME = 'csereljokosan-v4.6';
+const CACHE = "cs-shell-v2";
+const SHELL = ["/", "/index.html", "/style.css", "/app.js", "/manifest.json", "/favicon.png", "/icon-192.png", "/logo-mark.png"];
 
-const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './favicon.png',
-  './logo-mark.png',
-  './logo-emblem.png',
-  './gyik.html',
-  './facebook-matrica-csere.html',
-  './lutra-album-matrica-csere.html',
-  './csere-tervezo-szimulator.html',
-  './fotos-matrica-szkenner.html',
-  './korcsere-kalkulator.html',
-  './kozos-kalap.html'
-];
-
-// Telepítés: Statikus fájlok előzetes gyorsítótárazása
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('PWA Cache előtöltés figyelmeztetés:', err);
-      });
-    })
-  );
-  self.skipWaiting();
-});
-
-// Aktiválás: Régi cache verziók azonnali megsemmisítése
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Lekérés: Network-First stratégia a HTML/JS/CSS fájlokra
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((ks) => Promise.all(ks.filter((k) => k.startsWith("cs-shell-") && k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  if (req.method !== "GET") return;
   const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.endsWith("/sw.js")) return;
 
-  // Firestore és Worker hívások mindig hálózaton menjenek
-  if (url.origin.includes('firestore') || url.origin.includes('workers.dev') || url.origin.includes('googleapis')) {
+  const isImage = /\.(png|jpe?g|webp|svg|ico|gif)$/i.test(url.pathname);
+  if (isImage) {
+    e.respondWith(
+      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+        if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      }).catch(() => hit))
+    );
     return;
   }
 
-  // Nem GET kérések átengedése
-  if (req.method !== 'GET') return;
-
-  event.respondWith(
-    fetch(req)
-      .then((networkRes) => {
-        if (networkRes && networkRes.status === 200) {
-          const resClone = networkRes.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
-        }
-        return networkRes;
-      })
-      .catch(() => {
-        // Offline tartalék a cache-ből
-        return caches.match(req).then((cachedRes) => {
-          if (cachedRes) return cachedRes;
-          if (req.headers.get('accept')?.includes('text/html')) {
-            return caches.match('./index.html');
-          }
-        });
-      })
+  e.respondWith(
+    fetch(req).then((res) => {
+      if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+      return res;
+    }).catch(() => caches.match(req).then((hit) => hit || (req.mode === "navigate" ? caches.match("/index.html") : Response.error())))
   );
 });
