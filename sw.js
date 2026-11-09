@@ -5,7 +5,7 @@
 try { importScripts("/push-sw.js"); } catch (e) { /* a push-sw.js még nincs feltöltve: nem baj */ }
 
 const CACHE = "cs-shell-v2";
-const SHELL = ["/", "/index.html", "/style.css", "/app.js", "/manifest.json", "/favicon.png", "/icon-192.png", "/logo-mark.png"];
+const SHELL = ["/", "/index.html", "/style.css", "/app.js","/read-layer_v4.js", "/manifest.json", "/favicon.png", "/icon-192.png", "/logo-mark.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
