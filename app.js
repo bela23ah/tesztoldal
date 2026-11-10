@@ -104,6 +104,479 @@ let selectedSearchRadius = 'all';
 let filterTargetCity = '';
 let proximityDisplayLimit = 25;
 
+// === PÓTOLT BLOKK (v4.7 javítás): állapotváltozók és hiányzó függvények ===
+let myProfile = {
+  nev: "Vendég gyűjtő",
+  telepules: "",
+  locations: [{ city: "", districts: [] }],
+  geo: myGpsCoords,
+  tradeMode: "both",
+  email: "",
+  isGiftOffering: false,
+  showEmailToUsers: false,
+  emailNotifications: true,
+  allowInspect: true,
+  gdprAccepted: true,
+  isVacation: false,
+  trustScore: 0,
+  ratingsCount: 0,
+  privateNote: localStorage.getItem(`private_note_${currentAlbumId}`) || '',
+  favorites: ensureArray(safeJsonParse('lutra_favorites', [])),
+  van: ensureArray(safeJsonParse(`lutra_van_${currentAlbumId}`, [])).sort((a, b) => a - b),
+  vanCounts: safeJsonParse(`lutra_van_counts_${currentAlbumId}`, {}),
+  kell: ensureArray(safeJsonParse(`lutra_kell_${currentAlbumId}`, [])).sort((a, b) => a - b),
+  foglalva: ensureArray(safeJsonParse(`lutra_foglalva_${currentAlbumId}`, [])).sort((a, b) => a - b),
+  foglalvaCounts: safeJsonParse(`lutra_foglalva_counts_${currentAlbumId}`, {}),
+  activeTrades: safeJsonParse(`lutra_active_trades_${currentAlbumId}`, []),
+  lastActive: Date.now()
+};
+let allUsersData = [];
+let rawAllUsersDocs = [];
+let myIncomingMessages = [];
+let myOutgoingMessages = [];
+let radarReports = [];
+let meetupEvents = [];
+let activeAnnouncements = [];
+let albumSuggestions = [];
+let selectedTradePlanUids = new Set();
+let tradePlanManualOverrides = {};
+let previousIncomingCount = null;
+let previousRadarCount = null;
+let radarAttachedBase64 = '';
+let meetupAttachedBase64 = '';
+let showAllHeatmapCities = false;
+let activeInboxTab = 'inbox';
+let msgAlbumFilter = 'all';
+let currentFilter = 'all';
+let matchFilter = 'all';
+let currentChapterIndex = 0;
+let currentUser = null;
+let deferredPrompt = null;
+let myDocUnsubscribe = null;
+let allUsersUnsubscribe = null;
+let messagesUnsubscribe = null;
+let radarUnsubscribe = null;
+let meetupsUnsubscribe = null;
+let announcementsUnsubscribe = null;
+let albumsUnsubscribe = null;
+let suggestionsUnsubscribe = null;
+let incomingTradesUnsubscribe = null;
+let outgoingTradesUnsubscribe = null;
+let db = null;
+let auth = null;
+let activeContactTarget = { uid: '', nev: '', telepules: '', email: '', showEmail: false, subject: '', tradeMode: 'both' };
+
+// SZIGORÚ ALBUM-SZERINTI SZÉTVÁLASZTÁS
+function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
+  if (!data) return null;
+
+  const nev = getFirstValidString(data.nev, data.nickname, data.name, data.displayName) || 'Névtelen gyűjtő';
+  const telepules = getFirstValidString(data.telepules, data.city, data.varos);
+  const email = getFirstValidString(data.notifyEmail, data.email, data.mail);
+  const locations = Array.isArray(data.locations) ? data.locations : (telepules ? [{ city: telepules, districts: [] }] : []);
+  const geo = (data.geo && typeof data.geo.lat === 'number') ? data.geo : null;
+  const tradeMode = getFirstValidString(data.tradeMode, 'both');
+
+  let rawVan = [];
+  let rawKell = [];
+  let rawFoglalva = [];
+  let vanCounts = {};
+  let foglalvaCounts = {};
+
+  if (data.collections && data.collections[targetAlbumId]) {
+    const col = data.collections[targetAlbumId];
+    rawVan = col.van || [];
+    rawKell = col.kell || [];
+    rawFoglalva = col.foglalva || [];
+    vanCounts = col.vanCounts || {};
+    foglalvaCounts = col.foglalvaCounts || {};
+  } else if (data[`collections.${targetAlbumId}`]) {
+    const col = data[`collections.${targetAlbumId}`];
+    rawVan = col.van || [];
+    rawKell = col.kell || [];
+    rawFoglalva = col.foglalva || [];
+    vanCounts = col.vanCounts || {};
+    foglalvaCounts = col.foglalvaCounts || {};
+  } else if (targetAlbumId === 'lidl-lutra-2026') {
+    // KIZÁRÓLAG a Lutra olvashat a gyökér mezőkből!
+    rawVan = data.van || data.duplicates || data.duplak || [];
+    rawKell = data.kell || data.missing || data.hianyzo || [];
+    rawFoglalva = data.foglalva || data.reserved || [];
+    vanCounts = data.vanCounts || {};
+    foglalvaCounts = data.foglalvaCounts || {};
+  }
+
+  if (rawVan.length === 0 && vanCounts && Object.keys(vanCounts).length > 0) {
+    rawVan = Object.keys(vanCounts);
+  }
+
+  const van = ensureArray(rawVan).sort((a, b) => a - b);
+  const kell = ensureArray(rawKell).sort((a, b) => a - b);
+  const foglalva = ensureArray(rawFoglalva).sort((a, b) => a - b);
+
+  const favorites = ensureArray(data.favorites || []);
+  const isGiftOffering = data.isGiftOffering === true || data.isGift === true;
+  const showEmailToUsers = data.showEmailToUsers === true;
+  const emailNotifications = data.emailNotifications !== false;
+  const allowInspect = data.allowInspect !== false;
+  const gdprAccepted = data.gdprAccepted !== false;
+  const isVacation = data.isVacation === true;
+  const trustScore = parseFloat(data.trustScore || '0');
+  const ratingsCount = parseInt(data.ratingsCount || '0', 10);
+  const recentReviews = Array.isArray(data.recentReviews) ? data.recentReviews : [];
+  const updatedAt = data.updatedAt || data.localUpdatedAt || null;
+  const lastActive = data.lastActive || updatedAt;
+
+  return {
+    id: docId,
+    nev,
+    telepules,
+    locations,
+    geo,
+    tradeMode,
+    email,
+    van,
+    kell,
+    foglalva,
+    favorites,
+    vanCounts,
+    foglalvaCounts,
+    isGiftOffering,
+    showEmailToUsers,
+    emailNotifications,
+    allowInspect,
+    gdprAccepted,
+    isVacation,
+    trustScore,
+    ratingsCount,
+    recentReviews,
+    updatedAt,
+    lastActive
+  };
+}
+
+function listenToTrades(uid) {
+  if (!db || !uid) return;
+  if (incomingTradesUnsubscribe) incomingTradesUnsubscribe();
+  if (outgoingTradesUnsubscribe) outgoingTradesUnsubscribe();
+
+  const syncTradesToLocal = (docs) => {
+    if (!myProfile.activeTrades) myProfile.activeTrades = [];
+    docs.forEach(doc => {
+      const t = doc.data();
+      const isInitiator = (t.initiatorUid === uid);
+      const existingIdx = myProfile.activeTrades.findIndex(x => x.tradeId === doc.id);
+      
+      const tradeObj = {
+        tradeId: doc.id,
+        initiatorUid: t.initiatorUid,
+        partnerUid: isInitiator ? t.partnerUid : t.initiatorUid,
+        partnerName: isInitiator ? t.partnerName : t.initiatorName,
+        partnerCity: isInitiator ? t.partnerCity : t.initiatorCity,
+        albumId: t.albumId || 'lidl-lutra-2026',
+        givingItems: isInitiator ? (t.givingItems || []) : (t.receivingItems || []),
+        receivingItems: isInitiator ? (t.receivingItems || []) : (t.givingItems || []),
+        customOffer: t.customOffer || '',
+        message: t.message || '',
+        createdAt: t.createdAt || Date.now(),
+        status: t.status,
+        cancelReason: t.cancelReason || '',
+        isInitiator: isInitiator
+      };
+
+      if (existingIdx > -1) {
+        const prevStatus = myProfile.activeTrades[existingIdx].status;
+        myProfile.activeTrades[existingIdx] = tradeObj;
+
+        if (t.status === 'cancelled' && prevStatus !== 'cancelled' && t.cancelledBy !== uid) {
+          const nameSpan = document.getElementById('cancelled-notice-partner-name');
+          const reasonSpan = document.getElementById('cancelled-notice-reason-text');
+          if (nameSpan) nameSpan.textContent = tradeObj.partnerName;
+          if (reasonSpan) reasonSpan.textContent = t.cancelReason || 'Meggondolta magát';
+          document.getElementById('modal-trade-cancelled-notice')?.classList.add('open');
+        }
+      } else {
+        myProfile.activeTrades.unshift(tradeObj);
+      }
+    });
+
+    renderActiveTradesPanel();
+    renderGrid();
+  };
+
+  incomingTradesUnsubscribe = db.collection("trades")
+    .where("partnerUid", "==", uid)
+    .onSnapshot(snap => {
+      syncTradesToLocal(snap.docs);
+      
+      const pendingIncoming = snap.docs.filter(d => d.data().status === 'pending_acceptance');
+      if (pendingIncoming.length > 0) {
+        checkAndPromptIncomingTrade(pendingIncoming[0], pendingIncoming.length);
+      }
+    }, err => console.warn("Bejövő csere figyelő:", err));
+
+  outgoingTradesUnsubscribe = db.collection("trades")
+    .where("initiatorUid", "==", uid)
+    .onSnapshot(snap => {
+      syncTradesToLocal(snap.docs);
+    }, err => console.warn("Kimenő csere figyelő:", err));
+}
+
+const IMP_PFX = '(?:[A-Z]{1,5}[\\s\\-]?)?';
+const IMP_ENTRY_RE = new RegExp('^(' + IMP_PFX + '\\d+)(?:(?:\\s*[.:)]\\s*|\\s*[\\-–—]\\s+|\\s+)(.*))?$');
+const IMP_RANGE_RE = new RegExp('^(' + IMP_PFX + ')(\\d+)\\s*[\\-–—]\\s*(\\d+)$');
+const IMP_NOISE_RE = /\.(hu|com|net|org)\b|listája|megvan:|oldal\s*\d|page\s*\d/i;
+const IMP_DANGLING_RE = /(\b(and|a|az|és|the|of|with|to|in|on|for)|[,&\-–])$/i;
+
+function impIsHeader(text) {
+  const t = text.trim();
+  if (t.length < 3 || t.length > 60) return false;
+  if (/\d/.test(t)) return false;
+  if (!/\p{Lu}/u.test(t)) return false;
+  return t === t.toUpperCase();
+}
+function impTitleCase(s) {
+  if (!s || s !== s.toUpperCase() || s.length <= 4) return s;
+  return s.toLowerCase().replace(/(^|[\s\-(])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+}
+function impCleanName(s) {
+  return (s || '').replace(/\s+/g, ' ').replace(/^[\s,\-–—:.]+/, '').trim();
+}
+function impSplitLine(text) {
+  // 1) tabulátor / 2+ szóköz = oszlophatár
+  let pieces = text.split(/\t| {2,}/).map(p => p.trim()).filter(Boolean);
+  if (pieces.length > 1) return pieces;
+  // 2) egyetlen szövegsor, benne több tétel: emelkedő sorszámoknál vágunk
+  const t = pieces[0] || '';
+  const re = new RegExp('(?:^|\\s)(' + IMP_PFX + '\\d+)(?=(?:\\s*[.:)]|\\s+)\\p{L})', 'gu');
+  const cuts = [];
+  let m, prev = -1;
+  while ((m = re.exec(t)) !== null) {
+    const n = parseInt(m[1].replace(/\D/g, ''), 10);
+    const start = m.index + (m[0].length - m[1].length);
+    if (cuts.length === 0) { if (start === 0) { cuts.push(0); prev = n; } continue; }
+    if (n > prev && n - prev <= 400) { cuts.push(start); prev = n; }
+  }
+  if (cuts.length < 2) return [t];
+  return cuts.map((c, i) => t.slice(c, i + 1 < cuts.length ? cuts[i + 1] : undefined).trim());
+}
+
+function impTextToLines(text) {
+  return String(text || '').split(/\r?\n/).map(raw => {
+    const trimmed = raw.replace(/\s+$/, '');
+    if (!trimmed.trim()) return null;
+    const pieces = impSplitLine(trimmed);
+    const hasTab = /\t/.test(trimmed);
+    let from = 0;
+    return { charMode: !hasTab, cells: pieces.map(p => {
+      const idx = trimmed.indexOf(p, from);
+      from = idx >= 0 ? idx + p.length : from;
+      return hasTab ? { text: p } : { text: p, x: Math.max(0, idx) };
+    }) };
+  }).filter(Boolean);
+}
+function impPdfItemsToLines(items) {
+  const rows = [];
+  items.forEach(it => {
+    const s = it.str;
+    if (s === undefined) return;
+    const y = it.transform[5], x = it.transform[4];
+    let row = rows.find(r => Math.abs(r.y - y) <= 2);
+    if (!row) { row = { y, items: [] }; rows.push(row); }
+    row.items.push({ s, x, w: it.width || 0 });
+  });
+  rows.sort((a, b) => b.y - a.y);
+  return rows.map(row => {
+    row.items.sort((a, b) => a.x - b.x);
+    const cells = [];
+    let cur = null, lastEnd = 0, pendingSpace = false;
+    row.items.forEach(it => {
+      if (!it.s.trim()) { pendingSpace = true; return; }
+      if (!cur || it.x - lastEnd > 12) {
+        cur = { x: it.x, text: it.s };
+        cells.push(cur);
+      } else {
+        cur.text += (pendingSpace || it.x - lastEnd > 1.2 ? ' ' : '') + it.s;
+      }
+      lastEnd = it.x + it.w;
+      pendingSpace = false;
+    });
+    return { y: row.y, cells: cells.map(c => ({ x: c.x, text: c.text.replace(/\s+/g, ' ').trim() })).filter(c => c.text) };
+  }).filter(l => l.cells.length);
+}
+
+function parseCollectionLines(lines) {
+  const warnings = [];
+  const meta = {};
+  const entries = [];
+  const sections = [];            // { title }
+  let curSec = -1;
+  let metaLines = 0;
+
+  const pushEntry = (label, name, x, lineIdx) => {
+    entries.push({ label: label.replace(/\s+/g, '').replace(/^([A-Z]+)-/, '$1'), rawLabel: label, name: impCleanName(name), x, line: lineIdx, sec: curSec, lastLine: lineIdx });
+  };
+  const newSection = (title) => { sections.push({ title: impTitleCase(impCleanName(title)) }); curSec = sections.length - 1; };
+
+  lines.forEach((line, li) => {
+    const texts = line.cells.map(c => c.text);
+    const joined = texts.join(' ');
+
+    // meta: az első sorok (cím, kiadó · év · darabszám)
+    if (entries.length === 0 && curSec === -1) {
+      const mm = joined.match(/^(.+?)\s*[·|•]\s*((?:19|20)\d{2})\s*[·|•]\s*(\d+)\s*(?:db|kártya|matrica|tétel|lap)?/i);
+      if (mm) { meta.publisher = mm[1].trim(); meta.year = parseInt(mm[2], 10); meta.total = parseInt(mm[3], 10); metaLines++; return; }
+      const nextJoined = lines[1] ? lines[1].cells.map(c => c.text).join(' ') : '';
+      const nextIsMeta = /[·|•]\s*(?:19|20)\d{2}\s*[·|•]/.test(nextJoined);
+      if (metaLines === 0 && li === 0 && nextIsMeta && !IMP_ENTRY_RE.test(texts[0]) && !impIsHeader(texts[0]) && texts[0].length <= 90) {
+        meta.title = texts[0].replace(/\s+/g, ' ').trim(); metaLines++; return;
+      }
+    }
+    if (IMP_NOISE_RE.test(joined) && !texts.some(t => IMP_ENTRY_RE.test(t))) return;
+
+    // explicit fejléc-jelölések: "# Cím", "== Cím =="
+    if (line.cells.length === 1) {
+      const hm = texts[0].match(/^(?:#+|=+)\s*(.+?)\s*=*$/);
+      if (hm) { newSection(hm[1]); return; }
+    }
+
+    // tartomány sor: "1-72", "MEX 1-19", "Cím: 1-72"
+    if (line.cells.length === 1) {
+      const rt = texts[0];
+      const rm = rt.match(new RegExp('^(?:(.*?)\\s*[:]\\s*)?(' + IMP_PFX + ')(\\d+)\\s*[\\-–—]\\s*(\\d+)$'));
+      if (rm && (rm[1] !== undefined || IMP_RANGE_RE.test(rt))) {
+        if (rm[1]) newSection(rm[1]);
+        const pre = (rm[2] || '').trim();
+        const sp = /\s$/.test(rm[2] || '') ? ' ' : '';
+        const a = parseInt(rm[3], 10), b = parseInt(rm[4], 10);
+        const lo = Math.min(a, b), hi = Math.max(a, b);
+        if (hi - lo > 2000) { warnings.push('Túl nagy tartomány: ' + rt); return; }
+        for (let n = lo; n <= hi; n++) pushEntry(pre + sp + n, '', undefined, li);
+        return;
+      }
+    }
+
+    line.cells.forEach(cell => {
+      const t = cell.text;
+      const m = IMP_ENTRY_RE.exec(t);
+      if (m) { pushEntry(m[1], m[2] || '', cell.x, li); return; }
+
+      // csak nagybetűs, külön álló cella = fejezetcím
+      if (line.cells.length === 1 && impIsHeader(t)) { newSection(t); return; }
+      // "Cím:" alakú fejléc
+      if (line.cells.length === 1 && /^[^\d].{2,60}:$/.test(t)) { newSection(t.replace(/:$/, '')); return; }
+
+      // folytatósor: az előző tételhez tartozik
+      if (!entries.length) return;
+      if (IMP_NOISE_RE.test(t)) return;
+      let target = null;
+      if (cell.x !== undefined) {
+        for (let k = entries.length - 1; k >= 0 && entries.length - k <= 80; k--) {
+          const e = entries[k];
+          if (e.x === undefined) continue;
+          const dx = cell.x - e.x;
+          const tol = line.charMode ? 12 : 26;
+          if (dx >= -2 && dx <= tol && li - e.lastLine <= 2 && li > e.line) { target = e; break; }
+        }
+      } else {
+        // sima szöveg: az előző sor lógó végű tétele, különben az előző sor első tétele
+        let k = entries.length - 1;
+        const prevLine = entries[k].line;
+        const sameLine = entries.filter(e => e.line === prevLine);
+        target = sameLine.find(e => IMP_DANGLING_RE.test(e.name)) || (sameLine.length === 1 ? sameLine[0] : null);
+      }
+      if (target) { target.name = impCleanName(target.name + ' ' + t); target.lastLine = li; }
+    });
+  });
+
+  // sorrend: szakaszonként előtag-csoportok szerint, számsorrendben
+  const bySec = {};
+  entries.forEach(e => { (bySec[e.sec] = bySec[e.sec] || []).push(e); });
+  const ordered = [];
+  Object.keys(bySec).map(Number).sort((a, b) => a - b).forEach(sec => {
+    const arr = bySec[sec];
+    const groupOrder = {};
+    arr.forEach(e => {
+      e.pfx = e.label.replace(/\d+$/, '');
+      e.num = parseInt(e.label.replace(/^\D+/, ''), 10);
+      if (!(e.pfx in groupOrder)) groupOrder[e.pfx] = Object.keys(groupOrder).length;
+    });
+    arr.map((e, i) => ({ e, i }))
+      .sort((a, b) => (groupOrder[a.e.pfx] - groupOrder[b.e.pfx]) || (a.e.num - b.e.num) || (a.i - b.i))
+      .forEach(o => ordered.push(o.e));
+  });
+
+  // duplák kiszűrése
+  const seen = new Set();
+  const items = [];
+  ordered.forEach(e => {
+    if (seen.has(e.label)) { warnings.push('Ismétlődő kód kihagyva: ' + e.label); return; }
+    seen.add(e.label);
+    items.push({ label: e.label, name: e.name, sec: e.sec });
+  });
+
+  // hiányzó sorszámok a tiszta számozású csoportban
+  const plain = items.filter(i => /^\d+$/.test(i.label)).map(i => parseInt(i.label, 10));
+  if (plain.length > 1) {
+    const set = new Set(plain), miss = [];
+    for (let n = Math.min(...plain); n <= Math.max(...plain); n++) if (!set.has(n)) miss.push(n);
+    if (miss.length) warnings.push('Hiányzó sorszámok a felismerésben: ' + (miss.length > 15 ? miss.slice(0, 15).join(', ') + ' …' : miss.join(', ')));
+  }
+  if (meta.total && meta.total !== items.length) warnings.push(`A fejlécben ${meta.total} tétel szerepel, felismertem ${items.length}-t.`);
+
+  // fejezetek: pozícióhatárok
+  const chapters = [];
+  sections.forEach((s, si) => {
+    const pos = [];
+    items.forEach((it, idx) => { if (it.sec === si) pos.push(idx + 1); });
+    if (pos.length) chapters.push({ title: s.title, from: pos[0], to: pos[pos.length - 1] });
+  });
+  const untitledCount = items.filter(i => i.sec === -1).length;
+  if (untitledCount && chapters.length) {
+    // fejléc nélküli elemek az elején: külön fejezet
+    const pos = []; items.forEach((it, idx) => { if (it.sec === -1) pos.push(idx + 1); });
+    chapters.unshift({ title: 'Általános', from: pos[0], to: pos[pos.length - 1] });
+  }
+  return { meta, items, chapters: chapters.length > 1 || (chapters.length === 1 && untitledCount === 0 && chapters[0].to - chapters[0].from + 1 < items.length) ? chapters : (chapters.length === 1 ? chapters : []), warnings };
+}
+
+function importResultToFields(res) {
+  const items = res.items;
+  const identity = items.every((it, i) => it.label === String(i + 1));
+  // kódlista: számsorozatok tömörítve, a többi egyenként
+  let itemsRaw = '';
+  if (!identity) {
+    const toks = [];
+    let i = 0;
+    while (i < items.length) {
+      const a = items[i].label;
+      if (/^\d+$/.test(a)) {
+        let j = i;
+        while (j + 1 < items.length && /^\d+$/.test(items[j + 1].label) && parseInt(items[j + 1].label, 10) === parseInt(items[j].label, 10) + 1) j++;
+        toks.push(j - i >= 2 ? `${a}-${items[j].label}` : items.slice(i, j + 1).map(x => x.label).join(', '));
+        i = j + 1;
+      } else {
+        const pm = a.match(/^([A-Z]+)(\d+)$/);
+        let j = i;
+        if (pm) {
+          while (j + 1 < items.length) {
+            const nm = items[j + 1].label.match(/^([A-Z]+)(\d+)$/), cm = items[j].label.match(/^([A-Z]+)(\d+)$/);
+            if (!nm || nm[1] !== pm[1] || parseInt(nm[2], 10) !== parseInt(cm[2], 10) + 1) break;
+            j++;
+          }
+        }
+        if (pm && j - i >= 2) { toks.push(`${a}-${items[j].label.replace(/^[A-Z]+/, '')}`); i = j + 1; }
+        else { toks.push(a); i++; }
+      }
+    }
+    itemsRaw = toks.join(', ');
+  }
+  const namesRaw = items.map((it, i) => it.name ? `${i + 1}: ${it.name}` : null).filter(Boolean).join('\n');
+  const chaptersRaw = res.chapters.map(c => `${c.title}: ${c.from} – ${c.to}`).join('\n');
+  return { itemsRaw, namesRaw, chaptersRaw, total: items.length };
+}
+// === PÓTOLT BLOKK VÉGE ===
+
 // =========================================================================
 // CSALÁDI MÓD / PÁRHUZAMOS FÜZETEK TELJESEN SZAPORÍTOTT ADATBÁZISA
 // =========================================================================
@@ -6227,6 +6700,7 @@ safeAddListener('btn-geo-detect-profile', () => requestGpsLocation());
 // =========================================================================
 
 let adminAlbumCoverBase64 = '';
+let adminMsgPhotoBase64 = '';
 let ignoredAuditPairs = safeJsonParse('cserelj_ignored_audit_pairs', []);
 
 safeAddListener('btn-admin-audit-db', async () => {
