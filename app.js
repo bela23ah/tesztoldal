@@ -42,7 +42,7 @@ if (typeof MutationObserver !== 'undefined') {
 }
 document.addEventListener('error', function (e) {
   const t = e.target;
-  if (t && t.tagName === 'IMG' && !t.dataset.csFallback && /\/covers\//.test(t.getAttribute('src') || '')) {
+  if (t && t.tagName === 'IMG' && !t.dataset.csFallback && /(^|\/)covers\//.test(t.getAttribute('src') || '')) {
     t.dataset.csFallback = '1';
     t.src = 'logo-emblem.png';
   }
@@ -9027,6 +9027,7 @@ function initFirebase() {
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
+    try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch (e) {}
     auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
@@ -9496,3 +9497,263 @@ try {
 } catch (err) {
   console.error("Indítási hiba:", err);
 }
+
+// =========================================================================
+// v8 BŐVÍTÉS: "+" CSEMPÉS MENÜ, ÜZENŐFAL (ÖSSZNÉPI + ALBUMONKÉNTI), GYÁRTÓI HÍREK
+// =========================================================================
+(function () {
+  const ICONS = {
+    wall: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 8h8M8 12h5"/>',
+    news: '<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>',
+    map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    store: '<path d="M4 9l1-5h14l1 5"/><path d="M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"/><path d="M5 12v8h14v-8"/><path d="M10 20v-5h4v5"/>',
+    cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="m9 15 2 2 4-4"/>',
+    gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13"/><path d="M12 8c-2-4-6-3-5 0 .5 1.200 3 1 5 0zM12 8c2-4 6-3 5 0-.5 1.200-3 1-5 0z"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.500 9a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 .9-1 1.700M12 17h.01"/>'
+  };
+  const svg = (k) => `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+
+  const TILES = [
+    { view: 'uzenofal', icon: 'wall', t: 'Üzenőfal', d: 'Közös fal és albumonkénti beszélgetések' },
+    { view: 'hirek', icon: 'news', t: 'Gyártói hírek', d: 'Friss albumok, kiadások a gyártóktól' },
+    { view: 'statisztika', icon: 'map', t: 'Helyi cserék', d: 'Térkép és statisztika a közeli gyűjtőkről' },
+    { view: 'radar', icon: 'store', t: 'Készletradar', d: 'Hol kapható még a gyűjtős csomag?' },
+    { view: 'meetups', icon: 'cal', t: 'Találkozók', d: 'Személyes csere időpontok és helyek' },
+    { view: 'profil', icon: 'user', t: 'Profil', d: 'Adataid, értesítések, jegyzet' },
+    { view: 'admin', icon: 'gear', t: 'Admin', d: 'Vezérlőpult', admin: true }
+  ];
+
+  // ---------- "+" gomb, Profil átnevezés ----------
+  function ensureNavPlus() {
+    const nav = document.getElementById('main-primary-nav');
+    if (nav && !document.getElementById('btn-nav-plus')) {
+      const w = document.createElement('div');
+      w.className = 'nav-dropdown-item';
+      w.innerHTML = '<button class="primary-tab" id="btn-nav-plus" title="Továbbiak" aria-label="Továbbiak" style="font-size:1.3rem; font-weight:800; line-height:1; padding:8px 0;">+</button>';
+      nav.appendChild(w);
+      nav.style.gridTemplateColumns = 'repeat(4, 1fr) 54px';
+      w.querySelector('button').addEventListener('click', openPlusSheet);
+    }
+    const prof = document.querySelector('#main-primary-nav .primary-tab[data-cat="profil"]');
+    if (prof && /Jegyzet/.test(prof.textContent)) {
+      const arrow = prof.querySelector('.dropdown-arrow');
+      prof.textContent = 'Profil ';
+      if (arrow) prof.appendChild(arrow);
+    }
+  }
+
+  function openPlusSheet() {
+    let m = document.getElementById('modal-plus-tiles');
+    if (!m) {
+      m = document.createElement('div');
+      m.id = 'modal-plus-tiles';
+      m.style.cssText = 'position:fixed; inset:0; z-index:99990; background:rgba(0,0,0,.55); display:none; align-items:flex-end; justify-content:center;';
+      m.innerHTML = '<div id="plus-sheet" style="width:100%; max-width:640px; background:var(--bg-card,#14453F); border-radius:18px 18px 0 0; padding:16px 16px 22px; max-height:85vh; overflow:auto; box-shadow:0 -10px 40px rgba(0,0,0,.4);"></div>';
+      document.body.appendChild(m);
+      m.addEventListener('click', (e) => {
+        if (e.target === m || e.target.closest('[data-plus-close]')) { m.style.display = 'none'; return; }
+        const b = e.target.closest('[data-plus-view]');
+        if (b) { m.style.display = 'none'; switchView(b.dataset.plusView); }
+      });
+    }
+    const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+    const tiles = TILES.filter(t => !t.admin || isAdmin).map(t => `
+      <button data-plus-view="${t.view}" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; padding:14px; min-height:112px; border-radius:16px; border:1px solid rgba(243,238,223,.18); background:rgba(0,0,0,.22); color:var(--sand,#F3EEDF); cursor:pointer; font:inherit;${t.admin ? ' color:var(--amber);' : ''}">
+        <span style="color:var(--amber);">${svg(t.icon)}</span>
+        <strong style="font-size:0.98rem;">${t.t}</strong>
+        <span style="font-size:0.76rem; opacity:.75; line-height:1.3;">${t.d}</span>
+      </button>`).join('');
+    m.querySelector('#plus-sheet').innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0;">Továbbiak</h3>
+        <button data-plus-close style="background:none; border:none; color:inherit; font-size:1.4rem; cursor:pointer;" aria-label="Bezárás">✕</button>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;">${tiles}</div>`;
+    m.style.display = 'flex';
+  }
+  window.csOpenPlusSheet = openPlusSheet;
+
+  // mobil alsó "Továbbiak" gomb a csempés lapot nyissa
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('#btn-bottom-more');
+    if (b) { e.stopImmediatePropagation(); e.preventDefault(); openPlusSheet(); }
+  }, true);
+
+  // ---------- nézetek létrehozása ----------
+  function ensureViews() {
+    const main = document.querySelector('main');
+    if (!main) return;
+    if (!document.getElementById('view-uzenofal')) {
+      const s = document.createElement('section');
+      s.id = 'view-uzenofal'; s.className = 'view';
+      s.innerHTML = `<h2>Üzenőfal</h2>
+        <p class="view-intro">Beszélgess a gyűjtőtársakkal! Az Össznépi mindenkinek szól, az album fülön csak az adott album gyűjtői beszélgetnek. Kérjük, maradj kedves – a durva szavak csillagozódnak, a szabályszegő hozzászólásokat az admin törölheti.</p>
+        <div id="wall-tabs" style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;"></div>
+        <div id="wall-form" style="margin-bottom:12px;"></div>
+        <div id="wall-list"></div>`;
+      main.appendChild(s);
+      s.addEventListener('click', onWallClick);
+    }
+    if (!document.getElementById('view-hirek')) {
+      const s = document.createElement('section');
+      s.id = 'view-hirek'; s.className = 'view';
+      s.innerHTML = `<h2>Gyártói hírek</h2>
+        <p class="view-intro">Friss hírek a gyűjtős kiadóktól. Csak címet és rövid kivonatot mutatunk – a teljes cikk az eredeti oldalon olvasható.</p>
+        <div id="news-list"></div>`;
+      main.appendChild(s);
+    }
+  }
+
+  // ---------- ÜZENŐFAL ----------
+  let wallBoard = 'all';
+  let wallUnsub = null;
+  let lastPostAt = 0;
+  const BAD = /(kurv|geci|gecis|fasz|pics[aá]|\bpina\b|buzi|k[oö]cs[oö]g|szopj|szopd|anyad|csicska|hullye|retkes|rohad|bazd?meg|bassza|k[eé]rj[eé]k?\s*a\s*picsa)/i;
+  function csCensor(text) {
+    let t = String(text || '').replace(/https?:\/\/\S+|www\.\S+/gi, '[link]');
+    // szavanként csillagozás (ékezet- és kisbetű-függetlenül)
+    return t.replace(/\S+/g, (w) => {
+      const n = w.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/(.)\1{2,}/g, '$1$1');
+      return BAD.test(n) ? w[0] + '*'.repeat(Math.max(2, w.length - 1)) : w;
+    });
+  }
+  window.csCensor = csCensor;
+
+  function wallStop() { if (wallUnsub) { try { wallUnsub(); } catch (e) {} wallUnsub = null; } }
+  window.csWallStop = wallStop;
+
+  function boardPath() { return db.collection('boards').doc(wallBoard).collection('posts'); }
+
+  function renderWallTabs() {
+    const tabs = document.getElementById('wall-tabs');
+    if (!tabs) return;
+    const alb = getActiveAlbum && getActiveAlbum();
+    const albId = currentAlbumId;
+    const mk = (id, label) => `<button class="btn btn-sm ${wallBoard === id ? 'btn-primary' : 'btn-secondary'}" data-wall-board="${escapeHtml(id)}">${escapeHtml(label)}</button>`;
+    tabs.innerHTML = mk('all', '🌍 Össznépi') + (albId ? mk(albId, '📖 ' + ((alb && alb.title) || albId)) : '');
+  }
+
+  function renderWallForm() {
+    const f = document.getElementById('wall-form');
+    if (!f) return;
+    if (!currentUser) { f.innerHTML = '<div class="notice-banner">Hozzászóláshoz lépj be (ingyenes).</div>'; return; }
+    f.innerHTML = `<textarea id="wall-input" class="input-field" rows="2" maxlength="400" placeholder="Írj valamit a gyűjtőtársaknak… (max. 400 karakter, linkek nem engedettek)" style="width:100%;"></textarea>
+      <div style="display:flex; justify-content:flex-end; margin-top:6px;"><button class="btn btn-primary btn-sm" data-wall-send>Közzététel</button></div>`;
+  }
+
+  function renderWallPosts(docs) {
+    const list = document.getElementById('wall-list');
+    if (!list) return;
+    const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+    if (!docs.length) { list.innerHTML = '<p style="opacity:.7;">Még nincs hozzászólás. Légy te az első!</p>'; return; }
+    list.innerHTML = docs.map(d => {
+      const p = d.data();
+      const when = p.createdAt && p.createdAt.toDate ? p.createdAt.toDate().toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' }) : '';
+      const del = isAdmin && !p.deleted ? `<button data-wall-del="${d.id}" title="Törlés" style="background:none; border:none; color:var(--danger,#e57373); cursor:pointer; font-size:1rem;">✕</button>` : '';
+      const body = p.deleted
+        ? '<em style="opacity:.65;">A hozzászólást az admin törölte.</em>'
+        : `<div style="white-space:pre-wrap; word-break:break-word;">${escapeHtml(p.text || '')}</div>`;
+      return `<div style="background:rgba(0,0,0,.2); border-radius:12px; padding:10px 12px; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; gap:8px; font-size:0.78rem; opacity:.85; margin-bottom:4px;">
+          <span><strong>${p.deleted ? '—' : escapeHtml(p.name || 'Gyűjtő')}</strong> ${p.city && !p.deleted ? '· ' + escapeHtml(p.city) : ''} · ${when}</span>${del}
+        </div>${body}</div>`;
+    }).join('');
+  }
+
+  function wallStart() {
+    wallStop();
+    renderWallTabs(); renderWallForm();
+    const list = document.getElementById('wall-list');
+    if (!db) { if (list) list.innerHTML = '<p>Az adatbázis nem elérhető.</p>'; return; }
+    if (list) list.innerHTML = '<p style="opacity:.7;">Betöltés…</p>';
+    wallUnsub = boardPath().orderBy('createdAt', 'desc').limit(30).onSnapshot(
+      snap => renderWallPosts(snap.docs),
+      err => { if (list) list.innerHTML = '<p>Az üzenőfal még nincs engedélyezve (Firestore-szabály hiányzik), vagy nincs jogosultságod.</p>'; console.warn('wall', err); }
+    );
+  }
+  window.csWallStart = wallStart;
+
+  async function onWallClick(e) {
+    const tab = e.target.closest('[data-wall-board]');
+    if (tab) { wallBoard = tab.dataset.wallBoard; wallStart(); return; }
+    const del = e.target.closest('[data-wall-del]');
+    if (del) {
+      if (!(currentUser && currentUser.email === ADMIN_EMAIL)) return;
+      if (!confirm('Biztosan törlöd a hozzászólást?')) return;
+      try { await boardPath().doc(del.dataset.wallDel).update({ deleted: true, text: '', deletedAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+      catch (err) { showToast('Törlési hiba: ' + err.message); }
+      return;
+    }
+    if (e.target.closest('[data-wall-send]')) {
+      if (!currentUser) return showToast('Lépj be a hozzászóláshoz!');
+      const inp = document.getElementById('wall-input');
+      const raw = (inp && inp.value || '').trim();
+      if (raw.length < 2) return showToast('Írj legalább pár betűt!');
+      if (Date.now() - lastPostAt < 20000) return showToast('Kicsit lassabban – 20 másodpercenként írhatsz.');
+      const name = (myProfile.nev && myProfile.nev !== 'Vendég gyűjtő') ? myProfile.nev : '';
+      if (!name) return showToast('Előbb add meg a neved a Profilban!');
+      const clean = csCensor(raw).slice(0, 400);
+      try {
+        await boardPath().add({
+          uid: currentUser.uid, name: name.slice(0, 25), city: String(myProfile.telepules || '').slice(0, 40),
+          text: clean, deleted: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        lastPostAt = Date.now();
+        inp.value = '';
+        if (clean !== raw) showToast('A hozzászólás közzétéve – néhány szót csillagoztunk.');
+      } catch (err) { showToast('Nem sikerült közzétenni: ' + err.message); }
+    }
+  }
+
+  // ---------- GYÁRTÓI HÍREK ----------
+  const NEWS_CACHE_KEY = 'cs_news_cache_v1';
+  async function renderNews() {
+    const box = document.getElementById('news-list');
+    if (!box) return;
+    const fallback = '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><a class="btn btn-secondary btn-sm" target="_blank" rel="noopener" href="https://www.paninihungary.com/shp_hun_hu/blog/panini-stickers-hu/">Panini Hungary blog ↗</a></div>';
+    let items = null;
+    try {
+      const c = JSON.parse(localStorage.getItem(NEWS_CACHE_KEY) || 'null');
+      if (c && Date.now() - c.t < 3 * 3600 * 1000) items = c.items;
+    } catch (e) {}
+    if (!items) {
+      box.innerHTML = '<p style="opacity:.7;">Betöltés…</p>';
+      try {
+        const idToken = currentUser ? await currentUser.getIdToken() : '';
+        const res = await fetch(WORKER_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(idToken ? { Authorization: 'Bearer ' + idToken } : {}) }, body: JSON.stringify({ action: 'news' }) });
+        const j = await res.json();
+        items = Array.isArray(j.items) ? j.items : [];
+        try { localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({ t: Date.now(), items })); } catch (e) {}
+      } catch (e) { items = []; }
+    }
+    if (!items.length) { box.innerHTML = '<p>Most nem sikerült a híreket betölteni.</p>' + fallback; return; }
+    box.innerHTML = items.map(n => `
+      <a href="${escapeHtml(n.url)}" target="_blank" rel="noopener noreferrer" style="display:block; text-decoration:none; color:inherit; background:rgba(0,0,0,.2); border-radius:14px; padding:12px 14px; margin-bottom:10px; border:1px solid rgba(243,238,223,.12);">
+        <div style="font-size:0.72rem; color:var(--amber); font-weight:700;">${escapeHtml(n.source || '')}${n.date ? ' · ' + escapeHtml(n.date) : ''}</div>
+        <div style="font-weight:700; margin:3px 0;">${escapeHtml(n.title)}</div>
+        ${n.excerpt ? `<div style="font-size:0.82rem; opacity:.8; line-height:1.4;">${escapeHtml(n.excerpt)}</div>` : ''}
+        <div style="font-size:0.76rem; color:var(--amber); margin-top:6px;">Olvass tovább az eredeti oldalon ↗</div>
+      </a>`).join('') + fallback;
+  }
+
+  // ---------- beépülés a nézetváltásba ----------
+  const _origSwitch = switchView;
+  window.switchView = switchView = function (viewName) {
+    if (viewName !== 'uzenofal') wallStop();
+    ensureViews();
+    _origSwitch(viewName);
+    if (viewName === 'uzenofal' || viewName === 'hirek') {
+      document.querySelectorAll('.primary-tab').forEach(b => b.classList.remove('active'));
+      ['subnav-matricaim', 'subnav-cserebere', 'subnav-radar', 'subnav-profil'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      const mn = document.getElementById('main-primary-nav'); if (mn && currentAlbumId && document.getElementById('active-album-bar')?.style.display !== 'none') mn.style.display = 'grid';
+    }
+    if (viewName === 'uzenofal') wallStart();
+    if (viewName === 'hirek') renderNews();
+  };
+
+  function init() { ensureViews(); ensureNavPlus(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
