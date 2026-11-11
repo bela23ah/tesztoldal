@@ -337,9 +337,21 @@ function listenToTrades(uid) {
         cancelReason: t.cancelReason || '',
         isInitiator: isInitiator
       };
+      // Kétoldali lezárás: mindkét félnél külön kell átvezetni a tételeket és értékelni a másikat
+      if (t.closedBy && typeof t.closedBy === 'object') {
+        const myClosed = t.closedBy[uid] === true;
+        const partnerUidX = isInitiator ? t.partnerUid : t.initiatorUid;
+        tradeObj.partnerClosed = t.closedBy[partnerUidX] === true;
+        tradeObj.myClosed = myClosed;
+        if (myClosed) tradeObj.status = 'completed';
+        else if (t.status === 'completed') tradeObj.status = 'accepted';
+      }
 
       const prev = tradesCache[doc.id];
       tradesCache[doc.id] = tradeObj;
+      if (tradeObj.partnerClosed && !tradeObj.myClosed && !(prev && prev.partnerClosed)) {
+        try { showToast(`${tradeObj.partnerName} lezárta a cserét. Zárd le te is a „Cseréim” panelen – így nálad is átvezetődnek a tételek, és értékelheted őt.`); } catch (e) {}
+      }
 
       if (prev && t.status === 'cancelled' && prev.status !== 'cancelled' && t.cancelledBy !== uid) {
         const nameSpan = document.getElementById('cancelled-notice-partner-name');
@@ -2941,8 +2953,54 @@ function switchCategory(catName) {
   else if (catName === 'profil') switchView('profil');
 }
 
+let csHistoryPopping = false;
+function csPushView(viewName) {
+  try {
+    if (csHistoryPopping) return;
+    const cur = history.state && history.state.csView;
+    if (cur === viewName) return;
+    history.pushState({ csView: viewName }, '', location.pathname + location.search);
+  } catch (e) {}
+}
+function csShowHubUi() {
+  ['active-album-bar', 'main-primary-nav', 'mobile-bottom-bar'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+}
+function csRenderHubQuick() {
+  const hub = document.getElementById('view-hub');
+  if (!hub) return;
+  let bar = document.getElementById('cs-hub-quick');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'cs-hub-quick';
+    bar.style.cssText = 'display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px;';
+    hub.insertBefore(bar, hub.firstChild);
+    bar.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-cs-go]');
+      if (b) switchView(b.dataset.csGo);
+    });
+  }
+  const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+  bar.innerHTML = currentUser
+    ? `<button class="btn btn-secondary btn-sm" data-cs-go="profil">👤 Profil</button>${isAdmin ? '<button class="btn btn-secondary btn-sm" data-cs-go="admin" style="color:var(--amber); border-color:var(--amber);">⚙ Admin</button>' : ''}`
+    : '';
+}
+window.addEventListener('popstate', (e) => {
+  const v = e.state && e.state.csView;
+  if (!v) return;
+  csHistoryPopping = true;
+  try {
+    if (v === 'hub') { csShowHubUi(); switchView('hub'); }
+    else switchView(v);
+  } finally { csHistoryPopping = false; }
+});
+try { history.replaceState({ csView: 'hub' }, '', location.pathname + location.search); } catch (e) {}
+
 function switchView(viewName) {
+  csPushView(viewName);
   if (viewName === 'admin' && typeof ensureCsUi === 'function') ensureCsUi();
+  if (viewName === 'admin' || viewName === 'profil') {
+    const mn = document.getElementById('main-primary-nav'); if (mn) mn.style.display = 'grid';
+  }
   if (viewName === 'cseréim') {
     switchView('matricaim');
     const tradesPanel = document.getElementById('active-trades-panel');
@@ -2987,7 +3045,7 @@ function switchView(viewName) {
   if (subnavRadar) subnavRadar.style.display = parentCat === 'radar' ? 'flex' : 'none';
   if (subnavProfil) subnavProfil.style.display = parentCat === 'profil' ? 'flex' : 'none';
 
-  if (viewName === 'hub') renderHub();
+  if (viewName === 'hub') { renderHub(); csRenderHubQuick(); }
   if (viewName === 'cserek') renderMatches();
   if (viewName === 'kereso' && typeof renderProximityPartners === 'function') renderProximityPartners();
   if (viewName === 'statisztika') {
@@ -4891,6 +4949,7 @@ function renderActiveTradesPanel() {
             ${statusBadge}
           </div>
 
+          ${t.partnerClosed && !t.myClosed ? '<div style="background:rgba(232,171,84,0.18); border:1px solid var(--amber); color:var(--amber); border-radius:var(--radius-sm); padding:6px 8px; font-size:0.78rem; font-weight:700; margin-top:6px;">✓ A partnered már lezárta a cserét – zárd le te is, hogy a tételeid átvezetődjenek, és értékeld őt!</div>' : ''}
           <div style="font-size:0.8rem; line-height:1.5; margin:6px 0; background:rgba(0,0,0,0.2); padding:8px; border-radius:var(--radius-sm);">
             <p style="margin:2px 0;"><strong>Te adod:</strong> ${givingText}</p>
             <p style="margin:2px 0; color:var(--moss-soft);"><strong>Tőle kapod:</strong> ${receivingText}</p>
@@ -5437,6 +5496,7 @@ safeAddListener('btn-submit-trade-rating', async () => {
       if (trade.tradeId) {
         await db.collection("trades").doc(trade.tradeId).update({
           status: 'completed',
+          ['closedBy.' + currentUser.uid]: true,
           completedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }
@@ -8915,6 +8975,33 @@ safeAddListener('btn-email-login', () => {
     .catch(() => showToast("Hibás belépési adatok."));
 });
 
+function csEnsureForgotLink() {
+  if (document.getElementById('btn-forgot-password')) return;
+  const login = document.getElementById('btn-email-login');
+  if (!login || !login.parentNode) return;
+  const a = document.createElement('button');
+  a.id = 'btn-forgot-password';
+  a.type = 'button';
+  a.className = 'btn btn-sm';
+  a.style.cssText = 'background:none; border:none; color:var(--amber); text-decoration:underline; padding:8px 0 0; font-size:0.82rem; cursor:pointer;';
+  a.textContent = 'Elfelejtett jelszó?';
+  login.parentNode.insertAdjacentElement('afterend', a);
+}
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'btn-forgot-password') {
+    if (!auth) return;
+    const em = document.getElementById('auth-email')?.value.trim() || '';
+    if (!em) return showToast('Írd be fent az e-mail címedet, majd kattints újra az „Elfelejtett jelszó?” gombra.');
+    auth.languageCode = 'hu';
+    auth.sendPasswordResetEmail(em)
+      .then(() => showToast('Ha ezzel az e-mail címmel van fiókod, elküldtük a jelszó-visszaállító levelet. Nézd meg a spam mappát is!'))
+      .catch(() => showToast('Ha ezzel az e-mail címmel van fiókod, elküldtük a jelszó-visszaállító levelet.'));
+  }
+  if (e.target && e.target.id === 'btn-open-auth') setTimeout(csEnsureForgotLink, 50);
+});
+document.addEventListener('DOMContentLoaded', csEnsureForgotLink);
+setTimeout(csEnsureForgotLink, 800);
+
 safeAddListener('btn-email-signup', () => {
   if (!auth) return;
   const em = document.getElementById('auth-email')?.value.trim() || '';
@@ -9103,6 +9190,7 @@ function checkMandatoryProfile() {
     warning.style.display = 'none';
   }
   setTimeout(csCheckTradeModeReminder, 2500);
+  try { csRenderHubQuick(); } catch (e) {}
 }
 
 function listenToAllUsers() {
