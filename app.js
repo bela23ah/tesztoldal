@@ -1675,6 +1675,7 @@ function selectAlbum(albumId) {
     renderFamilySubPills();
     loadAlbumState(albumId);
     initFavoriteSelects();
+    rebuildAllUsersData();
 
     switchView('matricaim');
     showToast(isInactive ? `Figyelem: ${activeAlbum.title} jelenleg inaktív!` : `Aktív: ${activeAlbum.title}`);
@@ -1734,6 +1735,7 @@ function getActiveLockedCounts(albumId = currentAlbumId) {
 // =========================================================================
 
 function loadAlbumState(albumId) {
+  familyMergeVersion++;
   try {
     const effKey = getEffectiveAlbumKey(); // pl. "lidl-lutra-2026" VAGY "lidl-lutra-2026_sub2"
 
@@ -1776,6 +1778,67 @@ function loadAlbumState(albumId) {
   }
 }
 
+// =========================================================================
+// TESTVÉR-FÜZETEK: a párosítás és a közösségi nézet az ÖSSZES füzetet együtt kezeli
+// (a szülő egyszerre keresi mindkét gyerek hiányzóit és ajánlja mindkettő dupláit).
+// A füzetek között megegyező tételek belül elintéződnek, kifelé csak a maradék látszik.
+// =========================================================================
+let familyMergeVersion = 0;
+let _fmCache = { ver: -1, key: '', val: null };
+
+function getFamilyMergedState(albumId = currentAlbumId) {
+  const key = albumId + '|' + currentSubAlbumId + '|' + familyMergeVersion;
+  if (_fmCache.key === key && _fmCache.val) return _fmCache.val;
+
+  let subs = safeJsonParse(`family_subs_${albumId}`, []);
+  if (!Array.isArray(subs)) subs = [];
+  const ids = [...new Set([1, ...subs.map(s => Number(s && s.id)).filter(n => Number.isInteger(n) && n > 1)])];
+
+  const curKey = (albumId === currentAlbumId) ? getEffectiveAlbumKey() : null;
+  const books = ids.map(id => {
+    const k = id > 1 ? `${albumId}_sub${id}` : albumId;
+    if (k === curKey) {
+      return { van: ensureArray(myProfile.van), vc: myProfile.vanCounts || {}, kell: ensureArray(myProfile.kell), fog: ensureArray(myProfile.foglalva), fc: myProfile.foglalvaCounts || {} };
+    }
+    const isLutraMain = (k === 'lidl-lutra-2026');
+    return {
+      van: ensureArray(safeJsonParse(`lutra_van_${k}`, isLutraMain ? safeJsonParse('lutra_van', []) : [])),
+      vc: safeJsonParse(`lutra_van_counts_${k}`, {}),
+      kell: ensureArray(safeJsonParse(`lutra_kell_${k}`, isLutraMain ? safeJsonParse('lutra_kell', []) : [])),
+      fog: ensureArray(safeJsonParse(`lutra_foglalva_${k}`, [])),
+      fc: safeJsonParse(`lutra_foglalva_counts_${k}`, {})
+    };
+  });
+
+  let result;
+  if (books.length <= 1) {
+    const b = books[0] || { van: [], vc: {}, kell: [], fog: [], fc: {} };
+    result = { van: b.van, vanCounts: b.vc, kell: b.kell, foglalva: b.fog, foglalvaCounts: b.fc, notebooks: 1 };
+  } else {
+    const have = {}, need = {}, fog = {}, fc = {};
+    books.forEach(b => {
+      b.van.forEach(n => { have[n] = (have[n] || 0) + ((b.vc && b.vc[n]) ? b.vc[n] : 1); });
+      b.kell.forEach(n => { need[n] = (need[n] || 0) + 1; });
+      b.fog.forEach(n => { fog[n] = true; fc[n] = (fc[n] || 0) + ((b.fc && b.fc[n]) ? b.fc[n] : 1); });
+    });
+    const van = [], vanCounts = {}, kell = [];
+    new Set([...Object.keys(have), ...Object.keys(need)]).forEach(k => {
+      const n = Number(k);
+      const h = have[n] || 0, nd = need[n] || 0;
+      const internal = Math.min(h, nd);
+      if (h - internal > 0) { van.push(n); vanCounts[n] = h - internal; }
+      if (nd - internal > 0) kell.push(n);
+    });
+    van.sort((a, b) => a - b); kell.sort((a, b) => a - b);
+    result = { van, vanCounts, kell, foglalva: Object.keys(fog).map(Number).sort((a, b) => a - b), foglalvaCounts: fc, notebooks: books.length };
+  }
+  _fmCache = { ver: familyMergeVersion, key, val: result };
+  return result;
+}
+function getMyMatchVan() { return getFamilyMergedState().van; }
+function getMyMatchKell() { return getFamilyMergedState().kell; }
+function getMyMatchVanCounts() { return getFamilyMergedState().vanCounts; }
+
 function syncLutraDualSave(effKey) {
   if (!currentUser || !db) return;
   const isRootLutra = (effKey === 'lidl-lutra-2026');
@@ -1807,18 +1870,32 @@ function syncLutraDualSave(effKey) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (isRootLutra) {
-    publicPayload.van = myProfile.van;
-    publicPayload.vanCounts = myProfile.vanCounts || {};
-    publicPayload.kell = myProfile.kell;
-    publicPayload.foglalva = myProfile.foglalva;
-    publicPayload.foglalvaCounts = myProfile.foglalvaCounts || {};
+  // Többfüzetes család: a mások által látott alap-kulcs az összevont, kifelé maradt állapot
+  familyMergeVersion++;
+  const merged = getFamilyMergedState(currentAlbumId);
+  if (merged.notebooks > 1) {
+    publicPayload.collections[currentAlbumId] = {
+      van: merged.van, vanCounts: merged.vanCounts, kell: merged.kell,
+      foglalva: merged.foglalva, foglalvaCounts: merged.foglalvaCounts, updatedAt: Date.now()
+    };
+  }
+
+  if (isRootLutra || currentAlbumId === 'lidl-lutra-2026') {
+    const src = merged.notebooks > 1 ? merged : { van: myProfile.van, vanCounts: myProfile.vanCounts || {}, kell: myProfile.kell, foglalva: myProfile.foglalva, foglalvaCounts: myProfile.foglalvaCounts || {} };
+    if (merged.notebooks > 1 || isRootLutra) {
+      publicPayload.van = src.van;
+      publicPayload.vanCounts = src.vanCounts;
+      publicPayload.kell = src.kell;
+      publicPayload.foglalva = src.foglalva;
+      publicPayload.foglalvaCounts = src.foglalvaCounts;
+    }
   }
 
   db.collection("public_profiles").doc(currentUser.uid).set(publicPayload, { merge: true }).catch(() => {});
 }
 
 function saveMyStateFast() {
+  familyMergeVersion++;
   const effKey = getEffectiveAlbumKey();
   const now = Date.now();
   lastLocalEditTimestamp = now;
@@ -3206,8 +3283,8 @@ function refreshMatchesIfVisible() {
 
 function computeLoopMatches() {
   const myId = currentUser ? currentUser.uid : 'me';
-  const myVanSet = new Set(ensureArray(myProfile.van));
-  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
+  const myVanSet = new Set(ensureArray(getMyMatchVan()));
+  const myKellSet = new Set(ensureArray(getMyMatchKell()).filter(n => !myVanSet.has(n)));
   const otherUsers = allUsersData.filter(u => u.id !== myId && !u.isVacation);
   const loops = [];
 
@@ -3330,14 +3407,14 @@ function runMaxFlow(g, s, t) {
 }
 
 function getAvailableDupeQty(num, locks) {
-  const q = (myProfile.vanCounts && myProfile.vanCounts[num]) ? myProfile.vanCounts[num] : 1;
+  const q = (getMyMatchVanCounts() && getMyMatchVanCounts()[num]) ? getMyMatchVanCounts()[num] : 1;
   return q - ((locks && locks[num]) || 0);
 }
 
 function computeBalancedPlan(users, overrides) {
   overrides = overrides || {};
-  const myVan = new Set(ensureArray(myProfile.van));
-  const myKell = new Set(ensureArray(myProfile.kell).filter(n => !myVan.has(n)));
+  const myVan = new Set(ensureArray(getMyMatchVan()));
+  const myKell = new Set(ensureArray(getMyMatchKell()).filter(n => !myVan.has(n)));
   const locks = getActiveLockedCounts(currentAlbumId);
 
   const ordered = [...users].sort((a, b) => {
@@ -3414,8 +3491,8 @@ function computeBalancedPlan(users, overrides) {
 }
 
 function buildBalancedOffer(u) {
-  const myVan = new Set(ensureArray(myProfile.van));
-  const myKell = new Set(ensureArray(myProfile.kell).filter(n => !myVan.has(n)));
+  const myVan = new Set(ensureArray(getMyMatchVan()));
+  const myKell = new Set(ensureArray(getMyMatchKell()).filter(n => !myVan.has(n)));
   const locks = getActiveLockedCounts(currentAlbumId);
   const uVan = new Set(ensureArray(u.van));
   const uKell = new Set(ensureArray(u.kell).filter(n => !uVan.has(n)));
@@ -3454,8 +3531,8 @@ function renderMatches() {
   const list = document.getElementById('matches-list');
   if (!list) return;
 
-  const myVanSet = new Set(ensureArray(myProfile.van));
-  const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
+  const myVanSet = new Set(ensureArray(getMyMatchVan()));
+  const myKellSet = new Set(ensureArray(getMyMatchKell()).filter(n => !myVanSet.has(n)));
   const myCoords = myGpsCoords || getUserCoordinates(myProfile);
   const now = Date.now();
 
@@ -3855,8 +3932,8 @@ safeAddListener('matches-list', 'click', (e) => {
     const uid = btn.dataset.uid;
     const targetUser = allUsersData.find(u => u.id === uid);
     if (!targetUser) return;
-    const myVanSet = new Set(ensureArray(myProfile.van));
-    const myKellSet = new Set(ensureArray(myProfile.kell).filter(n => !myVanSet.has(n)));
+    const myVanSet = new Set(ensureArray(getMyMatchVan()));
+    const myKellSet = new Set(ensureArray(getMyMatchKell()).filter(n => !myVanSet.has(n)));
     const uVanSet = new Set(ensureArray(targetUser.van));
     const uKellSet = new Set(ensureArray(targetUser.kell).filter(n => !uVanSet.has(n)));
     const give = [...myVanSet].filter(n => uKellSet.has(n) && !uVanSet.has(n)).sort((a, b) => a - b);
@@ -4176,7 +4253,7 @@ function openContactModal(targetUser, giveArray = [], getArray = [], isGift = fa
   const targetKell = new Set(ensureArray(targetUser.kell));
   const alreadyGiving = new Set(activeContactGiveNums);
   const myReserved = new Set(ensureArray(myProfile.foglalva));
-  activeContactSuggestNums = ensureArray(myProfile.van).filter(n => targetKell.has(n) && !alreadyGiving.has(n) && !myReserved.has(n));
+  activeContactSuggestNums = ensureArray(getMyMatchVan()).filter(n => targetKell.has(n) && !alreadyGiving.has(n) && !myReserved.has(n));
   selectedSuggestNums.clear();
 
   const titleEl = document.getElementById('contact-modal-title');
@@ -4603,8 +4680,8 @@ safeAddListener('btn-run-fb-match', async () => {
       postData = parseFacebookPostText(rawText);
     }
 
-    const myVanSet = new Set(ensureArray(myProfile.van));
-    const myKellSet = new Set(ensureArray(myProfile.kell));
+    const myVanSet = new Set(ensureArray(getMyMatchVan()));
+    const myKellSet = new Set(ensureArray(getMyMatchKell()));
 
     const iCanGet = postData.has.filter(n => myKellSet.has(n)).sort((a, b) => a - b);
     const iCanGive = postData.needs.filter(n => myVanSet.has(n)).sort((a, b) => a - b);
@@ -5382,13 +5459,14 @@ safeAddListener('btn-search-all-missing', () => {
     return;
   }
 
-  if (myProfile.kell.length === 0) return showToast("Nincs bejelölt hiányzó tételed.");
+  const _allMissing = getMyMatchKell();
+  if (_allMissing.length === 0) return showToast("Nincs bejelölt hiányzó tételed.");
   if (btn) btn.classList.add('active');
   if (container) {
     container.style.display = 'block';
     container.dataset.mode = 'all-missing';
   }
-  renderSearchResults(myProfile.kell, `Összes hiányzód (${myProfile.kell.length} db)`);
+  renderSearchResults(_allMissing, `Összes hiányzód (${_allMissing.length} db)`);
 });
 
 function renderSearchResults(targetNums, titleText) {
@@ -6189,8 +6267,16 @@ function initOrUpdateLeafletMap() {
       </div>
     `);
 
+    marker.bindTooltip(String(c.users), { permanent: true, direction: 'center', className: 'cs-map-count', opacity: 1 });
     leafletMarkersGroup.addLayer(marker);
   });
+
+  if (!document.getElementById('cs-map-count-style')) {
+    const st = document.createElement('style');
+    st.id = 'cs-map-count-style';
+    st.textContent = '.cs-map-count{background:transparent;border:0;box-shadow:none;color:#fff;font-weight:800;font-size:12px;padding:0;text-shadow:0 1px 2px rgba(0,0,0,.7)}.cs-map-count:before{display:none}';
+    document.head.appendChild(st);
+  }
 }
 
 function filterMatchesByCityName(cityName) {
@@ -6221,7 +6307,7 @@ function renderCompletionOdds() {
 
   if (!oddsPct || !oddsBar || !oddsText) return;
 
-  const myMissing = ensureArray(myProfile.kell);
+  const myMissing = ensureArray(getMyMatchKell());
   if (myMissing.length === 0) {
     oddsPct.textContent = '100%';
     oddsBar.style.width = '100%';
@@ -6313,15 +6399,17 @@ function renderStatistics() {
 
   const rEl = document.getElementById('stats-rarest-list');
   const cEl = document.getElementById('stats-common-list');
+  const _lab = (num) => getItemLabel(num, currentAlbumId);
+  const _nm = (num, full) => { const l = _lab(num); const t = String(full || ''); return (t.startsWith(l) ? t.slice(l.length) : t.replace(/^#\S+/, '')).trim(); };
   if (rEl) rEl.innerHTML = rarest.slice(0, 5).map(r => `
     <div class="stats-ranking-item">
-      <span><strong>#${r.num}</strong> ${escapeHtml(r.name)}</span>
+      <span><strong>${escapeHtml(_lab(r.num))}</strong> ${escapeHtml(_nm(r.num, r.name))}</span>
       <span style="color:var(--amber); font-size:0.8rem;">${r.demand} gyűjtő keresi (${r.supply} dupla)</span>
     </div>
   `).join('');
   if (cEl) cEl.innerHTML = common.slice(0, 5).map(c => `
     <div class="stats-ranking-item">
-      <span><strong>#${c.num}</strong> ${escapeHtml(c.name)}</span>
+      <span><strong>${escapeHtml(_lab(c.num))}</strong> ${escapeHtml(_nm(c.num, c.name))}</span>
       <span style="color:var(--sand); font-size:0.8rem;">${c.supply} db dupla</span>
     </div>
   `).join('');
@@ -6370,7 +6458,8 @@ function renderExtraStatistics(common) {
   const hEl = document.getElementById('stats-hoarding-sticker');
   if (hEl) {
     const top = (common || [])[0];
-    hEl.textContent = (top && top.supply > 0) ? `${top.name} (${top.supply} db dupla)` : 'Még nincs dupla';
+    const perUser = (top && allUsersData.length) ? (top.supply / allUsersData.length) : 0;
+    hEl.textContent = (top && top.supply > 0) ? `${getItemLabel(top.num, currentAlbumId)} (${perUser.toFixed(1)} db/fő)` : 'Még nincs dupla';
   }
 
   // 2) Hol tart az ország? (közösségi telítettség)
@@ -8663,6 +8752,8 @@ function initFirebase() {
         touchActive(user.uid);
         if (guestNotice) guestNotice.style.display = 'none';
         if (adminTab) adminTab.style.display = user.email === ADMIN_EMAIL ? 'flex' : 'none';
+        const adminSheetBtn = document.getElementById('btn-sheet-admin');
+        if (adminSheetBtn) adminSheetBtn.style.display = user.email === ADMIN_EMAIL ? 'block' : 'none';
         if (adminTabM) adminTabM.style.display = user.email === ADMIN_EMAIL ? 'inline-block' : 'none';
 
         if (authArea) {
@@ -8693,6 +8784,8 @@ function initFirebase() {
         if (outgoingTradesUnsubscribe) outgoingTradesUnsubscribe();
         if (suggestionsUnsubscribe) suggestionsUnsubscribe();
         if (adminTab) adminTab.style.display = 'none';
+        const adminSheetBtn2 = document.getElementById('btn-sheet-admin');
+        if (adminSheetBtn2) adminSheetBtn2.style.display = 'none';
         if (adminTabM) adminTabM.style.display = 'none';
         myIncomingMessages = [];
         myOutgoingMessages = [];
@@ -8775,20 +8868,23 @@ function listenToAllUsers() {
 
   allUsersUnsubscribe = db.collection("public_profiles").onSnapshot(snapshot => {
     rawAllUsersDocs = snapshot.docs;
-    allUsersData = [];
-
-    snapshot.forEach(doc => {
-      const parsedUser = extractUserData(doc.data(), doc.id, currentAlbumId);
-      if (!parsedUser) return;
-      if (parsedUser.van.length === 0 && parsedUser.kell.length === 0) return;
-      allUsersData.push(parsedUser);
-    });
-
-    renderMatches();
-    renderStatistics();
-    renderProximityPartners();
+    rebuildAllUsersData();
     renderHub();
   }, err => console.warn("All users listener:", err));
+}
+
+// A közösségi adatok mindig az AKTÍV albumra épülnek (albumváltáskor is újra kell számolni!)
+function rebuildAllUsersData() {
+  allUsersData = [];
+  (rawAllUsersDocs || []).forEach(doc => {
+    const parsedUser = extractUserData(doc.data(), doc.id, currentAlbumId);
+    if (!parsedUser) return;
+    if (parsedUser.van.length === 0 && parsedUser.kell.length === 0) return;
+    allUsersData.push(parsedUser);
+  });
+  try { renderMatches(); } catch (e) { console.warn(e); }
+  try { renderStatistics(); } catch (e) { console.warn(e); }
+  try { renderProximityPartners(); } catch (e) { console.warn(e); }
 }
 
 function listenToMyProfile(uid) {
