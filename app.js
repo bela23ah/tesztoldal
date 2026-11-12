@@ -3007,8 +3007,8 @@ function csRenderHubQuick() {
     });
   }
   const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
-  bar.innerHTML = currentUser
-    ? `<button class="btn btn-secondary btn-sm" data-cs-go="profil">👤 Profil</button>${isAdmin ? '<button class="btn btn-secondary btn-sm" data-cs-go="admin" style="color:var(--amber); border-color:var(--amber);">⚙ Admin</button>' : ''}`
+  bar.innerHTML = isAdmin
+    ? '<button class="btn btn-secondary btn-sm" data-cs-go="admin" style="color:var(--amber); border-color:var(--amber);">⚙ Admin</button>'
     : '';
 }
 window.addEventListener('popstate', (e) => {
@@ -9640,6 +9640,7 @@ try {
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
     chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+    note: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
     help: '<circle cx="12" cy="12" r="9"/><path d="M9.500 9a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 .9-1 1.700M12 17h.01"/>'
   };
   const svg = (k) => `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -9650,7 +9651,8 @@ try {
     { view: 'statisztika', icon: 'map', t: 'Helyi cserék', d: 'Térkép és statisztika a közeli gyűjtőkről' },
     { view: 'radar', icon: 'store', t: 'Készletradar', d: 'Hol kapható még a gyűjtős csomag?' },
     { view: 'meetups', icon: 'cal', t: 'Találkozók', d: 'Személyes csere időpontok és helyek' },
-    { view: 'profil', icon: 'user', t: 'Profil', d: 'Adataid, értesítések, jegyzet' },
+    { view: 'profil', icon: 'user', t: 'Profil', d: 'Adataid és értesítések' },
+    { view: 'jegyzet', icon: 'note', t: 'Jegyzet', d: 'Saját, privát jegyzeted az albumhoz', mobileOnly: true },
     { view: 'admin', icon: 'gear', t: 'Admin', d: 'Vezérlőpult', admin: true }
   ];
 
@@ -9684,11 +9686,17 @@ try {
       m.addEventListener('click', (e) => {
         if (e.target === m || e.target.closest('[data-plus-close]')) { m.style.display = 'none'; return; }
         const b = e.target.closest('[data-plus-view]');
-        if (b) { m.style.display = 'none'; switchView(b.dataset.plusView); }
+        if (b) {
+          m.style.display = 'none';
+          if (b.dataset.plusView === 'jegyzet') {
+            switchView('profil');
+            setTimeout(() => { const d = document.getElementById('prof-note-accordion'); if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); } }, 250);
+          } else switchView(b.dataset.plusView);
+        }
       });
     }
     const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
-    const tiles = TILES.filter(t => !t.admin || isAdmin).map(t => `
+    const tiles = TILES.filter(t => (!t.admin || isAdmin) && (!t.mobileOnly || (window.matchMedia ? window.matchMedia('(max-width: 768px)').matches : window.innerWidth <= 768))).map(t => `
       <button data-plus-view="${t.view}" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; padding:14px; min-height:112px; border-radius:16px; border:1px solid rgba(243,238,223,.18); background:rgba(0,0,0,.22); color:var(--sand,#F3EEDF); cursor:pointer; font:inherit;${t.admin ? ' color:var(--amber);' : ''}">
         <span style="color:var(--amber);">${svg(t.icon)}</span>
         <strong style="font-size:0.98rem;">${t.t}</strong>
