@@ -20,11 +20,14 @@ function csOnce(query, ok, bad) {
 }
 
 // --- ALAPVETŐ SEGÉDFÜGGVÉNYEK ---
-// Retro: 2006 előtti (20+ éves) album. Hiányzó/0 évszám NEM számít retrónak.
+// Retro: 2006-os vagy korábbi (20+ éves) album. Ha van évszám, kizárólag az számít (a tárolt jelölő nem);
+// hiányzó/0 évszámnál a tárolt `isRetro` jelölő érvényes.
+const RETRO_MAX_YEAR = 2006;
+function csIsRetroYear(y) { y = Number(y); return y > 0 && y <= RETRO_MAX_YEAR; }
 function isRetroAlbum(a) {
   if (!a) return false;
   const y = Number(a.year);
-  return a.isRetro === true || (y > 0 && y < 2006);
+  return y > 0 ? csIsRetroYear(y) : a.isRetro === true;
 }
 // A gyujtoklub.hu zárolta a képeit (a hotlinkelt képek helyett a saját fejlécképüket adják) –
 // ezért az ilyen URL-eket sehol nem használjuk, helyette a megadott tartalék kép jelenik meg.
@@ -7530,7 +7533,7 @@ safeAddListener('btn-admin-import-json', async () => {
           typeLabel,
           coverUrl: csCover(alb.coverUrl || alb.image, `covers/${id}.webp`),
           featured: false,
-          isRetro: alb.isRetro === true || (year > 0 && year < 2006),
+          isRetro: year > 0 ? csIsRetroYear(year) : alb.isRetro === true,
           hasFavorites: false,
           hasRadar: alb.hasRadar === true,
           radarType: alb.radarType || 'none',
@@ -7819,7 +7822,7 @@ async function executeSaveAlbum(publishActive) {
   const type = document.getElementById('admin-album-type')?.value || 'sticker';
   const subtitle = document.getElementById('admin-album-subtitle')?.value.trim() || '';
   const isFeatured = publishActive && (document.getElementById('admin-album-featured')?.checked || false);
-  const isRetro = document.getElementById('admin-album-is-retro')?.checked || (year > 0 && year < 2006);
+  const isRetro = year > 0 ? csIsRetroYear(year) : (document.getElementById('admin-album-is-retro')?.checked || false);
   const radarType = document.getElementById('admin-album-radar-type')?.value || 'none';
   const hasChapters = (document.getElementById('admin-album-has-chapters')?.checked || false);
   const description = (document.getElementById('admin-album-description')?.value || '').trim().slice(0, 1200);
@@ -7920,7 +7923,7 @@ function loadAlbumIntoAdminForm(albumId) {
   setV('admin-album-custom-names', album.customNamesRaw || (album.customNames ? album.customNames.map((n, i) => `${i + 1}: ${n}`).join('\n') : ''));
   setV('admin-album-custom-chapters', album.customChaptersRaw || '');
   setC('admin-album-featured', album.featured === true);
-  setC('admin-album-is-retro', album.isRetro === true || (album.year > 0 && album.year < 2006));
+  setC('admin-album-is-retro', isRetroAlbum(album));
   setV('admin-album-radar-type', album.radarType || (album.hasRadar ? 'lidl' : 'none'));
   setC('admin-album-has-chapters', album.hasChapters === true);
   setV('admin-album-cover-url', /^https?:\/\//i.test(album.coverUrl || '') && csCover(album.coverUrl, '') ? album.coverUrl : '');
@@ -8078,8 +8081,8 @@ function csAdminExtraFilter(a) {
   if (f.status === 'active' && !act) return false;
   if (f.status === 'inactive' && act) return false;
   const y = Number(a.year) || 0;
-  if (f.era === 'retro' && !(y > 0 && y < 2006)) return false;
-  if (f.era === '2006-2015' && !(y >= 2006 && y <= 2015)) return false;
+  if (f.era === 'retro' && !csIsRetroYear(y)) return false;
+  if (f.era === '2007-2015' && !(y >= 2007 && y <= 2015)) return false;
   if (f.era === '2016+' && !(y >= 2016)) return false;
   if (f.type !== 'all' && (a.type || '') !== f.type) return false;
   if (f.problem === 'any' && csAlbumProblems(a, csAdminDupKeys()).length === 0) return false;
@@ -8124,11 +8127,11 @@ function csEnsureAdminAlbumFilters(container, allAlbums) {
   const f = adminAlbumFilter;
   const dup = csAdminDupKeys();
   const nProb = allAlbums.filter(a => csAlbumProblems(a, dup).length).length;
-  const nRetro = allAlbums.filter(a => Number(a.year) > 0 && Number(a.year) < 2006).length;
+  const nRetro = allAlbums.filter(a => csIsRetroYear(a.year)).length;
   const nInact = allAlbums.filter(a => a.active === false).length;
   bar.innerHTML = `
     <select class="input-field" data-f="status" style="max-width:160px;">${opt('all', 'Állapot: mind', f.status)}${opt('active', 'Csak aktívak', f.status)}${opt('inactive', 'Csak inaktívak (' + nInact + ')', f.status)}</select>
-    <select class="input-field" data-f="era" style="max-width:190px;">${opt('all', 'Kor: mind', f.era)}${opt('retro', 'Retro – 2006 előtt (' + nRetro + ')', f.era)}${opt('2006-2015', '2006–2015', f.era)}${opt('2016+', '2016 után', f.era)}</select>
+    <select class="input-field" data-f="era" style="max-width:190px;">${opt('all', 'Kor: mind', f.era)}${opt('retro', 'Retro – 2006 vagy korábbi (' + nRetro + ')', f.era)}${opt('2007-2015', '2007–2015', f.era)}${opt('2016+', '2016 után', f.era)}</select>
     <select class="input-field" data-f="type" style="max-width:170px;">${opt('all', 'Típus: mind', f.type)}${types.map(t => opt(t, t, f.type)).join('')}</select>
     <button type="button" class="btn btn-secondary btn-sm" data-export="albums" title="Album ID – név lista letöltése (CSV)">⬇ ID–név lista (CSV)</button>
     <select class="input-field" data-f="problem" style="max-width:210px;">${opt('all', 'Hibakeresés: ki', f.problem)}${opt('any', 'Hiányos / hibás adatúak (' + nProb + ')', f.problem)}</select>`;
@@ -8546,7 +8549,7 @@ function listenToAlbumsFull() {
         typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
         coverUrl: csCover(data.coverUrl, `covers/${doc.id}.webp`),
         featured: data.featured === true,
-        isRetro: data.isRetro === true || (data.year > 0 && data.year < 2006),
+        isRetro: data.year > 0 ? csIsRetroYear(data.year) : data.isRetro === true,
         hasFavorites: false,
         hasRadar: data.hasRadar === true,
         radarType: data.radarType || 'none',
@@ -10009,6 +10012,7 @@ try {
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
         <button class="btn btn-secondary btn-sm" id="cs-adm-rebuild">Közösségi index újraépítése</button>
         <button class="btn btn-secondary btn-sm" id="cs-adm-albums">Albumok újratöltése</button>
+        <button class="btn btn-secondary btn-sm" id="cs-adm-retro" title="Az albumok retro-jelölését az évszámhoz igazítja az adatbázisban (2006 vagy korábbi = retro)">Retro-jelölés rendbetétele</button>
       </div>
       <details style="margin-bottom:10px;"><summary style="cursor:pointer; font-weight:700;">Tiltott szavak (üzenőfal)</summary>
         <p style="font-size:0.78rem; opacity:.75; margin:6px 0;">Szavak vesszővel, szóközzel vagy új sorral elválasztva; több szavas kifejezés idézőjelben: „ilyen kifejezés”. Ékezet- és kisbetű-függetlenül működik; a beépített lista mellett érvényes.</p>
@@ -10028,6 +10032,29 @@ try {
       </details>`;
     view.insertBefore(box, view.firstChild);
     box.querySelector('#cs-adm-rebuild').onclick = () => csRebuildCommunityIndex(false);
+    box.querySelector('#cs-adm-retro').onclick = async (ev) => {
+      const btn = ev.currentTarget;
+      try {
+        btn.disabled = true;
+        const snap = await db.collection('albums').get();
+        const todo = [];
+        snap.docs.forEach(d => {
+          const x = d.data(); const y = Number(x.year);
+          if (!(y > 0)) return;                       // évszám nélkül nem nyúlunk hozzá
+          const want = csIsRetroYear(y);
+          if ((x.isRetro === true) !== want) todo.push([d.ref, want]);
+        });
+        if (!todo.length) { showToast('Minden album retro-jelölése rendben van (' + snap.size + ' album).'); return; }
+        if (!confirm(todo.length + ' album retro-jelölését javítom (retro = 2006 vagy korábbi). Mehet?')) return;
+        for (let i = 0; i < todo.length; i += 400) {
+          const b = db.batch();
+          todo.slice(i, i + 400).forEach(([ref, want]) => b.update(ref, { isRetro: want }));
+          await b.commit();
+        }
+        showToast(todo.length + ' album retro-jelölése javítva.');
+      } catch (e) { showToast('Hiba: ' + e.message); }
+      finally { btn.disabled = false; }
+    };
     box.querySelector('#cs-adm-albums').onclick = () => { window.csBumpAlbumsVersion(); showToast('Albumok újratöltve.'); };
     const ta = box.querySelector('#cs-adm-badwords');
     loadModeration(true).then(t => { ta.value = t.map(x => /\s/.test(x) ? '"' + x + '"' : x).join('\n'); });
