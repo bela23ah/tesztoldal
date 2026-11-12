@@ -17,6 +17,17 @@
   <meta name="description" content="Ingyenes matrica- és kártyacsere platform gyűjtőknek: jelöld be, mid van meg, és találd meg a cserepartnered. Okos párosítás, matricaszkenner, Facebook-poszt elemző, csereszimulátor, helyi cserék. Panini, Lidl, Kinder, Topps és 180+ album – 1000+ gyűjtő, 221 Lidl áruház készletradarja.">
   <meta name="keywords" content="matricacsere, kártyacsere, matricagyűjtés, Panini, Lidl gyűjtős, Kinder Meglepetés, hiányzó matricák, duplikátum, album csere, cserepartner, retro matricák">
   <meta name="robots" content="index, follow">
+  <script>
+    // Csak az éles domain indexelhető: a tesztoldal (github.io, localhost, stb.) kapjon noindex-et
+    (function () {
+      var h = location.hostname;
+      if (h !== 'csereljokosan.hu' && h !== 'www.csereljokosan.hu') {
+        var m = document.querySelector('meta[name="robots"]');
+        if (m) m.setAttribute('content', 'noindex, nofollow');
+        var c = document.querySelector('link[rel="canonical"]'); if (c) c.remove();
+      }
+    })();
+  </script>
   <link rel="canonical" href="https://csereljokosan.hu/">
 
   <!-- Közösségi Megosztási Meta Tagek (Open Graph) -->
