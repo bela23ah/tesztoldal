@@ -31,12 +31,31 @@ function isRetroAlbum(a) {
 }
 // A gyujtoklub.hu zárolta a képeit (a hotlinkelt képek helyett a saját fejlécképüket adják) –
 // ezért az ilyen URL-eket sehol nem használjuk, helyette a megadott tartalék kép jelenik meg.
+// Borító-sorrend: 1) GitHub covers/<album_id>.webp  2) a Firestore-ban megadott kép (admin feltöltés / URL)  3) vidra
+const CS_COVER_ALT = {};
+const CS_COVER_MISSING = new Set();
 function csCover(url, fallback) {
   const u = String(url || '').trim();
-  if (!u || /gyujtoklub\.hu/i.test(u)) return fallback || '';
+  const fb = String(fallback || '');
+  const okUrl = u && !/gyujtoklub\.hu/i.test(u);
+  if (/^covers\//i.test(fb)) {
+    if (okUrl && u !== fb) CS_COVER_ALT[fb] = u;
+    if (CS_COVER_MISSING.has(fb)) return CS_COVER_ALT[fb] || 'logo-emblem.png';
+    return fb;
+  }
+  if (!okUrl) return fb;
   return u;
 }
 // A gyujtoklub.hu-ról hotlinkelt képek helyett mindenhol a vidra jelenik meg (amíg a saját borító fel nem kerül)
+function csAlbumCover(album) {
+    if (!album || !album.id) return 'logo-emblem.png';
+    const gh = `covers/${album.id}.webp`;
+    const stored = String(album.coverUrl || '').trim();
+    if (stored && !/^covers\//i.test(stored) && !/gyujtoklub\.hu/i.test(stored)) CS_COVER_ALT[gh] = stored;
+    else if (/^covers\//i.test(stored) && stored !== gh) CS_COVER_ALT[gh] = stored;
+    return csCover(stored, gh);
+}
+
 function csFixGyujtoklubImgs(root) {
   try {
     (root || document).querySelectorAll('img[src*="gyujtoklub"]').forEach(im => {
@@ -51,9 +70,15 @@ if (typeof MutationObserver !== 'undefined') {
 }
 document.addEventListener('error', function (e) {
   const t = e.target;
-  if (t && t.tagName === 'IMG' && !t.dataset.csFallback && /(^|\/)covers\//.test(t.getAttribute('src') || '')) {
-    t.dataset.csFallback = '1';
-    t.src = 'logo-emblem.png';
+  if (!t || t.tagName !== 'IMG') return;
+  const src = t.getAttribute('src') || '';
+  if (/(^|\/)covers\//.test(src) && !/_\d+\.webp$/i.test(src)) {
+    CS_COVER_MISSING.add(src);
+    const alt = CS_COVER_ALT[src];
+    if (alt && !t.dataset.csAlt) { t.dataset.csAlt = '1'; t.src = alt; return; }
+    if (!t.dataset.csFallback) { t.dataset.csFallback = '1'; t.src = 'logo-emblem.png'; }
+  } else if (t.dataset.csAlt && !t.dataset.csFallback) {
+    t.dataset.csFallback = '1'; t.src = 'logo-emblem.png';
   }
 }, true);
 
@@ -1440,7 +1465,16 @@ function getAlbumLiveStats(albumId) {
   if (csCommunityAlbum !== albumId) {
     const pm = csCommunityMeta && csCommunityMeta.perAlbum && csCommunityMeta.perAlbum[albumId];
     const haveIdx = !!(csCommunityMeta && csCommunityMeta.perAlbum);
-    return { collectors: pm ? pm.c : (haveIdx ? 0 : null), dupes: pm ? pm.d : 0, partners: null };
+    let partners = null;
+    try {
+      if (currentUser) {
+        const isL = (albumId === 'lidl-lutra-2026');
+        const mv = new Set(ensureArray(safeJsonParse(`lutra_van_${albumId}`, isL ? safeJsonParse('lutra_van', []) : [])).map(Number));
+        const mk = new Set(ensureArray(safeJsonParse(`lutra_kell_${albumId}`, isL ? safeJsonParse('lutra_kell', []) : [])).map(Number));
+        if (mv.size || mk.size) { csEnsurePartnerIdx(albumId); partners = csPartnerCount(albumId, mv, mk); }
+      }
+    } catch (e) {}
+    return { collectors: pm ? pm.c : (haveIdx ? 0 : null), dupes: pm ? pm.d : 0, partners };
   }
   let collectors = 0;
   let dupes = 0;
@@ -1587,7 +1621,7 @@ function renderHub() {
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
     const collectedCount = albumVan.length;
     const pct = Math.min(100, Math.round((collectedCount / (album.totalItems || 100)) * 100));
-    const cover = csCover(album.coverUrl, 'logo-emblem.png');
+    const cover = csAlbumCover(album);
 
     const { collectors, dupes, partners } = getAlbumLiveStats(album.id);
     const collectorsPill = collectors === null ? '' : collectors > 0
@@ -1761,7 +1795,7 @@ function selectAlbum(albumId) {
     updateActiveAlbumTitleWithSubName();
 
     const thumbEl = document.getElementById('active-album-thumb');
-    if (thumbEl) thumbEl.src = csCover(activeAlbum.coverUrl, 'logo-emblem.png');
+    if (thumbEl) thumbEl.src = csAlbumCover(activeAlbum);
 
     const countSizeEl = document.getElementById('count-total-size');
     if (countSizeEl) countSizeEl.textContent = activeAlbum.totalItems || 108;
@@ -2254,12 +2288,12 @@ function renderAlbumMore() {
     <h3 class="am-title">${escapeHtml(album.title || 'Gyűjtemény')}</h3>
     <p class="am-meta">${[album.publisher, album.year, `${total} tétel`, typeLabel].filter(Boolean).map(escapeHtml).join(' · ')}</p>
     ${desc ? `<div class="am-desc" style="white-space:pre-wrap;">${formatLinksWithAnchors(escapeHtml(desc))}</div>` : `<p class="am-desc am-desc-auto">${escapeHtml(autoAlbumDescription(album))}${isAdmin ? '<br><em>(Admin: a saját leírást a gyűjtemény szerkesztőjében adhatod meg.)</em>' : ''}</p>`}
-    ${(album.descImages && album.descImages.length) ? `<div style="display:flex; gap:8px; overflow-x:auto; margin:8px 0;">${album.descImages.map(u => `<img src="${escapeHtml(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" style="height:120px; border-radius:10px; flex:0 0 auto;">`).join('')}</div>` : ''}
+    ${(() => { const imgs = [...new Set([...(album.descImages || []), ...[1,2,3,4,5,6].map(n => `covers/${currentAlbumId}_${n}.webp`)])]; return `<div style="display:flex; gap:8px; overflow-x:auto; margin:${imgs.length ? 8 : 0}px 0;">${imgs.map(u => `<img src="${escapeHtml(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" style="height:120px; border-radius:10px; flex:0 0 auto;">`).join('')}</div>`; })()}
     ${chips}
     <div class="am-actions">
-      <button class="btn btn-secondary btn-sm" id="btn-open-print-sheet">🖨 Nyomtatható lista</button>
-      <button class="btn btn-secondary btn-sm" id="btn-open-share-image">🖼 Megosztható kép</button>
-      <button class="btn btn-secondary btn-sm" id="btn-copy-missing-list">📋 Hiányzók másolása</button>
+      <button class="btn btn-secondary btn-sm" id="btn-open-print-sheet">Nyomtatható lista</button>
+      <button class="btn btn-secondary btn-sm" id="btn-open-share-image">Megosztható kép</button>
+      <button class="btn btn-secondary btn-sm" id="btn-copy-missing-list">Hiányzók másolása</button>
     </div>`;
   safeAddListener('btn-open-print-sheet', () => openPrintSheet('state'));
   safeAddListener('btn-open-share-image', () => openShareImage());
@@ -2323,7 +2357,7 @@ function openPrintSheet(mode) {
   sheet.innerHTML = `
     <div class="ps-toolbar no-print">
       <select id="ps-mode" class="input-field" style="max-width:260px;">${modeOpts}</select>
-      <button class="btn btn-primary" id="ps-print">🖨 Nyomtatás / PDF mentése</button>
+      <button class="btn btn-primary" id="ps-print">Nyomtatás / PDF mentése</button>
       <button class="btn btn-secondary" id="ps-close">Bezárás</button>
     </div>
     <div class="ps-page">
@@ -3013,7 +3047,7 @@ function csRenderHubQuick() {
   }
   const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
   bar.innerHTML = isAdmin
-    ? '<button class="btn btn-secondary btn-sm" data-cs-go="admin" style="color:var(--amber); border-color:var(--amber);">⚙ Admin</button>'
+    ? '<button class="btn btn-secondary btn-sm" data-cs-go="admin" style="color:var(--amber); border-color:var(--amber);">Admin</button>'
     : '';
 }
 window.addEventListener('popstate', (e) => {
@@ -6391,38 +6425,14 @@ function initOrUpdateLeafletMap() {
     });
   });
 
+  window.csMapPoints = [];
   Object.values(cityAggregates).forEach(c => {
     const coords = CITY_COORDINATES[c.canonicalKey] || CITY_COORDINATES[normalizeText(c.name)];
     if (!coords) return;
-
-    const isHot = c.users >= 3 || c.duplicates >= 30;
-    const isWarm = c.users >= 2 || c.duplicates >= 10;
-    const pinColor = isHot ? '#E85A4F' : (isWarm ? '#D89B4A' : '#6B8A5A');
-    const radius = Math.min(22, Math.max(9, 7 + c.users * 2.5));
-
-    const marker = L.circleMarker([coords.lat, coords.lng], {
-      radius: radius,
-      fillColor: pinColor,
-      color: '#FFFFFF',
-      weight: 1.5,
-      opacity: 0.9,
-      fillOpacity: 0.85
-    });
-
-    marker.bindPopup(`
-      <div style="text-align:center; min-width:140px;">
-        <strong style="color:var(--amber); font-size:1rem; display:block; margin-bottom:2px;">${escapeHtml(c.name)}</strong>
-        <span style="font-size:0.8rem; color:#FFF; display:block;"><strong>${c.users}</strong> gyűjtő</span>
-        <span style="font-size:0.75rem; color:var(--sand); display:block; margin-bottom:8px;"><strong>${c.duplicates}</strong> cserélhető dupla</span>
-        <button class="btn btn-primary btn-sm" style="width:100%; font-size:0.75rem; padding:4px 8px;" onclick="filterMatchesByCityName('${escapeHtml(c.name)}')">
-          Helyi gyűjtők mutatása
-        </button>
-      </div>
-    `);
-
-    marker.bindTooltip(String(c.users), { permanent: true, direction: 'center', className: 'cs-map-count', opacity: 1 });
-    leafletMarkersGroup.addLayer(marker);
+    window.csMapPoints.push({ key: c.canonicalKey, name: c.name, lat: coords.lat, lng: coords.lng, users: c.users, duplicates: c.duplicates });
   });
+  if (!leafletMap.__csZoomBound) { leafletMap.__csZoomBound = true; leafletMap.on('zoomend', () => window.csDrawMapClusters()); }
+  window.csDrawMapClusters();
 
   if (!document.getElementById('cs-map-count-style')) {
     const st = document.createElement('style');
@@ -9298,6 +9308,7 @@ async function csRebuildCommunityIndex(silent) {
     if (!silent) showToast('Közösségi index építése… (egyszeri teljes olvasás)');
     const snap = await db.collection('public_profiles').get();
     const per = {};
+    const idxByAlbum = {};
     let tracked = 0, dupes = 0, writes = 0;
     let batch = db.batch();
     const commits = [];
@@ -9311,6 +9322,9 @@ async function csRebuildCommunityIndex(silent) {
         albs.add(base);
         if (isSub) return;
         const cnt = col.vanCounts || {};
+        if (data.isVacation !== true) {
+          (idxByAlbum[base] = idxByAlbum[base] || {})[d.id] = v.filter(Number.isFinite.bind(Number) === undefined ? () => true : (x) => Number.isFinite(Number(x))).map(Number).join(',') + '|' + k.filter((x) => Number.isFinite(Number(x))).map(Number).join(',');
+        }
         let dd = 0; v.forEach(n => { dd += cnt[n] || 1; });
         per[base] = per[base] || { c: 0, d: 0 };
         per[base].c++; per[base].d += dd;
@@ -9334,6 +9348,20 @@ async function csRebuildCommunityIndex(silent) {
     await Promise.all(commits);
     const meta = { perAlbum: per, totals: { collectors: snap.size, tracked, dupes }, updatedAtMs: Date.now() };
     await db.collection('meta').doc('community').set(meta);
+    // albumonkénti partner-index (a hub „cserepartner" számához): albumindex/{albumId}
+    try {
+      const ids = Object.keys(idxByAlbum);
+      for (let i = 0; i < ids.length; i += 200) {
+        const b2 = db.batch();
+        ids.slice(i, i + 200).forEach(id => {
+          let u = idxByAlbum[id];
+          let size = JSON.stringify(u).length;
+          if (size > 900000) { const keys = Object.keys(u); const keep = {}; let acc = 0; for (const k2 of keys) { acc += (u[k2].length + 30); if (acc > 880000) break; keep[k2] = u[k2]; } u = keep; }
+          b2.set(db.collection('albumindex').doc(id), { u, n: Object.keys(u).length, updatedAtMs: Date.now() });
+        });
+        await b2.commit();
+      }
+    } catch (e) { console.warn('albumindex', e); }
     csCommunityMeta = meta;
     try { localStorage.setItem('cs_comm_meta', JSON.stringify({ t: Date.now(), data: meta })); } catch (e) {}
     renderHub();
@@ -9652,6 +9680,7 @@ try {
     gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
     chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
     note: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+    star: '<path d="M12 3l2.600 5.500 6 .8-4.400 4.200 1.100 6L12 16.600 6.700 19.500l1.100-6L3.400 9.300l6-.8z"/>',
     help: '<circle cx="12" cy="12" r="9"/><path d="M9.500 9a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 .9-1 1.700M12 17h.01"/>'
   };
   const svg = (k) => `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -9663,6 +9692,8 @@ try {
     { view: 'radar', icon: 'store', t: 'Készletradar', d: 'Hol kapható még a gyűjtős csomag?' },
     { view: 'meetups', icon: 'cal', t: 'Találkozók', d: 'Személyes csere időpontok és helyek' },
     { view: 'profil', icon: 'user', t: 'Profil', d: 'Adataid és értesítések' },
+    { view: 'kedvencek', icon: 'star', t: 'Kedvenceim', d: 'Kiemelt tételek és hol vannak dupla példányok' },
+    { view: 'gyik', icon: 'help', t: 'GYIK', d: 'Gyakori kérdések és válaszok' },
     { view: 'jegyzet', icon: 'note', t: 'Jegyzet', d: 'Általános és albumhoz kötött jegyzeteid' },
     { view: 'admin', icon: 'gear', t: 'Admin', d: 'Vezérlőpult', admin: true }
   ];
@@ -9699,6 +9730,7 @@ try {
         const b = e.target.closest('[data-plus-view]');
         if (b) {
           m.style.display = 'none';
+          if (b.dataset.plusView === 'gyik') { window.location.href = 'gyik.html'; return; }
           if (b.dataset.plusView === '__none') {
             switchView('profil');
             setTimeout(() => { const d = document.getElementById('prof-note-accordion'); if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); } }, 250);
@@ -9782,7 +9814,7 @@ try {
     const alb = getActiveAlbum && getActiveAlbum();
     const albId = currentAlbumId;
     const mk = (id, label) => `<button class="btn btn-sm ${wallBoard === id ? 'btn-primary' : 'btn-secondary'}" data-wall-board="${escapeHtml(id)}">${escapeHtml(label)}</button>`;
-    tabs.innerHTML = mk('all', '🌍 Össznépi') + (albId ? mk(albId, '📖 ' + ((alb && alb.title) || albId)) : '');
+    tabs.innerHTML = mk('all', 'Össznépi') + (albId ? mk(albId, ((alb && alb.title) || albId)) : '');
   }
 
   function renderWallForm() {
@@ -10116,7 +10148,7 @@ try {
   };
 
   // ---------- Hub: végtelen lapozás + vidrás kereső-popup ----------
-  let otterShown = false;
+  let otterShown = false, otterStage = 0, otterFirstAt = 0;
   function otterPrompt() {
     if (otterShown || document.getElementById('cs-otter-modal')) return; otterShown = true;
     const m = document.createElement('div');
@@ -10139,6 +10171,7 @@ try {
     m.addEventListener('click', (e) => { if (e.target === m || e.target.dataset.o === 'x') closeIt(); else if (e.target.dataset.o === 'go') { go(); otterShown = false; } });
     q.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   }
+  window.csOtterPrompt = otterPrompt;
   function setupHubSentinel() {
     const grid = document.getElementById('hub-albums-grid');
     if (!grid || document.getElementById('hub-more-sentinel') || typeof IntersectionObserver === 'undefined') return;
@@ -10150,7 +10183,9 @@ try {
       if (!entries[0].isIntersecting || !csHubHasMore) return;
       hubVisibleCount += 20; ticks++;
       renderHub();
-      if (hubVisibleCount >= 40 && hubVisibleCount % 40 === 0) otterPrompt();   // minden 40. album után újra
+      // 1. felugrás 25 album után, a 2. további 10 album után; a 3.: 30 mp tétlenség (lásd v13)
+      if (otterStage === 0 && hubVisibleCount >= 25) { otterStage = 1; otterFirstAt = hubVisibleCount; otterPrompt(); }
+      else if (otterStage === 1 && hubVisibleCount >= otterFirstAt + 10) { otterStage = 2; otterPrompt(); }
     }, { rootMargin: '300px' }).observe(s);
   }
   const initExt2 = () => { setupHubSentinel(); if (db === undefined) return; };
@@ -10385,7 +10420,7 @@ try {
     if (!view || !currentUser) return;
     let card = document.getElementById('cs-my-rating');
     if (!card) {
-      card = document.createElement('div');
+      card = document.createElement('details');
       card.id = 'cs-my-rating'; card.className = 'card';
       card.style.cssText = 'margin:0 0 14px; padding:12px; border-radius:12px; border:1px solid rgba(243,238,223,.18);';
       const h2 = view.querySelector('h2');
@@ -10405,8 +10440,8 @@ try {
     }
     const cnt = Number(myProfile.ratingsCount || 0), score = Number(myProfile.trustScore || 0);
     const avg = cnt > 0 ? (score / cnt) : 0;
-    const head = `<h3 style="margin:0 0 6px;">Értékelésem</h3>` + (cnt > 0
-      ? `<div style="font-size:1.1rem;"><span style="color:var(--amber); font-weight:800;">⭐ ${avg.toFixed(1)}</span> <span style="opacity:.75; font-size:0.85rem;">(${cnt} értékelés)</span></div>`
+    const head = `<summary style="cursor:pointer; font-weight:700; font-size:1.02rem;">Értékelésem <span style="color:var(--amber); font-weight:800;">${cnt > 0 ? '&#9733; ' + avg.toFixed(1) : ''}</span> <span style="opacity:.7; font-size:0.8rem; font-weight:400;">${cnt > 0 ? '(' + cnt + ' értékelés)' : ''}</span></summary>` + (cnt > 0
+      ? `<div style="font-size:0.85rem; opacity:.8; margin-top:6px;">Az utolsó 10 értékelés:</div>`
       : '<div style="opacity:.75; font-size:0.88rem;">Még nem érkezett értékelés. Lezárt csere után a partnered értékelhet.</div>');
     card.innerHTML = head + '<div id="cs-my-rev-list" style="margin-top:8px;"></div>';
     if (!force && Date.now() - lastMyRev < 5 * 60 * 1000 && card.dataset.loaded) return;
@@ -10490,7 +10525,7 @@ try {
     s.innerHTML = `<h2>Jegyzet</h2>
       <p class="view-intro">Két privát jegyzeted van – mindkettőt <strong>kizárólag te látod</strong>.</p>
       <div class="card" style="margin-bottom:14px;">
-        <h3 style="margin:0 0 4px;">🌍 Általános jegyzet</h3>
+        <h3 style="margin:0 0 4px;">Általános jegyzet</h3>
         <p style="font-size:0.78rem; opacity:.75; margin:0 0 8px;">Minden albumnál ugyanez jelenik meg (pl. postázási szokások, emlékeztetők).</p>
         <textarea id="cs-global-note" class="input-field" rows="5" maxlength="2000" placeholder="Pl. Postázás csak szerdán; Marcinak mindig külön borítékot…" style="width:100%;"></textarea>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;"><span id="cs-global-note-count" style="font-size:0.75rem; opacity:.7;">0/2000</span><button class="btn btn-secondary btn-sm" id="cs-global-note-save">Mentés</button></div>
@@ -10549,4 +10584,483 @@ try {
       if (v === 'admin') setTimeout(ensureDescImagesField, 60);
     } catch (e) { console.warn(e); }
   };
+})();
+
+// =========================================================================
+// v13: mobil alsó menü, gyűjtemény-nézet mobilon, térkép-klaszterezés, partner-index, vidra-triggerek
+// =========================================================================
+(function () {
+  const esc = (s) => escapeHtml(String(s == null ? '' : s));
+  const isMobile = () => (window.matchMedia ? window.matchMedia('(max-width: 640px)').matches : window.innerWidth <= 640);
+
+  // ---------- CSS ----------
+  const css = document.createElement('style');
+  css.id = 'cs-v13-css';
+  css.textContent = `
+    #mobile-bottom-bar { grid-template-columns: repeat(5, 1fr) 54px !important; }
+    #mobile-bottom-bar .bottom-nav-label { font-size:0.8rem; font-weight:900; letter-spacing:.6px; }
+    #mobile-bottom-bar .bottom-nav-btn { color:#FFF; }
+    #mobile-bottom-bar .bottom-nav-btn.active { color:var(--amber); }
+    #mobile-bottom-bar #btn-bottom-more { background:var(--amber); color:#0D2E2C !important; border-radius:12px; margin:8px 5px; padding:0; min-height:40px; }
+    #mobile-bottom-bar #btn-bottom-more .bottom-nav-label { font-size:1.6rem; line-height:1; font-weight:900; color:#0D2E2C; letter-spacing:0; }
+    .cs-mob-album { display:none; }
+    @media (max-width: 640px) {
+      .cs-mob-album { display:flex; align-items:center; gap:8px; background:rgba(20,69,63,.85); border:1.5px solid var(--amber); border-radius:12px; padding:5px 9px; max-width:58%; min-width:0; }
+      .cs-mob-album img { width:34px; height:34px; border-radius:6px; background:#F3EEDF; padding:2px; object-fit:contain; flex:0 0 auto; }
+      .cs-mob-album span { font-size:0.74rem; font-weight:800; line-height:1.15; color:#FFF; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; word-break:break-word; }
+      #cs-coll-tools { display:grid !important; grid-template-columns:1fr 1fr; grid-template-areas:"batch reset" "scan more" "fb more"; gap:6px; width:100%; }
+      #cs-coll-tools #btn-toggle-batch { grid-area:batch; } #cs-coll-tools #btn-open-reset { grid-area:reset; }
+      #cs-coll-tools #btn-open-scanner { grid-area:scan; } #cs-coll-tools #btn-copy-fb-post { grid-area:fb; }
+      #cs-coll-tools #btn-album-more { grid-area:more; height:100%; }
+      #cs-coll-tools .btn { width:100%; margin:0 !important; }
+    }
+    .cs-map-cluster{background:transparent;border:0;box-shadow:none;color:#fff;font-weight:800;font-size:12px;padding:0;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+  `;
+  document.head.appendChild(css);
+
+  // ---------- alsó menü: Profil külön, "+" keskeny, inverz ----------
+  function fixBottomBar() {
+    const bar = document.getElementById('mobile-bottom-bar');
+    const more = document.getElementById('btn-bottom-more');
+    if (!bar || !more || bar.querySelector('[data-bottom-view="profil"]')) return;
+    const prof = document.createElement('button');
+    prof.className = 'bottom-nav-btn';
+    prof.setAttribute('data-bottom-view', 'profil');
+    prof.innerHTML = '<span class="bottom-nav-label">PROFIL</span>';
+    bar.insertBefore(prof, more);
+    more.setAttribute('aria-label', 'Továbbiak');
+    more.innerHTML = '<span class="bottom-nav-label">+</span>';
+  }
+
+  // ---------- gyűjtemény-nézet mobilon ----------
+  function fixCollectionView() {
+    const scan = document.getElementById('btn-open-scanner');
+    if (!scan) return;
+    const tools = scan.parentElement;
+    if (tools && !tools.id) tools.id = 'cs-coll-tools';
+    const more = document.getElementById('btn-album-more');
+    const bar = document.querySelector('.album-more-bar');
+    if (tools && more) {
+      if (isMobile()) { if (more.parentElement !== tools) tools.appendChild(more); }
+      else if (bar && more.parentElement !== bar) bar.insertBefore(more, bar.firstChild);
+    }
+    // album doboz a "Gyűjteményem" mellett
+    const head = tools && tools.parentElement;
+    if (head && !document.getElementById('cs-mob-album')) {
+      const box = document.createElement('div');
+      box.id = 'cs-mob-album'; box.className = 'cs-mob-album';
+      box.innerHTML = '<img src="logo-emblem.png" alt=""><span></span>';
+      const h2 = head.querySelector('h2'); if (h2) h2.insertAdjacentElement('afterend', box);
+    }
+    const box = document.getElementById('cs-mob-album');
+    if (box) {
+      const t = document.getElementById('active-album-title'), th = document.getElementById('active-album-thumb');
+      const sp = box.querySelector('span'), im = box.querySelector('img');
+      if (t && sp.textContent !== t.textContent) sp.textContent = t.textContent;
+      if (th && im.getAttribute('src') !== th.getAttribute('src')) im.setAttribute('src', th.getAttribute('src') || 'logo-emblem.png');
+    }
+  }
+  if (window.matchMedia) { try { window.matchMedia('(max-width: 640px)').addEventListener('change', fixCollectionView); } catch (e) {} }
+
+  // ---------- Továbbiak panel: ikon nélküli feliratok (ha a régi emoji még benne lenne) ----------
+  function stripEmojiButtons() {
+    ['btn-open-print-sheet', 'btn-open-share-image', 'btn-copy-missing-list'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) b.textContent = b.textContent.replace(/^[^\p{L}\p{N}]+/u, '').trim();
+    });
+  }
+
+  // ---------- térkép: zoom szerinti klaszterezés ----------
+  window.csMapPoints = [];
+  window.csDrawMapClusters = function () {
+    if (!leafletMap || !leafletMarkersGroup) return;
+    leafletMarkersGroup.clearLayers();
+    const z = leafletMap.getZoom();
+    const CELL = z >= 12 ? 0 : 64;            // px; 12-es nagyítástól nincs összevonás
+    const cells = {};
+    window.csMapPoints.forEach(p => {
+      const key = CELL ? (() => { const pt = leafletMap.project([p.lat, p.lng], z); return Math.floor(pt.x / CELL) + ':' + Math.floor(pt.y / CELL); })() : p.key;
+      (cells[key] = cells[key] || []).push(p);
+    });
+    Object.values(cells).forEach(list => {
+      const users = list.reduce((a, p) => a + p.users, 0);
+      const dup = list.reduce((a, p) => a + p.duplicates, 0);
+      const lat = list.reduce((a, p) => a + p.lat * p.users, 0) / users;
+      const lng = list.reduce((a, p) => a + p.lng * p.users, 0) / users;
+      list.sort((a, b) => b.users - a.users);
+      let name = list[0].name;
+      if (list.length > 1) {
+        const allBp = list.every(p => /^budapest/i.test(p.name));
+        name = allBp ? 'Budapest' : (list[0].name + ' és környéke');
+      }
+      const isHot = users >= 3 || dup >= 30, isWarm = users >= 2 || dup >= 10;
+      const marker = L.circleMarker([lat, lng], { radius: Math.min(26, Math.max(9, 7 + Math.sqrt(users) * 3.2)), fillColor: isHot ? '#E85A4F' : (isWarm ? '#D89B4A' : '#6B8A5A'), color: '#FFFFFF', weight: 1.5, opacity: 0.9, fillOpacity: 0.85 });
+      const sub = list.length > 1 ? `<span style="font-size:0.72rem; color:var(--sand); display:block; margin-bottom:6px;">${list.length} település: ${esc(list.slice(0, 4).map(p => p.name).join(', '))}${list.length > 4 ? '…' : ''}</span>` : '';
+      const action = list.length > 1
+        ? `<button class="btn btn-primary btn-sm" style="width:100%; font-size:0.75rem; padding:4px 8px;" data-cs-zoom="${lat.toFixed(4)},${lng.toFixed(4)}">Nagyítás ide</button>`
+        : `<button class="btn btn-primary btn-sm" style="width:100%; font-size:0.75rem; padding:4px 8px;" onclick="filterMatchesByCityName('${esc(list[0].name)}')">Helyi gyűjtők mutatása</button>`;
+      marker.bindPopup(`<div style="text-align:center; min-width:150px;"><strong style="color:var(--amber); font-size:1rem; display:block; margin-bottom:2px;">${esc(name)}</strong>
+        <span style="font-size:0.8rem; color:#FFF; display:block;"><strong>${users}</strong> gyűjtő</span>
+        <span style="font-size:0.75rem; color:var(--sand); display:block; margin-bottom:6px;"><strong>${dup}</strong> cserélhető dupla</span>${sub}${action}</div>`);
+      marker.bindTooltip(String(users), { permanent: true, direction: 'center', className: 'cs-map-count', opacity: 1 });
+      leafletMarkersGroup.addLayer(marker);
+    });
+  };
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('[data-cs-zoom]');
+    if (b && leafletMap) { const [la, ln] = b.dataset.csZoom.split(',').map(Number); leafletMap.closePopup(); leafletMap.setView([la, ln], Math.min(leafletMap.getZoom() + 2, 13)); }
+  });
+
+  // ---------- partner-index (időszakos adat: albumindex/{albumId}) ----------
+  const partnerIdx = {};          // albumId -> {u:{uid:"v|k"}}
+  const partnerLoading = {};
+  window.csPartnerCount = function (albumId, myVan, myKell) {
+    const idx = partnerIdx[albumId]; if (!idx || !idx.u) return null;
+    const me = currentUser ? currentUser.uid : '';
+    let n = 0;
+    for (const uid in idx.u) {
+      if (uid === me) continue;
+      const [v, k] = String(idx.u[uid]).split('|');
+      const theirVan = v ? v.split(',') : [], theirKell = k ? k.split(',') : [];
+      if (theirVan.some(x => myKell.has(Number(x))) && theirKell.some(x => myVan.has(Number(x)))) n++;
+    }
+    return n;
+  };
+  window.csEnsurePartnerIdx = function (albumId) {
+    if (!db || !currentUser || partnerIdx[albumId] || partnerLoading[albumId]) return;
+    partnerLoading[albumId] = true;
+    db.collection('albumindex').doc(albumId).get().then(d => {
+      partnerIdx[albumId] = d.exists ? d.data() : { u: {} };
+      clearTimeout(window.__csHubRe); window.__csHubRe = setTimeout(() => { try { if (document.getElementById('view-hub')?.classList.contains('active')) renderHub(); } catch (e) {} }, 80);
+    }).catch(() => { partnerIdx[albumId] = { u: {} }; });
+  };
+
+  // ---------- vidra-popup triggerek ----------
+  let idleShown = false, idleTimer = null, openedAlbum = false;
+  function onHubActivity() {
+    clearTimeout(idleTimer);
+    if (idleShown || openedAlbum) return;
+    const hub = document.getElementById('view-hub');
+    if (!hub || !hub.classList.contains('active')) return;
+    idleTimer = setTimeout(() => {
+      if (idleShown || openedAlbum) return;
+      if (!hub.classList.contains('active') || document.getElementById('cs-otter-modal')) return;
+      idleShown = true; try { window.csOtterPrompt && window.csOtterPrompt(); } catch (e) {}
+    }, 30000);
+  }
+  ['scroll', 'click', 'keydown', 'touchstart', 'mousemove'].forEach(ev => window.addEventListener(ev, onHubActivity, { passive: true }));
+
+  const _p5 = switchView;
+  window.switchView = switchView = function (v) {
+    if (v !== 'hub') { clearTimeout(idleTimer); if (['matricaim'].includes(v)) openedAlbum = true; }
+    _p5(v);
+    try {
+      if (v === 'hub') { openedAlbum = false; onHubActivity(); }
+      if (v === 'matricaim') { fixCollectionView(); stripEmojiButtons(); }
+      if (v === 'statisztika') setTimeout(() => { const m = document.getElementById('leaflet-map-container'); if (m) m.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 450);
+      fixBottomBar();
+    } catch (e) { console.warn(e); }
+  };
+  const initV13 = () => { fixBottomBar(); fixCollectionView(); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initV13); else initV13();
+  new MutationObserver(() => { fixBottomBar(); fixCollectionView(); }).observe(document.getElementById('active-album-title') || document.body, { childList: true, characterData: true, subtree: true });
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#btn-album-more')) setTimeout(stripEmojiButtons, 50); });
+  // az album megnyitása is "megnyitott album"
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.hub-album-card, [data-select-album]')) openedAlbum = true; }, true);
+})();
+
+// =========================================================================
+// v14: borítósorrend, Kedvencek, GYIK, jelvények, utólagos értékelés, GPS-kérés, értékelés-védelem
+// =========================================================================
+(function () {
+  const esc = (s) => escapeHtml(String(s == null ? '' : s));
+  const isAdm = () => currentUser && currentUser.email === ADMIN_EMAIL;
+  const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const censor = (t) => (typeof csCensor === 'function' ? csCensor(t) : t);
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+  // ---------- 1) Borító: covers/<id>.webp -> Firestore-kép -> vidra ----------
+
+  // ---------- 2) „Nyilvántartott tétel" magyarázat ----------
+  function addTrackedNote() {
+    const el = document.getElementById('sp-tracked-items-count');
+    if (!el || el.parentElement.querySelector('.cs-tracked-note')) return;
+    const s = document.createElement('small');
+    s.className = 'cs-tracked-note';
+    s.style.cssText = 'display:block; font-size:0.62rem; opacity:.65; font-weight:400; line-height:1.2; margin-top:2px;';
+    s.textContent = '(Csak a hiányzók és duplák, megszerzettek nélkül.)';
+    el.insertAdjacentElement('afterend', s);
+  }
+
+  // ---------- 3) Értékelés-védelem: 1–2★ indoklással, szűrt szöveg ----------
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('#btn-submit-trade-rating');
+    if (!b) return;
+    const ta = document.getElementById('rate-modal-comment');
+    const txt = (ta && ta.value || '').trim();
+    if (typeof selectedStarRating === 'number' && selectedStarRating <= 2 && txt.length < 10) {
+      e.stopImmediatePropagation(); e.preventDefault();
+      showToast('1–2 csillaghoz kérjük, indokold meg röviden (legalább 10 karakter).');
+      if (ta) { ta.style.borderColor = 'var(--danger)'; ta.focus(); }
+      return;
+    }
+    if (ta) { ta.style.borderColor = ''; ta.value = censor(txt).slice(0, 500); }
+  }, true);
+
+  // ---------- 4) Utólagos értékelés (üzenetváltás alapján, 30 napig) ----------
+  const RETRO_KEY = 'cs_retro_done_v1';
+  const retroDone = () => { try { return JSON.parse(lsGet(RETRO_KEY, '[]')); } catch (e) { return []; } };
+  function retroCandidates() {
+    if (!currentUser) return [];
+    const me = currentUser.uid, now = Date.now(), lim = 30 * 24 * 3600 * 1000, done = new Set(retroDone());
+    const map = {};
+    const add = (uid, name, m) => {
+      if (!uid || uid === me || uid === 'admin' || done.has(uid)) return;
+      const t = (m.createdAt && m.createdAt.seconds ? m.createdAt.seconds * 1000 : 0);
+      if (!t || now - t > lim || m.isCharity) return;
+      const x = map[uid] || (map[uid] = { uid, name: name || 'Gyűjtőtárs', last: 0, sent: 0, got: 0 });
+      x.last = Math.max(x.last, t);
+    };
+    (myIncomingMessages || []).forEach(m => { add(m.fromUid, m.fromName, m); if (map[m.fromUid]) map[m.fromUid].got++; });
+    (myOutgoingMessages || []).forEach(m => { add(m.toUid, m.toName, m); if (map[m.toUid]) map[m.toUid].sent++; });
+    // csak ha tényleg volt oda-vissza üzenetváltás
+    return Object.values(map).filter(x => x.sent > 0 && x.got > 0).sort((a, b) => b.last - a.last).slice(0, 3);
+  }
+  function renderRetroBanner() {
+    const view = document.getElementById('view-uzeneteim'); if (!view) return;
+    let box = document.getElementById('cs-retro-rate');
+    const list = retroCandidates();
+    if (!list.length) { if (box) box.remove(); return; }
+    if (!box) {
+      box = document.createElement('div'); box.id = 'cs-retro-rate'; box.className = 'card';
+      box.style.cssText = 'margin:0 0 12px; padding:10px 12px; border:1.5px solid var(--amber); border-radius:12px; background:rgba(216,155,74,.10);';
+      const h2 = view.querySelector('h2'); (h2 && h2.parentElement ? h2.parentElement : view).insertAdjacentElement('afterend', box);
+      box.addEventListener('click', (e) => {
+        const r = e.target.closest('[data-retro-rate]'), s = e.target.closest('[data-retro-skip]');
+        if (r) openRetroModal(r.dataset.retroRate, r.dataset.retroName);
+        if (s) { const d = retroDone(); d.push(s.dataset.retroSkip); lsSet(RETRO_KEY, JSON.stringify(d)); renderRetroBanner(); }
+      });
+    }
+    box.innerHTML = `<div style="font-size:0.78rem; color:var(--amber); font-weight:800; margin-bottom:4px;">Cserélj Okosan – tájékoztató</div>
+      <div style="font-size:0.88rem; margin-bottom:6px;">Értékelnéd a cserepartnert? Most megteheted.</div>` +
+      list.map(x => `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px;"><strong>${esc(x.name)}</strong>
+        <span style="display:flex; gap:6px;"><button class="btn btn-primary btn-sm" data-retro-rate="${esc(x.uid)}" data-retro-name="${esc(x.name)}">Értékelem</button><button class="btn btn-secondary btn-sm" data-retro-skip="${esc(x.uid)}">Most nem</button></span></div>`).join('');
+  }
+  function openRetroModal(uid, name) {
+    let m = document.getElementById('cs-retro-modal'); if (m) m.remove();
+    m = document.createElement('div'); m.id = 'cs-retro-modal';
+    m.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
+    m.innerHTML = `<div style="background:var(--sand,#F3EEDF); color:#0D2E2C; width:100%; max-width:380px; border-radius:14px; padding:18px;">
+      <h3 style="margin:0 0 4px;">${esc(name)} értékelése</h3>
+      <p style="margin:0 0 8px; font-size:0.82rem;">Hogyan ment a csere? 1–2 csillaghoz kérjük az indoklást.</p>
+      <div id="cs-retro-stars" style="font-size:2rem; letter-spacing:4px; cursor:pointer; user-select:none;" data-v="0">${[1,2,3,4,5].map(i => `<span data-s="${i}" style="color:#B9B39F;">★</span>`).join('')}</div>
+      <textarea id="cs-retro-comment" class="input-field" rows="3" maxlength="500" placeholder="Rövid szöveges vélemény (nem kötelező, 1–2 csillagnál kötelező)" style="width:100%; margin-top:8px;"></textarea>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px;"><button class="btn btn-secondary btn-sm" id="cs-retro-cancel">Mégse</button><button class="btn btn-primary btn-sm" id="cs-retro-send">Elküldöm</button></div></div>`;
+    document.body.appendChild(m);
+    const stars = m.querySelector('#cs-retro-stars');
+    stars.addEventListener('click', (e) => { const s = e.target.closest('[data-s]'); if (!s) return; stars.dataset.v = s.dataset.s; stars.querySelectorAll('[data-s]').forEach(x => x.style.color = (+x.dataset.s <= +s.dataset.s) ? '#D89B4A' : '#B9B39F'); });
+    m.querySelector('#cs-retro-cancel').onclick = () => m.remove();
+    m.querySelector('#cs-retro-send').onclick = async () => {
+      const v = +stars.dataset.v, txt = m.querySelector('#cs-retro-comment').value.trim();
+      if (!v) return showToast('Válassz csillagot!');
+      if (v <= 2 && txt.length < 10) return showToast('1–2 csillaghoz kérjük, indokold meg röviden (legalább 10 karakter).');
+      try {
+        await db.collection('public_profiles').doc(uid).collection('reviews').doc(currentUser.uid + '_msg').set({
+          fromUid: currentUser.uid, fromName: myProfile.nev || 'Gyűjtőtárs', stars: v, comment: censor(txt).slice(0, 500), retro: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection('public_profiles').doc(uid).update({ trustScore: firebase.firestore.FieldValue.increment(v), ratingsCount: firebase.firestore.FieldValue.increment(1) });
+        const d = retroDone(); d.push(uid); lsSet(RETRO_KEY, JSON.stringify(d));
+        m.remove(); renderRetroBanner(); showToast('Köszönjük az értékelést!');
+      } catch (e) { showToast('Nem sikerült (talán már értékelted ezt a partnert).'); const d = retroDone(); d.push(uid); lsSet(RETRO_KEY, JSON.stringify(d)); m.remove(); renderRetroBanner(); }
+    };
+  }
+
+  // ---------- 5) Jelvények ----------
+  const BADGES = [
+    { id: 'nagylelku', t: 'Nagylelkű adakozó', d: 'Közös kalapba ajánlott fel tételeket', c: '#C9892F', i: '<path d="M12 21s-7-4.500-7-10a4 4 0 0 1 7-2.500A4 4 0 0 1 19 11c0 5.500-7 10-7 10z"/>' },
+    { id: 'elso-csere', t: 'Első csere', d: 'Lezárta az első cseréjét', c: '#5F8A5A', i: '<path d="M5 12l5 5 9-10"/>' },
+    { id: 'pontos-postazo', t: 'Pontos postázó', d: 'Mindig gyorsan és gondosan postáz', c: '#4A7C9B', i: '<rect x="4" y="6" width="16" height="12" rx="1.500"/><path d="M4 7l8 6 8-6"/>' },
+    { id: 'segitokesz', t: 'Segítőkész gyűjtő', d: 'Másokat is segít a cserében', c: '#A0522D', i: '<circle cx="12" cy="8" r="3"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/>' },
+    { id: 'torzs', t: 'Törzsgyűjtő', d: 'Rendszeres és megbízható résztvevő', c: '#7B5EA7', i: '<path d="M12 3l2.600 5.500 6 .8-4.400 4.200 1.100 6L12 16.600 6.700 19.500l1.100-6L3.400 9.300l6-.8z"/>' },
+    { id: 'felfedezo', t: 'Felfedező', d: 'Új albumot javasolt a közösségnek', c: '#2E7D74', i: '<circle cx="12" cy="12" r="8"/><path d="M15 9l-2 6-4 0 2-6z"/>' },
+    { id: 'retro', t: 'Retro-gyűjtő', d: '20+ éves albumok megmentője', c: '#8C6B3F', i: '<path d="M7 4h10v16l-5-3-5 3z"/>' },
+    { id: 'hirnok', t: 'Közösségépítő', d: 'Segít jó hangulatot teremteni', c: '#C0504D', i: '<path d="M4 12v3h3l5 4V5L7 9H4zM16 9a4 4 0 0 1 0 6"/>' }
+  ];
+  const badgeSvg = (b, size) => `<svg viewBox="0 0 48 48" width="${size || 44}" height="${size || 44}" role="img" aria-label="${esc(b.t)}"><circle cx="24" cy="24" r="22" fill="${b.c}"/><circle cx="24" cy="24" r="18" fill="none" stroke="#F3EEDF" stroke-width="1.500" stroke-dasharray="2 3"/><g transform="translate(12 12) scale(1)" fill="none" stroke="#F3EEDF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${b.i}</g></svg>`;
+  window.csBadgeSvg = (id, size) => { const b = BADGES.find(x => x.id === id); return b ? badgeSvg(b, size) : ''; };
+  window.CS_BADGES = BADGES;
+
+  async function renderMyBadges() {
+    const view = document.getElementById('view-profil'); if (!view || !currentUser || !db) return;
+    let card = document.getElementById('cs-my-badges');
+    if (!card) {
+      card = document.createElement('details'); card.id = 'cs-my-badges'; card.className = 'card';
+      card.style.cssText = 'margin:0 0 14px; padding:10px 12px; border-radius:12px; border:1px solid rgba(243,238,223,.18);';
+      const anchor = document.getElementById('cs-my-rating') || view.querySelector('h2');
+      anchor.insertAdjacentElement('afterend', card);
+    }
+    let got = [];
+    try { const d = await db.collection('public_profiles').doc(currentUser.uid).get(); got = (d.exists && Array.isArray(d.data().badges)) ? d.data().badges : []; } catch (e) {}
+    const mine = BADGES.filter(b => got.includes(b.id));
+    card.innerHTML = `<summary style="cursor:pointer; font-weight:800;">Jelvényeim (${mine.length})</summary>
+      <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:10px;">${mine.length ? mine.map(b => `<div style="width:88px; text-align:center;">${badgeSvg(b, 48)}<div style="font-size:0.7rem; font-weight:700; margin-top:3px; line-height:1.2;">${esc(b.t)}</div></div>`).join('') : '<p style="font-size:0.82rem; opacity:.75; margin:0;">Még nincs jelvényed. Jelvényt kaphatsz például a Közös kalapba felajánlott tételekért, vagy a segítőkészségedért.</p>'}</div>`;
+  }
+
+  function renderAdminBadges() {
+    const box = document.getElementById('cs-admin-tools'); if (!box || !isAdm()) return;
+    if (box.querySelector('#cs-adm-badges')) return;
+    const d = document.createElement('details'); d.id = 'cs-adm-badges'; d.style.cssText = 'margin-top:10px;';
+    d.innerHTML = `<summary style="cursor:pointer; font-weight:700;">Jelvények adása</summary>
+      <div style="margin-top:8px;"><div style="display:flex; gap:6px;"><input id="cs-badge-q" class="input-field" placeholder="Felhasználó neve (az eleje)…" style="flex:1;"><button class="btn btn-secondary btn-sm" id="cs-badge-find">Keresés</button></div>
+      <div id="cs-badge-res" style="margin-top:8px;"></div></div>`;
+    box.appendChild(d);
+    const find = async () => {
+      const q = d.querySelector('#cs-badge-q').value.trim(), out = d.querySelector('#cs-badge-res');
+      if (q.length < 2) return showToast('Írj be legalább 2 betűt.');
+      out.textContent = 'Keresés…';
+      try {
+        const snap = await db.collection('public_profiles').where('nev', '>=', q).where('nev', '<=', q + '').limit(8).get();
+        if (snap.empty) { out.innerHTML = '<p style="opacity:.7;">Nincs találat (a kis/nagybetű számít).</p>'; return; }
+        out.innerHTML = snap.docs.map(x => { const p = x.data(), have = Array.isArray(p.badges) ? p.badges : [];
+          return `<div style="background:rgba(0,0,0,.2); border-radius:10px; padding:8px 10px; margin-bottom:8px;" data-uid="${x.id}">
+            <div><strong>${esc(p.nev || '?')}</strong> · ${esc(p.telepules || '')} <span style="opacity:.55; font-size:0.7rem;">${x.id.slice(0, 6)}</span></div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px 12px; margin:6px 0;">${BADGES.map(b => `<label style="display:flex; align-items:center; gap:5px; font-size:0.8rem;"><input type="checkbox" data-b="${b.id}" ${have.includes(b.id) ? 'checked' : ''}>${badgeSvg(b, 20)} ${esc(b.t)}</label>`).join('')}</div>
+            <button class="btn btn-primary btn-sm" data-save-badges>Mentés</button></div>`; }).join('');
+      } catch (e) { out.textContent = 'Hiba: ' + e.message; }
+    };
+    d.querySelector('#cs-badge-find').onclick = find;
+    d.querySelector('#cs-badge-q').addEventListener('keydown', (e) => { if (e.key === 'Enter') find(); });
+    d.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-save-badges]'); if (!b) return;
+      const row = b.closest('[data-uid]'); const ids = [...row.querySelectorAll('input[data-b]:checked')].map(x => x.dataset.b);
+      try { await db.collection('public_profiles').doc(row.dataset.uid).update({ badges: ids }); showToast('Jelvények elmentve.'); } catch (err) { showToast('Hiba: ' + err.message); }
+    });
+  }
+
+  // ---------- 6) Kedvencek nézet ----------
+  function favKey() { return 'cs_fav_' + (typeof getEffectiveAlbumKey === 'function' ? getEffectiveAlbumKey() : currentAlbumId); }
+  const getFavs = () => { try { return JSON.parse(lsGet(favKey(), '[]')).filter(n => Number.isInteger(n)); } catch (e) { return []; } };
+  function saveFavs(a) {
+    lsSet(favKey(), JSON.stringify(a));
+    if (currentUser && db) db.collection('users').doc(currentUser.uid).set({ ['favoritesByAlbum']: { [getEffectiveAlbumKey()]: a } }, { merge: true }).catch(() => {});
+  }
+  function ensureViews() {
+    const main = document.querySelector('main'); if (!main) return;
+    if (!document.getElementById('view-kedvencek')) {
+      const s = document.createElement('section'); s.id = 'view-kedvencek'; s.className = 'view';
+      s.innerHTML = `<h2>Kedvenceim</h2>
+        <p class="view-intro">Jelöld meg azokat a tételeket, amikre kiemelten vadászol (pl. <em>12, 45, 88</em>). Megmutatjuk, kinél van belőlük dupla – a legközelebbi gyűjtők elöl.</p>
+        <div style="display:flex; gap:6px; margin:8px 0;"><input id="cs-fav-input" class="input-field" placeholder="Sorszámok vesszővel…" style="flex:1;"><button class="btn btn-primary btn-sm" id="cs-fav-add">Hozzáadás</button></div>
+        <div id="cs-fav-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
+        <div id="cs-fav-results"></div>`;
+      main.appendChild(s);
+      s.addEventListener('click', (e) => {
+        if (e.target.closest('#cs-fav-add')) {
+          const nums = (document.getElementById('cs-fav-input').value.match(/\d+/g) || []).map(Number).filter(n => n >= 1 && n <= getActiveAlbumSize());
+          const cur = new Set(getFavs()); nums.forEach(n => cur.add(n));
+          saveFavs([...cur].sort((a, b) => a - b)); document.getElementById('cs-fav-input').value = ''; renderFavs();
+        }
+        const rm = e.target.closest('[data-fav-rm]');
+        if (rm) { saveFavs(getFavs().filter(n => n !== +rm.dataset.favRm)); renderFavs(); }
+        if (e.target.closest('#cs-fav-reload')) { csCommunityAlbum = null; loadFavCommunity(true); }
+      });
+    }
+    if (!document.getElementById('view-gyik')) {
+      const s = document.createElement('section'); s.id = 'view-gyik'; s.className = 'view';
+      const QA = [
+        ['Mi ez az oldal, és mennyibe kerül?', 'A Cserélj Okosan ingyenes matrica-, kártya- és figuracsere platform gyűjtőknek. Nincs előfizetés, nincs rejtett költség.'],
+        ['Hogyan találok cserepartnert?', 'Jelöld be a gyűjteményedben, mi hiányzik és miből van duplád. A Cserék és a Kereső nézet megmutatja, kivel tudtok kölcsönösen cserélni – a legközelebbiek elöl.'],
+        ['Mit csinál a matricaszkenner?', 'Lefényképezed a matricák hátoldalát vagy a számlistát, és az app felismeri a sorszámokat. Ellenőrizd az eredményt mentés előtt.'],
+        ['Mi az a Facebook-poszt elemző?', 'Ha egy csoportban csereposztot látsz (VAN/KELL lista), a képéből vagy szövegéből kiolvassa a számokat, és összeveti a te listáddal.'],
+        ['Hogyan zárom le a cserét?', 'A Cserék nézetben a csere kártyán „Lezárom”. Mindkét félnek külön le kell zárnia: nála is átvezetődnek a tételek, és értékelhetitek egymást.'],
+        ['Mit jelent a zárolás?', 'Ha megállapodtatok egy cseréről, a felajánlott tételek „foglalva” lesznek, így nem ígéred oda másnak. A lezáráskor automatikusan feloldódnak.'],
+        ['Mi a Közös kalap?', 'Itt felajánlhatsz tételeket rászoruló osztályoknak, ovisoknak. A felajánlók jelvényt kaphatnak.'],
+        ['Hogyan véditek az adataimat?', 'Pontos címedet senki nem látja, csak a településedet. A GPS-t csak a közeli partnerek keresésére kérjük, és te döntesz róla. Az e-mail címedet csak akkor mutatjuk, ha engedélyezed.'],
+        ['Hogyan jelezhetek hibás értékelést vagy hozzászólást?', 'Az értékeléseknél a „Jelentem” gombbal. Az admin megnézi, és szükség esetén moderálja.'],
+        ['Hiányzik az albumom. Mit tegyek?', 'Javasold az albumot a Hubon az „Album javaslat” gombbal, vagy írj az adminnak.']
+      ];
+      s.innerHTML = `<h2>Gyakori kérdések</h2>` + QA.map(([q, a]) => `<details class="card" style="margin-bottom:8px; padding:10px 12px;"><summary style="cursor:pointer; font-weight:700;">${esc(q)}</summary><p style="margin:8px 0 0; line-height:1.5; font-size:0.9rem;">${esc(a)}</p></details>`).join('');
+      main.appendChild(s);
+    }
+  }
+  async function loadFavCommunity(force) {
+    if (!currentUser) return;
+    try { if (typeof csLoadCommunity === 'function' && (force || csCommunityAlbum !== currentAlbumId)) await csLoadCommunity(currentAlbumId); } catch (e) {}
+    renderFavs();
+  }
+  function renderFavs() {
+    const chips = document.getElementById('cs-fav-chips'), res = document.getElementById('cs-fav-results'); if (!chips || !res) return;
+    const favs = getFavs();
+    const myVan = new Set(ensureArray(safeJsonParse(`lutra_van_${currentAlbumId}`, [])));
+    const myKell = new Set(ensureArray(safeJsonParse(`lutra_kell_${currentAlbumId}`, [])));
+    chips.innerHTML = favs.length ? favs.map(n => `<span style="display:inline-flex; align-items:center; gap:6px; background:rgba(216,155,74,.18); border:1px solid var(--amber); border-radius:999px; padding:3px 10px; font-weight:700;">${esc(typeof getItemLabel === 'function' ? getItemLabel(n) : '#' + n)}${myKell.has(n) ? ' <span style="font-weight:400; opacity:.75;">hiányzik</span>' : (myVan.has(n) ? ' <span style="font-weight:400; opacity:.75;">dupla</span>' : '')}<button data-fav-rm="${n}" aria-label="Törlés" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button></span>`).join('') : '<span style="opacity:.7;">Még nincs kedvenc tételed.</span>';
+    if (!favs.length) { res.innerHTML = ''; return; }
+    if (!currentUser) { res.innerHTML = '<div class="notice-banner">Az eredményekhez lépj be.</div>'; return; }
+    const loaded = csCommunityAlbum === currentAlbumId && Array.isArray(allUsersData) && allUsersData.length;
+    if (!loaded) { res.innerHTML = '<p style="opacity:.7;">Eredmények betöltése…</p>'; loadFavCommunity(false); return; }
+    const me = currentUser.uid;
+    const geo = myGpsCoords;
+    const dist = (u) => { try { return geo && u.geo ? calculateDistanceKm(geo.lat, geo.lng, u.geo.lat, u.geo.lng) : null; } catch (e) { return null; } };
+    res.innerHTML = favs.map(n => {
+      const owners = allUsersData.filter(u => u.id !== me && u.van.includes(n)).map(u => ({ u, d: dist(u) }))
+        .sort((a, b) => (a.d == null) - (b.d == null) || (a.d || 0) - (b.d || 0)).slice(0, 6);
+      return `<div style="background:rgba(0,0,0,.2); border-radius:12px; padding:10px 12px; margin-bottom:8px;"><strong>${esc(typeof getItemLabel === 'function' ? getItemLabel(n) : '#' + n)}</strong> – ${owners.length ? owners.length + (allUsersData.filter(u => u.id !== me && u.van.includes(n)).length > 6 ? '+' : '') + ' gyűjtőnél dupla' : 'most senkinél nincs dupla'}
+        ${owners.map(o => `<div style="font-size:0.84rem; margin-top:4px;">${esc(o.u.nev)} · ${esc(o.u.telepules || '')}${o.d != null ? ' · ~' + Math.round(o.d) + ' km' : ''}</div>`).join('')}</div>`;
+    }).join('') + '<button class="btn btn-secondary btn-sm" id="cs-fav-reload">Gyűjtők frissítése</button>';
+  }
+
+  // ---------- 7) GPS-kérés, releváns helyen ----------
+  let gpsAsked = false;
+  function askGps(reason) {
+    if (myGpsCoords || gpsAsked || !currentUser || document.getElementById('cs-gps-modal')) return;
+    if (lsGet('cs_gps_declined', '') === String(new Date().toISOString().slice(0, 7))) return;
+    gpsAsked = true;
+    const m = document.createElement('div'); m.id = 'cs-gps-modal';
+    m.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
+    m.innerHTML = `<div style="background:var(--sand,#F3EEDF); color:#0D2E2C; max-width:380px; width:100%; border-radius:14px; padding:18px;">
+      <h3 style="margin:0 0 6px;">Megmutathatod, hol vagy?</h3>
+      <p style="margin:0 0 12px; line-height:1.45; font-size:0.9rem;">${esc(reason)} A pontos helyedet <strong>senki nem látja</strong>, csak a távolságot számoljuk vele. Bármikor kikapcsolhatod a profilban.</p>
+      <div style="display:flex; gap:8px; justify-content:flex-end;"><button class="btn btn-secondary btn-sm" id="cs-gps-no">Most nem</button><button class="btn btn-primary btn-sm" id="cs-gps-yes">Engedélyezem</button></div></div>`;
+    document.body.appendChild(m);
+    m.querySelector('#cs-gps-no').onclick = () => { lsSet('cs_gps_declined', new Date().toISOString().slice(0, 7)); m.remove(); };
+    m.querySelector('#cs-gps-yes').onclick = () => { m.remove(); requestGpsLocation(() => {}); };
+  }
+  function suggestCity() {
+    if (!myGpsCoords || !document.getElementById('view-profil')?.classList.contains('active')) return;
+    let best = null, bd = 1e9;
+    Object.entries(CITY_COORDINATES).forEach(([k, c]) => { if (/_\d+$/.test(k)) return; const d = calculateDistanceKm(myGpsCoords.lat, myGpsCoords.lng, c.lat, c.lng); if (d != null && d < bd) { bd = d; best = k; } });
+    if (!best || bd > 25) return;
+    const opts = [...document.querySelectorAll('#hungarian-cities-list option')].map(o => o.value);
+    const name = opts.find(o => norm(o) === best) || best.charAt(0).toUpperCase() + best.slice(1);
+    if (confirm(`A helyzeted alapján ${name} közelében vagy. Beállítsam ezt a települést az 1. helyszínnek?`)) {
+      const inp = document.querySelector('#profile-locations-list .profile-location-input'); if (inp) { inp.value = name; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); }
+    }
+  }
+  const _rg = requestGpsLocation;
+  window.requestGpsLocation = requestGpsLocation = function (cb) { _rg(function (ok) { if (ok) setTimeout(suggestCity, 300); if (cb) cb(ok); }); };
+
+  // ---------- nézetváltás ----------
+  const _p6 = switchView;
+  window.switchView = switchView = function (v) {
+    if (v === 'kedvencek' || v === 'gyik') ensureViews();
+    _p6(v);
+    try {
+      if (v === 'kedvencek' || v === 'gyik') {
+        document.querySelectorAll('.primary-tab').forEach(b => b.classList.remove('active'));
+        ['subnav-matricaim', 'subnav-cserebere', 'subnav-radar', 'subnav-profil'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        const mn = document.getElementById('main-primary-nav'); if (mn) mn.style.display = 'grid';
+      }
+      if (v === 'kedvencek') renderFavs();
+      if (v === 'uzeneteim') setTimeout(renderRetroBanner, 400);
+      if (v === 'profil') { setTimeout(renderMyBadges, 500); }
+      if (v === 'admin') setTimeout(renderAdminBadges, 120);
+      if (v === 'hub') addTrackedNote();
+      if (v === 'statisztika') setTimeout(() => askGps('Így a térképen és a keresőben a hozzád legközelebbi cserepartnereket mutathatjuk elöl.'), 1500);
+      if (v === 'kereso') setTimeout(() => askGps('A közeli cserepartnerek listájához szükségünk van a helyzetedre.'), 1200);
+    } catch (e) { console.warn(e); }
+  };
+  document.addEventListener('DOMContentLoaded', () => { ensureViews(); addTrackedNote(); });
+  if (document.readyState !== 'loading') { ensureViews(); addTrackedNote(); }
+  new MutationObserver(addTrackedNote).observe(document.body, { childList: true, subtree: true });
 })();
