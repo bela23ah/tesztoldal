@@ -930,9 +930,9 @@ function expandCustomItemsText(rawText) {
   
   tokens.forEach(tok => {
     // "LE1-LE10" / "SSG1 - SSG3" forma
-    const dblPfx = tok.match(/^([A-Za-z]+)\s*(\d+)\s*[\-—–]\s*\1\s*(\d+)$/i);
-    if (dblPfx) {
-      const a = parseInt(dblPfx[2], 10), b = parseInt(dblPfx[3], 10);
+    const dblPfx = tok.match(/^([A-Za-z]+(?:\s+[A-Za-z]+)*)\s*(\d+)\s*[\-—–]\s*([A-Za-z]+(?:\s+[A-Za-z]+)*)\s*(\d+)$/);
+    if (dblPfx && dblPfx[1].replace(/\s+/g, '').toUpperCase() === dblPfx[3].replace(/\s+/g, '').toUpperCase()) {
+      const a = parseInt(dblPfx[2], 10), b = parseInt(dblPfx[4], 10);
       for (let i = Math.min(a, b); i <= Math.max(a, b); i++) items.push(`${dblPfx[1]}${i}`);
       return;
     }
@@ -1009,11 +1009,18 @@ function parseChaptersText(rawText, customItems = [], customNames = []) {
   // egy "tól-ig" szakasz feloldása: 1-191 | P1-8 | LE1-LE10 | P1 – P8 | 7
   const resolveSpan = (span) => {
     const out = [];
-    const m = span.trim().match(/^([A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű]*)\s*(\d+)\s*(?:[\-—–]+\s*([A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű]*)\s*(\d+))?$/);
+    const t = span.trim();
+    // önálló kód számjegy nélkül (pl. CC): egyetlen tétel
+    if (/^[A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű][A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű\s]*$/.test(t)) {
+      const k = pos[t.replace(/\s+/g, '').toUpperCase()];
+      return k ? [k] : null;
+    }
+    const L = 'A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű';
+    const m = t.match(new RegExp('^([' + L + '\\s]*?)\\s*(\\d+)\\s*(?:[\\-—–]+\\s*([' + L + '\\s]*?)\\s*(\\d+))?$'));
     if (!m) return null;
-    const p1 = (m[1] || '').toUpperCase();
+    const p1 = (m[1] || '').replace(/\s+/g, '').toUpperCase();
     const a = parseInt(m[2], 10);
-    const p2 = (m[3] || p1).toUpperCase();
+    const p2 = (m[3] || p1).replace(/\s+/g, '').toUpperCase();
     const b = m[4] !== undefined ? parseInt(m[4], 10) : a;
     const lo = Math.min(a, b), hi = Math.max(a, b);
     if (p1 !== p2) return null;
@@ -1555,11 +1562,13 @@ function renderHub() {
       const matchTitle = (album.title || '').toLowerCase().includes(query);
       const matchPub = (album.publisher || '').toLowerCase().includes(query);
       const matchYear = String(album.year || '').includes(query);
-      if (!matchTitle && !matchPub && !matchYear) return false;
+      const matchSub = (album.subtitle || '').toLowerCase().includes(query);
+      const matchDesc = (album.description || '').toLowerCase().includes(query);
+      if (!matchTitle && !matchPub && !matchYear && !matchSub && !matchDesc) return false;
     }
 
-    if (currentHubFilter === 'sticker') return album.type === 'sticker';
-    if (currentHubFilter === 'card') return album.type === 'card';
+    if (currentHubFilter === 'sticker') return album.type === 'sticker' || album.type === 'mixed';
+    if (currentHubFilter === 'card') return album.type === 'card' || album.type === 'mixed';
     if (currentHubFilter === 'figure') {
       return album.type === 'figure' || album.type === 'kinder' || (album.title && /kinder|figura/i.test(album.title));
     }
@@ -2263,7 +2272,7 @@ function compactItemLabels(nums, albumId = currentAlbumId) {
 
 function autoAlbumDescription(album) {
   if (!album) return '';
-  const word = album.type === 'card' ? 'kártyából' : (album.type === 'figure' || album.type === 'kinder') ? 'figurából' : 'matricából';
+  const word = album.type === 'mixed' ? 'tételből' : album.type === 'card' ? 'kártyából' : (album.type === 'figure' || album.type === 'kinder') ? 'figurából' : 'matricából';
   const n = album.totalItems || 0;
   const chs = (album.customChaptersList || []).map(c => c.cim).filter(Boolean);
   let t = `${album.title}${album.publisher ? ` – ${album.publisher}` : ''}${album.year ? `, ${album.year}` : ''}: ${n} ${word} álló gyűjtemény`;
@@ -2288,7 +2297,7 @@ function renderAlbumMore() {
     <h3 class="am-title">${escapeHtml(album.title || 'Gyűjtemény')}</h3>
     <p class="am-meta">${[album.publisher, album.year, `${total} tétel`, typeLabel].filter(Boolean).map(escapeHtml).join(' · ')}</p>
     ${desc ? `<div class="am-desc" style="white-space:pre-wrap;">${formatLinksWithAnchors(escapeHtml(desc))}</div>` : `<p class="am-desc am-desc-auto">${escapeHtml(autoAlbumDescription(album))}${isAdmin ? '<br><em>(Admin: a saját leírást a gyűjtemény szerkesztőjében adhatod meg.)</em>' : ''}</p>`}
-    ${(() => { const imgs = [...new Set([...(album.descImages || []), ...[1,2,3,4,5,6].map(n => `covers/${currentAlbumId}_${n}.webp`)])]; return `<div style="display:flex; gap:8px; overflow-x:auto; margin:${imgs.length ? 8 : 0}px 0;">${imgs.map(u => `<img src="${escapeHtml(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" style="height:120px; border-radius:10px; flex:0 0 auto;">`).join('')}</div>`; })()}
+    ${(() => { const imgs = [...new Set([...(album.descImages || []), ...[1,2,3,4,5,6].map(n => `covers/${currentAlbumId}_${n}.webp`)])]; return `<div style="display:flex; gap:8px; overflow-x:auto; margin:${imgs.length ? 8 : 0}px 0;">${imgs.map(u => `<img class="cs-zoom" src="${escapeHtml(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" style="height:120px; border-radius:10px; flex:0 0 auto; cursor:zoom-in;">`).join('')}</div>`; })()}
     ${chips}
     <div class="am-actions">
       <button class="btn btn-secondary btn-sm" id="btn-open-print-sheet">Nyomtatható lista</button>
@@ -7531,7 +7540,7 @@ safeAddListener('btn-admin-import-json', async () => {
         const totalItems = parseInt(alb.totalItems || alb.total_stickers || '100', 10);
         const year = parseInt(alb.year || '2026', 10);
         const type = alb.type || 'sticker';
-        const typeLabel = alb.typeLabel || (type === 'card' ? 'Kártya' : type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum');
+        const typeLabel = alb.typeLabel || (type === 'mixed' ? 'Matrica + kártya' : type === 'card' ? 'Kártya' : type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum');
 
         const docRef = db.collection("albums").doc(id);
         const payload = {
@@ -7839,7 +7848,7 @@ async function executeSaveAlbum(publishActive) {
   const radarType = document.getElementById('admin-album-radar-type')?.value || 'none';
   const hasChapters = (document.getElementById('admin-album-has-chapters')?.checked || false);
   const description = (document.getElementById('admin-album-description')?.value || '').trim();
-  const descImages = (document.getElementById('admin-album-desc-images')?.value || '').split(/\r?\n/).map(x => x.trim()).filter(x => /^(https?:\/\/|covers\/|img\/)/i.test(x)).slice(0, 12);
+  const descImages = (document.getElementById('admin-album-desc-images')?.value || '').split(/\r?\n/).map(x => x.trim()).map(x => /^[\w\-.]+\.(webp|png|jpe?g)$/i.test(x) ? 'covers/' + x : x).filter(x => /^(https?:\/\/|covers\/|img\/)/i.test(x)).slice(0, 12);
 
   const customItemsRaw = document.getElementById('admin-album-custom-items')?.value.trim() || '';
   const customNamesRaw = document.getElementById('admin-album-custom-names')?.value.trim() || '';
@@ -7858,7 +7867,7 @@ async function executeSaveAlbum(publishActive) {
   if (finalTotal < 1) return showToast("Kérlek add meg a darabszámot!");
 
   const customChaptersList = parseChaptersText(customChaptersRaw, customItems, customNames);
-  const typeLabel = type === 'sticker' ? 'Matricaalbum' : type === 'card' ? 'Kártya' : 'Figura / Kinder';
+  const typeLabel = type === 'mixed' ? 'Matrica + kártya' : type === 'sticker' ? 'Matricaalbum' : type === 'mixed' ? 'Matrica + kártya' : type === 'card' ? 'Kártya' : 'Figura / Kinder';
   const existingCover = csCover(ALBUMS_REGISTRY[editingAlbumId || newId]?.coverUrl, `covers/${newId}.webp`);
 
   try {
@@ -8020,7 +8029,7 @@ function renderAdminAlbumPreview() {
   const publisher = val('admin-album-publisher');
   const year = val('admin-album-year');
   const type = val('admin-album-type') || 'sticker';
-  const typeLabel = type === 'card' ? 'Kártya' : type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum';
+  const typeLabel = type === 'mixed' ? 'Matrica + kártya' : type === 'card' ? 'Kártya' : type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum';
   const cover = adminAlbumCoverBase64 || csCover(val('admin-album-cover-url'), '') || csCover(ALBUMS_REGISTRY[editingAlbumId || id]?.coverUrl, '') || 'logo-emblem.png';
   const labelOf = (n) => items[n - 1] || String(n);
   const nameOf = (n) => names[n - 1] || '';
@@ -8563,7 +8572,7 @@ function listenToAlbumsFull() {
         year: data.year || 2026,
         totalItems: data.totalItems || 100,
         type: data.type || 'sticker',
-        typeLabel: data.typeLabel || (data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
+        typeLabel: data.typeLabel || (data.type === 'mixed' ? 'Matrica + kártya' : data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
         coverUrl: csCover(data.coverUrl, `covers/${doc.id}.webp`),
         featured: data.featured === true,
         isRetro: data.year > 0 ? csIsRetroYear(data.year) : data.isRetro === true,
@@ -11063,4 +11072,51 @@ try {
   document.addEventListener('DOMContentLoaded', () => { ensureViews(); addTrackedNote(); });
   if (document.readyState !== 'loading') { ensureViews(); addTrackedNote(); }
   new MutationObserver(addTrackedNote).observe(document.body, { childList: true, subtree: true });
+})();
+
+// =========================================================================
+// v14b: nagyítás, vegyes típus, ismertetőkép-segéd
+// =========================================================================
+(function () {
+  // Képnagyítás (album borító + ismertető fotók)
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest && e.target.closest('img.cs-zoom, #active-album-thumb');
+    if (!img || !img.src) return;
+    e.preventDefault(); e.stopPropagation();
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed; inset:0; z-index:100001; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; padding:12px; cursor:zoom-out;';
+    ov.innerHTML = '<img src="' + img.src.replace(/"/g, '&quot;') + '" alt="" style="max-width:100%; max-height:100%; border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,.6);">';
+    ov.addEventListener('click', () => ov.remove());
+    document.addEventListener('keydown', function esc(k) { if (k.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', esc); } });
+    document.body.appendChild(ov);
+  }, true);
+  const addZoomStyle = () => {
+    if (document.getElementById('cs-zoom-style')) return;
+    const st = document.createElement('style'); st.id = 'cs-zoom-style';
+    st.textContent = '#active-album-thumb{cursor:zoom-in}';
+    document.head.appendChild(st);
+  };
+  addZoomStyle();
+
+  // Vegyes típus + ismertetőkép-segéd az admin szerkesztőben
+  function patchAdminForm() {
+    document.querySelectorAll('#admin-album-type, #suggest-album-type').forEach(sel => {
+      if (!sel.querySelector('option[value="mixed"]')) {
+        const o = document.createElement('option'); o.value = 'mixed'; o.textContent = 'Vegyes (matrica + kártya)'; sel.appendChild(o);
+      }
+    });
+    const ta = document.getElementById('admin-album-desc-images');
+    if (ta && !document.getElementById('cs-desc-img-helper')) {
+      const h = document.createElement('div'); h.id = 'cs-desc-img-helper'; h.style.cssText = 'margin-top:4px; font-size:0.75rem;';
+      h.innerHTML = '<button type="button" class="btn btn-secondary btn-sm" id="cs-desc-img-add">+ Következő kép az album ID-ja alapján</button> <span style="opacity:.7;">Elég a fájlnév is (pl. <code>moomin_1.webp</code>), a <code>covers/</code> előtagot magunktól pótoljuk.</span>';
+      ta.insertAdjacentElement('afterend', h);
+      h.querySelector('#cs-desc-img-add').onclick = () => {
+        const id = (document.getElementById('admin-album-id')?.value || '').toLowerCase().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '') || '{album_id}';
+        const lines = ta.value.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+        ta.value = lines.concat(`covers/${id}_${lines.length + 1}.webp`).join('\n');
+      };
+    }
+  }
+  new MutationObserver(patchAdminForm).observe(document.body, { childList: true, subtree: true });
+  patchAdminForm();
 })();
