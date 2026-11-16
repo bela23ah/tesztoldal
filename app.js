@@ -1,3 +1,66 @@
+// ===== Darabszám-értelmező (szkenner szövege, Facebook-poszt, kézi bevitel) =====
+const CS_NUMWORDS = { egy: 1, egyet: 1, ketto: 2, kettő: 2, ket: 2, két: 2, harom: 3, három: 3, negy: 4, négy: 4, ot: 5, öt: 5, hat: 6, het: 7, hét: 7, nyolc: 8, kilenc: 9, tiz: 10, tíz: 10 };
+function csWordQty(w) {
+  w = String(w || '').toLowerCase().trim();
+  if (/^\d+$/.test(w)) return parseInt(w, 10);
+  return CS_NUMWORDS[w] || CS_NUMWORDS[w.normalize('NFD').replace(/[̀-ͯ]/g, '')] || 0;
+}
+// Csoportcímsor: "amiből kettő van:", "két példány:", "kettő van belőle", "3 db:", "dupláim kettő:"
+const CS_GROUP_RE = /(?:^|[\s(])(?:amib[őo]l|mindb[őo]l|ezekb[őo]l|dupl[aá]im|dupl[aá]k|plusz|van)?\s*(\d+|egy|kett[őo]|k[ée]t|h[áa]rom|n[ée]gy|[öo]t|hat|h[ée]t|nyolc|kilenc|t[ií]z)\s*(?:db|darab|p[ée]ld[áa]ny(?:ban|ból|bol)?|p[ée]ld[áa]nyom|van|megvan)?\s*(?:van|megvan)?\s*(?:bel[őo]le|ebb[őo]l|mindb[őo]l|bel[őo]l[üu]k)?\s*$/i;
+const CS_GROUP_KEYWORD = /(p[ée]ld[áa]ny|\bdb\b|darab|bel[őo]le|amib[őo]l|ezekb[őo]l|mindb[őo]l|\bvan\b|megvan)/i;
+function csDetectHeading(line) {
+  // visszaad: { qty, rest } ha a sor csoport-címsor (rest = a címsor utáni tételek), különben null
+  const m = line.match(/^([^:]{2,60}):\s*(.*)$/);
+  if (m && CS_GROUP_KEYWORD.test(m[1]) && !/\d{3,}/.test(m[1])) {
+    const hm = m[1].match(CS_GROUP_RE);
+    if (hm && csWordQty(hm[1])) return { qty: csWordQty(hm[1]), rest: m[2] };
+  } else if (!/\d{2,}/.test(line) || /^(amib|két|kett|\d+\s*(db|darab|p[ée]ld))/i.test(line)) {
+    const hm = line.match(CS_GROUP_RE);
+    if (hm && CS_GROUP_KEYWORD.test(line) && csWordQty(hm[1]) && !/[,;]/.test(line)) return { qty: csWordQty(hm[1]), rest: '' };
+  }
+  return null;
+}
+// A csoport-címsorokat számonkénti darabszámra bontja ("Amiből kettő van: 2, 5" -> "Van: 2 (2db), 5 (2db)")
+function csExpandGroups(raw) {
+  let group = 1; const out = [];
+  String(raw || '').split(/\r?\n/).forEach(l0 => {
+    const line = l0.trim();
+    if (!line) { group = 1; out.push(''); return; }
+    const h = csDetectHeading(line);
+    let body = line;
+    if (!h && /^[^\d:]{2,30}:/.test(line)) group = 1;
+    if (h) { group = h.qty; body = h.rest; if (!body.trim()) { out.push('Van:'); return; } out.push('Van: ' + tag(body)); return; }
+    out.push(group > 1 ? tag(body) : body);
+  });
+  return out.join('\n');
+  function tag(txt) {
+    return txt.split(/\s*[,;]\s*/).map(t => t.trim()).filter(Boolean).map(t => /\(|db|darab|[x*×]\s*\d/i.test(t) ? t : `${t} (${group}db)`).join(', ');
+  }
+}
+function csParseQty(raw, maxItem) {
+  const max = maxItem || 5000;
+  const out = {};
+  let group = 1;
+  const add = (n, q) => { if (n >= 1 && n <= max && q > 0) out[n] = (out[n] || 0) + q; };
+  const item = /#?\s*(\d{1,4})(?:\s*[-–—]\s*#?\s*(\d{1,4}))?(?:\s*\(\s*(\d{1,2})\s*(?:db|darab|p[ée]ld[áa]ny)?\s*\)|\s*[x*×]\s*(\d{1,2})(?![\d])|\s+(\d{1,2})\s*(?:db|darab|p[ée]ld[áa]ny)\b|(\d{1,2})\s*(?:db|darab)\b)?/gi;
+  String(raw || '').split(/\r?\n/).forEach(line0 => {
+    let line = line0.trim();
+    if (!line) { group = 1; return; }
+    const h = csDetectHeading(line);
+    if (!h && /^[^\d:]{2,30}:/.test(line)) group = 1;
+    if (h) { group = h.qty; line = h.rest; if (!line.trim()) return; }
+    let mm; item.lastIndex = 0;
+    while ((mm = item.exec(line)) !== null) {
+      const a = parseInt(mm[1], 10), b = mm[2] ? parseInt(mm[2], 10) : null;
+      const q = parseInt(mm[3] || mm[4] || mm[5] || mm[6] || '0', 10) || group;
+      if (b !== null) { for (let n = Math.min(a, b); n <= Math.max(a, b); n++) add(n, q); }
+      else add(a, q);
+      if (mm[0].length === 0) item.lastIndex++;
+    }
+  });
+  return out;
+}
+
 // =========================================================================
 // Cserélj Okosan (csereljokosan.hu) - app.js (v4.7 ÉLES KIADÁS)
 // 1 / 5. RÉSZ: ALAPARCHITEKTÚRA, ADATMODELL, CSALÁDI FÜZETEK & HUB MOTOR
@@ -321,6 +384,7 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     gdprAccepted,
     isVacation,
     trustScore,
+    badges: Array.isArray(data.badges) ? data.badges : [],
     ratingsCount,
     recentReviews,
     updatedAt,
@@ -2877,45 +2941,8 @@ safeAddListener('btn-close-batch-box', () => {
 });
 
 function parseBatchInput(raw) {
-  const tokens = raw.split(/[\s,;]+/);
-  const parsed = {};
   const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
-
-  tokens.forEach(t => {
-    t = t.trim();
-    if (!t) return;
-
-    const rangeMatch = t.match(/^(\d+)[\s\-—–]+(\d+)(?:[*xX](\d+))?$/);
-    if (rangeMatch) {
-      const start = parseInt(rangeMatch[1], 10);
-      const end = parseInt(rangeMatch[2], 10);
-      const qty = parseInt(rangeMatch[3] || '1', 10);
-      const min = Math.min(start, end);
-      const max = Math.max(start, end);
-
-      for (let num = min; num <= max; num++) {
-        if (num >= 1 && num <= maxLimit && qty > 0) {
-          parsed[num] = (parsed[num] || 0) + qty;
-        }
-      }
-      return;
-    }
-
-    const multMatch = t.match(/^(\d+)[*xX](\d+)$/);
-    if (multMatch) {
-      const num = parseInt(multMatch[1], 10);
-      const qty = parseInt(multMatch[2], 10);
-      if (num >= 1 && num <= maxLimit && qty > 0) parsed[num] = (parsed[num] || 0) + qty;
-      return;
-    }
-
-    const num = parseInt(t.replace(/[^\d]/g, ''), 10);
-    if (!isNaN(num) && num >= 1 && num <= maxLimit) {
-      parsed[num] = (parsed[num] || 0) + 1;
-    }
-  });
-
-  return parsed;
+  return csParseQty(raw, maxLimit);
 }
 
 safeAddListener('btn-apply-batch-van', () => {
@@ -4222,6 +4249,7 @@ function getEffectiveContactGive() {
 }
 let fbMatchUploadedBase64 = '';
 let scannerRecognizedNums = [];
+let scannerQty = {};
 
 // =========================================================================
 // FOTÓS SZÁMSZKENNER LOGIKÁJA & DRAG-AND-DROP TÁMOGATÁS
@@ -4232,6 +4260,7 @@ safeAddListener('btn-open-scanner', () => {
 });
 
 function closeScannerModal() {
+  scannerQty = {};
   document.getElementById('modal-scanner')?.classList.remove('open');
   if (document.getElementById('scanner-results-box')) document.getElementById('scanner-results-box').style.display = 'none';
   if (document.getElementById('scanner-loader')) document.getElementById('scanner-loader').style.display = 'none';
@@ -4281,8 +4310,15 @@ async function processScannerImageWithProxy(base64Data) {
     let data;
     try { data = await res.json(); } catch (parseErr) { throw new Error("A képfelismerő szerver hibát adott."); }
     if (!res.ok) throw new Error(data.error || "Hiba történt a kép beolvasásakor.");
-    scannerRecognizedNums = ensureArray(data.numbers).sort((a, b) => a - b);
+    scannerQty = {};
+    if (Array.isArray(data.items) && data.items.length) {
+      data.items.forEach(it => { const n = parseInt(it && it.n, 10), c = Math.max(1, Math.min(99, parseInt(it && it.count, 10) || 1)); if (n > 0) scannerQty[n] = (scannerQty[n] || 0) + c; });
+      scannerRecognizedNums = Object.keys(scannerQty).map(Number).sort((a, b) => a - b);
+    } else {
+      scannerRecognizedNums = ensureArray(data.numbers).sort((a, b) => a - b);
+    }
     renderScannerTags();
+    if (Object.values(scannerQty).some(q => q > 1)) showToast('Ellenőrizd a felismert darabszámokat (+/−).');
   } catch (err) {
     showToast('Hiba: ' + err.message);
   } finally {
@@ -4305,6 +4341,7 @@ function renderScannerTags() {
   box.innerHTML = scannerRecognizedNums.map((num, idx) => `
     <span style="background:var(--water-mid); padding:2px 8px; border-radius:999px; font-size:0.8rem; display:inline-flex; align-items:center; gap:4px; border:1px solid var(--amber);">
       ${escapeHtml(getItemLabel(num))}
+      <span style="display:inline-flex; align-items:center; gap:3px; background:rgba(0,0,0,.25); border-radius:999px; padding:0 4px;"><span data-qty-dec="${idx}" style="cursor:pointer; padding:0 3px;">−</span><strong>×${scannerQty[num] || 1}</strong><span data-qty-inc="${idx}" style="cursor:pointer; padding:0 3px;">+</span></span>
       <span data-del-idx="${idx}" style="cursor:pointer; color:var(--danger); font-weight:bold;">✕</span>
     </span>
   `).join('');
@@ -4312,9 +4349,16 @@ function renderScannerTags() {
 }
 
 safeAddListener('scanner-tags-box', 'click', (e) => {
+  const incB = e.target.closest('[data-qty-inc]'), decB = e.target.closest('[data-qty-dec]');
+  if (incB || decB) {
+    const n = scannerRecognizedNums[parseInt((incB || decB).dataset[incB ? 'qtyInc' : 'qtyDec'], 10)];
+    if (n) { scannerQty[n] = Math.max(1, Math.min(99, (scannerQty[n] || 1) + (incB ? 1 : -1))); renderScannerTags(); }
+    return;
+  }
   const delBtn = e.target.closest('[data-del-idx]');
   if (!delBtn) return;
   const idx = parseInt(delBtn.dataset.delIdx, 10);
+  delete scannerQty[scannerRecognizedNums[idx]];
   scannerRecognizedNums.splice(idx, 1);
   renderScannerTags();
 });
@@ -4341,11 +4385,12 @@ safeAddListener('btn-scanner-save-van', () => {
     if (kIdx > -1) myProfile.kell.splice(kIdx, 1);
     const fIdx = myProfile.foglalva.indexOf(num);
     if (fIdx > -1) myProfile.foglalva.splice(fIdx, 1);
-    myProfile.vanCounts[num] = (myProfile.vanCounts[num] || 0) + 1;
+    myProfile.vanCounts[num] = (myProfile.vanCounts[num] || 0) + (scannerQty[num] || 1);
   });
+  const csTot = scannerRecognizedNums.reduce((a, n) => a + (scannerQty[n] || 1), 0), csCnt = scannerRecognizedNums.length;
   saveMyState();
   closeScannerModal();
-  showToast(`${scannerRecognizedNums.length} db tétel mentve a Duplákhoz.`);
+  showToast(`${csCnt} tétel (${csTot} db) mentve a Duplákhoz.`);
 });
 
 safeAddListener('btn-scanner-save-kell', () => {
@@ -4818,39 +4863,73 @@ safeAddListener('fb-match-camera-input', (e) => processFbImageFile(e.target.file
 safeAddListener('fb-match-file-input', (e) => processFbImageFile(e.target.files[0]));
 
 function parseFacebookPostText(rawText) {
-  let otherHas = [];
-  let otherNeeds = [];
-
-  const HAS_KW = /(?:^|\s|[,;\n])(?:van|dupla|dupl[aá]k?|cser[eé]k?|cserematric[aá]k?|adom|adok|cser[eé]lem|plusz|plussz|tudok adni|tudunk adni|k[íi]n[aá]l|felesleg)[:\s\-—–]*/i;
+  const maxLimit = typeof getActiveAlbumSize === 'function' ? getActiveAlbumSize() : 2000;
+  const Q = (txt) => csParseQty(txt, maxLimit);
+  const HAS_KW = /(?:^|\s|[,;\n])(?:van|dupla|dupl[aá]k?|dupl[aá]im|cser[eé]k?|cserematric[aá]k?|cser[eé]be adom|adom|adok|cser[eé]lem|plusz|plussz|tudok adni|tudunk adni|k[íi]n[aá]l|felesleg)[:\s\-—–]*/i;
   const NEEDS_KW = /(?:^|\s|[,;\n])(?:kell|hi[aá]ny(?:z[oó]k?)?|k[eé]rem|keres(?:em|s[uü]k|n[eé]m)?|valakinek megvan\??|sz[uü]ks[eé]gem van|vinn[eé]k)[:\s\-—–]*/i;
-
-  const hasPos = rawText.search(HAS_KW);
-  const needsPos = rawText.search(NEEDS_KW);
-
-  if (hasPos !== -1 && needsPos !== -1) {
-    let hasChunk = '';
-    let needsChunk = '';
-    if (hasPos < needsPos) {
-      hasChunk = rawText.slice(hasPos, needsPos);
-      needsChunk = rawText.slice(needsPos);
-    } else {
-      needsChunk = rawText.slice(needsPos, hasPos);
-      hasChunk = rawText.slice(hasPos);
-    }
-    otherHas = Object.keys(parseBatchInput(hasChunk.replace(HAS_KW, ''))).map(Number);
-    otherNeeds = Object.keys(parseBatchInput(needsChunk.replace(NEEDS_KW, ''))).map(Number);
-  } else if (hasPos !== -1) {
-    otherHas = Object.keys(parseBatchInput(rawText.replace(HAS_KW, ''))).map(Number);
-  } else if (needsPos !== -1) {
-    otherNeeds = Object.keys(parseBatchInput(rawText.replace(NEEDS_KW, ''))).map(Number);
-  } else {
-    otherHas = Object.keys(parseBatchInput(rawText)).map(Number);
+  const UNK_KW = /(?:^|\s|[,;\n])ismeretlen[:\s\-—–]*/i;
+  const res = { has: [], needs: [], hasQty: {}, needsQty: {}, unknown: false, unknownQty: {} };
+  const text = csExpandGroups(String(rawText || ''));
+  const unkPos = text.search(UNK_KW);
+  if (unkPos !== -1) {
+    res.unknown = true;
+    const after = text.slice(unkPos).replace(UNK_KW, '');
+    const nxt = Math.min(...[after.search(HAS_KW), after.search(NEEDS_KW)].filter(x => x >= 0).concat([after.length]));
+    res.unknownQty = Q(after.slice(0, nxt));
+    return Object.assign(res, applyKnown(text.slice(0, unkPos) + '\n' + after.slice(nxt)));
   }
+  const known = applyKnown(text);
+  if (!known.has.length && !known.needs.length && text.search(HAS_KW) === -1 && text.search(NEEDS_KW) === -1) {
+    res.unknown = true; res.unknownQty = Q(text);
+  } else Object.assign(res, known);
+  const force = window.__csFbForce;
+  if (res.unknown && force) {
+    if (force === 'has' || force === 'both') { res.hasQty = Object.assign({}, res.unknownQty); }
+    if (force === 'needs' || force === 'both') { res.needsQty = Object.assign({}, res.unknownQty); }
+    res.has = Object.keys(res.hasQty).map(Number); res.needs = Object.keys(res.needsQty).map(Number);
+    res.unknown = false;
+  }
+  return res;
 
-  return { has: [...new Set(otherHas)], needs: [...new Set(otherNeeds)] };
+  function applyKnown(t) {
+    const hasPos = t.search(HAS_KW), needsPos = t.search(NEEDS_KW);
+    let hq = {}, nq = {};
+    if (hasPos !== -1 && needsPos !== -1) {
+      let hasChunk, needsChunk;
+      if (hasPos < needsPos) { hasChunk = t.slice(hasPos, needsPos); needsChunk = t.slice(needsPos); }
+      else { needsChunk = t.slice(needsPos, hasPos); hasChunk = t.slice(hasPos); }
+      hq = Q(hasChunk.replace(HAS_KW, '')); nq = Q(needsChunk.replace(NEEDS_KW, ''));
+    } else if (hasPos !== -1) hq = Q(t.replace(HAS_KW, ''));
+    else if (needsPos !== -1) nq = Q(t.replace(NEEDS_KW, ''));
+    return { has: Object.keys(hq).map(Number), needs: Object.keys(nq).map(Number), hasQty: hq, needsQty: nq };
+  }
+}
+
+function csFbAskIntent(postData) {
+  if (document.getElementById('cs-fb-intent')) return;
+  const nums = Object.keys(postData.unknownQty).length;
+  const m = document.createElement('div'); m.id = 'cs-fb-intent';
+  m.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
+  m.innerHTML = `<div style="background:#F3EEDF; color:#0D2E2C; max-width:400px; width:100%; border-radius:14px; padding:18px;">
+    <h3 style="margin:0 0 6px;">Mit jelent ez a lista?</h3>
+    <p style="margin:0 0 12px; font-size:.9rem; line-height:1.45;">A cetliből nem derül ki, hogy a ${nums} szám <strong>kínált (duplák)</strong>, vagy <strong>keresett (hiányzók)</strong>. Tudod?</p>
+    <div style="display:grid; gap:8px;">
+      <button class="btn btn-primary" data-i="has">Duplákat kínál (VAN)</button>
+      <button class="btn btn-secondary" data-i="needs">Hiányzókat keres (KELL)</button>
+      <button class="btn btn-secondary" data-i="both">Nem tudom, nézd meg mindkét irányban</button>
+      <button class="btn btn-secondary" data-i="x" style="opacity:.8;">Mégse</button></div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-i]'); if (!b) return;
+    m.remove(); if (b.dataset.i === 'x') return;
+    window.__csFbForce = b.dataset.i; window.__csFbRerun = true;
+    document.getElementById('btn-run-fb-match').click();
+  });
 }
 
 safeAddListener('btn-run-fb-match', async () => {
+  if (!window.__csFbRerun) { window.__csFbForce = null; window.__csFbLastText = null; }
+  window.__csFbRerun = false;
   const isPhotoTab = document.getElementById('btn-fb-tab-photo')?.classList.contains('active');
   const rawText = document.getElementById('fb-match-raw-text')?.value.trim() || '';
   const loader = document.getElementById('fb-match-loader');
@@ -4865,7 +4944,9 @@ safeAddListener('btn-run-fb-match', async () => {
   let postData = { has: [], needs: [] };
 
   try {
-    if (isPhotoTab && fbMatchUploadedBase64) {
+    if (isPhotoTab && fbMatchUploadedBase64 && window.__csFbLastText != null) {
+      postData = parseFacebookPostText(window.__csFbLastText);
+    } else if (isPhotoTab && fbMatchUploadedBase64) {
       const idToken = currentUser ? await currentUser.getIdToken() : '';
       const res = await fetch(WORKER_ENDPOINT_URL, {
         method: 'POST',
@@ -4874,10 +4955,12 @@ safeAddListener('btn-run-fb-match', async () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "A fotó felismerése sikertelen.");
+      window.__csFbLastText = data.text || '';
       postData = parseFacebookPostText(data.text || '');
     } else {
       postData = parseFacebookPostText(rawText);
     }
+    if (postData.unknown) { if (loader) loader.style.display = 'none'; csFbAskIntent(postData); return; }
 
     const myVanSet = new Set(ensureArray(getMyMatchVan()));
     const myKellSet = new Set(ensureArray(getMyMatchKell()));
@@ -4896,7 +4979,7 @@ safeAddListener('btn-run-fb-match', async () => {
 
     if (getPillsEl) {
       getPillsEl.innerHTML = iCanGet.length 
-        ? iCanGet.map(n => `<span class="fb-match-pill get">${escapeHtml(getItemLabel(n))}</span>`).join(' ')
+        ? iCanGet.map(n => `<span class="fb-match-pill get">${escapeHtml(getItemLabel(n))}${(postData.hasQty[n] || 1) > 1 ? ' (' + postData.hasQty[n] + ' db)' : ''}</span>`).join(' ')
         : '<em style="color:var(--text-muted);">Sajnos ebből a posztból most nincs hiányzód.</em>';
     }
 
@@ -10752,6 +10835,17 @@ try {
     }).catch(() => { partnerIdx[albumId] = { u: {} }; });
   };
 
+  window.csWhoHas = function (albumId, nums) {
+    const idx = partnerIdx[albumId]; if (!idx || !idx.u) return 0;
+    const me = currentUser ? currentUser.uid : ''; let n = 0;
+    for (const uid in idx.u) {
+      if (uid === me) continue;
+      const v = String(idx.u[uid]).split('|')[0]; if (!v) continue;
+      if (v.split(',').some(x => nums.has(Number(x)))) n++;
+    }
+    return n;
+  };
+
   // ---------- vidra-popup triggerek ----------
   let idleShown = false, idleTimer = null, openedAlbum = false;
   function onHubActivity() {
@@ -10919,7 +11013,12 @@ try {
     }
     let got = [];
     try { const d = await db.collection('public_profiles').doc(currentUser.uid).get(); got = (d.exists && Array.isArray(d.data().badges)) ? d.data().badges : []; } catch (e) {}
-    const mine = BADGES.filter(b => got.includes(b.id));
+    const auto = [];
+    try {
+      if ((myProfile.activeTrades || []).some(t => t.status === 'completed')) auto.push('elso-csere');
+      const ct = currentUser.metadata && currentUser.metadata.creationTime; if (ct && Date.now() - new Date(ct).getTime() > 60 * 864e5) auto.push('torzs');
+    } catch (e) {}
+    const mine = BADGES.filter(b => got.includes(b.id) || auto.includes(b.id));
     card.innerHTML = `<summary style="cursor:pointer; font-weight:800;">Jelvényeim (${mine.length})</summary>
       <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:10px;">${mine.length ? mine.map(b => `<div style="width:88px; text-align:center;">${badgeSvg(b, 48)}<div style="font-size:0.7rem; font-weight:700; margin-top:3px; line-height:1.2;">${esc(b.t)}</div></div>`).join('') : '<p style="font-size:0.82rem; opacity:.75; margin:0;">Még nincs jelvényed. Jelvényt kaphatsz például a Közös kalapba felajánlott tételekért, vagy a segítőkészségedért.</p>'}</div>`;
   }
@@ -11166,6 +11265,7 @@ try {
       lsSet('cs_share_' + currentUser.uid, JSON.stringify({ code, enabled: share.enabled }));
     } catch (e) { share.loaded = false; }
   }
+  window.csMyShareLink = () => myShareLink();
   const myShareLink = () => (share.code && share.enabled) ? `${baseUrl()}?csere=${share.code}&album=${encodeURIComponent(currentAlbumId)}` : '';
   setInterval(() => { if (currentUser && !share.loaded) loadShare(); }, 3000);
 
@@ -11437,4 +11537,72 @@ try {
       localStorage.setItem(key, 'done');
     } catch (e) { try { localStorage.removeItem('cs_mail_mig_' + currentUser.uid); } catch (x) {} }
   }, 8000);
+})();
+
+// =========================================================================
+// v17: visszatérést és új felhasználót segítő sávok, jelvények a partnerprofilon
+// =========================================================================
+(function () {
+  const esc = (s) => escapeHtml(String(s == null ? '' : s));
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  function renderGrowthBar() {
+    const view = document.getElementById('view-matricaim');
+    if (!view || !view.classList.contains('active') || !currentUser || !myProfile) return;
+    const van = new Set(ensureArray(myProfile.van)), kell = new Set(ensureArray(myProfile.kell));
+    let bar = document.getElementById('cs-growth-bar');
+    const hide = () => { if (bar) bar.remove(); };
+    if (lsGet('cs_growth_hide', '') === today() || (!van.size && !kell.size)) return hide();
+    csEnsurePartnerIdx(currentAlbumId);
+    const n = csPartnerCount(currentAlbumId, van, kell);
+    if (n === null) return hide();
+    let html = '', action = '', label = '';
+    if (kell.size > 0 && kell.size <= 5) {
+      const owners = csWhoHas(currentAlbumId, kell);
+      html = `<strong>Már csak ${kell.size} tétel hiányzik!</strong> ${owners ? owners + ' gyűjtőnél megvan közülük legalább egy.' : 'Egyelőre senkinél nincs dupla belőlük, de figyeljük.'}`;
+      action = 'cserek'; label = 'Keressünk partnert';
+    } else if (n > 0) {
+      html = `<strong>Találtunk neked ${n} cserepartnert</strong> ebben az albumban: náluk van, ami hiányzik neked, és nekik is kellene a dupláid.`;
+      action = 'cserek'; label = 'Megnézem';
+    } else if (van.size && kell.size) {
+      html = `<strong>Még nincs kölcsönös egyezés.</strong> Oszd meg a listád linkjét a csoportban, így többen rád találnak.`;
+      action = 'link'; label = 'Link másolása';
+    } else return hide();
+    if (!bar) {
+      bar = document.createElement('div'); bar.id = 'cs-growth-bar';
+      bar.style.cssText = 'margin:0 0 12px; padding:10px 12px; border:1.5px solid var(--amber); border-radius:12px; background:rgba(216,155,74,.10); font-size:.9rem; line-height:1.45;';
+      const first = view.children[0]; first.insertAdjacentElement('afterend', bar);
+      bar.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-g]'); if (!b) return;
+        if (b.dataset.g === 'close') { lsSet('cs_growth_hide', today()); bar.remove(); }
+        else if (b.dataset.g === 'link') { const l = window.csMyShareLink && window.csMyShareLink(); if (l) { navigator.clipboard.writeText(l); showToast('Link kimásolva, illeszd be a csoportba.'); } else showToast('A megosztó link a Profil menüben kapcsolható be.'); }
+        else switchView(b.dataset.g);
+      });
+    }
+    const firstTrade = !(myProfile.activeTrades || []).length && n > 0 && !lsGet('cs_firsttrade_seen', '');
+    bar.innerHTML = `<div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;"><div>${html}</div><button data-g="close" aria-label="Bezár" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1rem;">✕</button></div>
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><button class="btn btn-primary btn-sm" data-g="${action}">${label}</button></div>
+      ${firstTrade ? `<details style="margin-top:8px; font-size:.84rem;"><summary style="cursor:pointer; font-weight:700;">Első csere? Így megy</summary><ol style="margin:6px 0 0; padding-left:20px;"><li>Nyisd meg a Párosítások nézetet, és válassz egy partnert.</li><li>Küldj neki ajánlatot vagy üzenetet: a rendszer előre megírja.</li><li>Ha megérkeztek a matricák, zárjátok le a cserét, és értékeljétek egymást.</li></ol></details>` : ''}`;
+    if (firstTrade) bar.querySelector('details').addEventListener('toggle', () => lsSet('cs_firsttrade_seen', '1'));
+  }
+  setInterval(() => { try { renderGrowthBar(); } catch (e) {} }, 4000);
+
+  // Jelvények a másik gyűjtő profiljában
+  const _o = openUserProfileModal;
+  window.openUserProfileModal = openUserProfileModal = async function (uid) {
+    await _o(uid);
+    try {
+      const u = allUsersData.find(x => x.id === uid); const host = document.getElementById('user-profile-rating-badge');
+      if (!u || !host || !window.CS_BADGES) return;
+      let row = document.getElementById('cs-profile-badges'); if (row) row.remove();
+      const mine = window.CS_BADGES.filter(b => (u.badges || []).includes(b.id)); if (!mine.length) return;
+      row = document.createElement('div'); row.id = 'cs-profile-badges'; row.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin:6px 0;';
+      row.innerHTML = mine.map(b => `<span title="${esc(b.d)}" style="display:inline-flex; align-items:center; gap:4px; font-size:.75rem; font-weight:700;">${window.csBadgeSvg(b.id, 26)} ${esc(b.t)}</span>`).join('');
+      host.insertAdjacentElement('afterend', row);
+    } catch (e) { console.warn(e); }
+  };
+  const _p8 = switchView;
+  window.switchView = switchView = function (v) { _p8(v); if (v === 'matricaim') setTimeout(renderGrowthBar, 800); };
 })();
