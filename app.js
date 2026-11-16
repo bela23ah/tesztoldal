@@ -34,6 +34,8 @@ function isRetroAlbum(a) {
 // Borító-sorrend: 1) GitHub covers/<album_id>.webp  2) a Firestore-ban megadott kép (admin feltöltés / URL)  3) vidra
 const CS_COVER_ALT = {};
 const CS_COVER_MISSING = new Set();
+function csRoundGeo(g) { return (g && typeof g.lat === 'number') ? { lat: Math.round(g.lat * 100) / 100, lng: Math.round(g.lng * 100) / 100 } : g; }
+
 function csCover(url, fallback) {
   const u = String(url || '').trim();
   const fb = String(fallback || '');
@@ -3350,6 +3352,7 @@ function requestGpsLocation(callback) {
       myGpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       myProfile.geo = myGpsCoords;
       localStorage.setItem('cserelj_gps_coords', JSON.stringify(myGpsCoords));
+      try { localStorage.setItem('cs_gps_ts', String(Date.now())); } catch (e) {}
       if (statusEl) {
         statusEl.innerHTML = '<span style="color:var(--moss-soft);">Helyzet sikeresen bemérve! Távolsági szűrők aktívak.</span>';
       }
@@ -7808,6 +7811,7 @@ function resetAdminAlbumForm() {
   document.getElementById('admin-album-subtitle').value = '';
   if (document.getElementById('admin-album-description')) document.getElementById('admin-album-description').value = '';
   if (document.getElementById('admin-album-desc-images')) document.getElementById('admin-album-desc-images').value = '';
+  { const cbo = document.getElementById('admin-album-desc-original'); if (cbo) cbo.checked = false; }
   if (document.getElementById('admin-import-text')) document.getElementById('admin-import-text').value = '';
   if (document.getElementById('admin-import-file')) document.getElementById('admin-import-file').value = '';
   if (document.getElementById('admin-import-preview')) document.getElementById('admin-import-preview').style.display = 'none';
@@ -7877,6 +7881,7 @@ async function executeSaveAlbum(publishActive) {
       subtitle: subtitle || '',
       description: description,
       descImages: descImages,
+      descOriginal: document.getElementById('admin-album-desc-original')?.checked === true,
       publisher: publisher || '',
       year: isNaN(year) ? 2026 : year,
       totalItems: finalTotal,
@@ -7945,6 +7950,7 @@ function loadAlbumIntoAdminForm(albumId) {
   setV('admin-album-description', album.description || '');
   try { csEnsureDescImagesField(); } catch (e) {}
   setV('admin-album-desc-images', (album.descImages || []).join('\n'));
+  { const cbo = document.getElementById('admin-album-desc-original'); if (cbo) cbo.checked = album.descOriginal === true; }
   setV('admin-album-custom-items', album.customItemsRaw || (album.customItems ? album.customItems.join(', ') : ''));
   setV('admin-album-custom-names', album.customNamesRaw || (album.customNames ? album.customNames.map((n, i) => `${i + 1}: ${n}`).join('\n') : ''));
   setV('admin-album-custom-chapters', album.customChaptersRaw || '');
@@ -8582,6 +8588,7 @@ function listenToAlbumsFull() {
         hasChapters: data.hasChapters === true,
         description: data.description || '',
         descImages: Array.isArray(data.descImages) ? data.descImages : [],
+        descOriginal: data.descOriginal === true,
         customItems: data.customItems || [],
         customNames: data.customNames || [],
         customItemsRaw: data.customItemsRaw || '',
@@ -8931,7 +8938,7 @@ safeAddListener('btn-save-profile', () => {
         nev: myProfile.nev,
         telepules: myProfile.telepules,
         locations: myProfile.locations,
-        geo: myProfile.geo,
+        geo: csRoundGeo(myProfile.geo),
         tradeMode: myProfile.tradeMode,
         tradeModeSet: true,
         email: myProfile.email,
@@ -8951,10 +8958,10 @@ safeAddListener('btn-save-profile', () => {
         telepules: myProfile.telepules,
         city: myProfile.telepules,
         locations: myProfile.locations,
-        geo: myProfile.geo,
+        geo: csRoundGeo(myProfile.geo),
         tradeMode: myProfile.tradeMode,
         email: myProfile.showEmailToUsers ? myProfile.email : '',
-        notifyEmail: myProfile.email, // Megtartva a közvetlen és megbízható Worker v2.6 értesítéshez!
+        notifyEmail: firebase.firestore.FieldValue.delete(),   // az e-mail privát helyre költözött (mail_private)
         isGiftOffering: myProfile.isGiftOffering,
         showEmailToUsers: myProfile.showEmailToUsers,
         emailNotifications: myProfile.emailNotifications,
@@ -8964,6 +8971,7 @@ safeAddListener('btn-save-profile', () => {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
+      batch.set(db.collection('mail_private').doc(currentUser.uid), { notifyEmail: myProfile.email, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
       await batch.commit();
       checkMandatoryProfile();
       showToast(myProfile.isVacation ? "Profil mentve: Szüneteltetés bekapcsolva!" : "Profil adatok elmentve.");
@@ -11021,19 +11029,26 @@ try {
 
   // ---------- 7) GPS-kérés, releváns helyen ----------
   let gpsAsked = false;
-  function askGps(reason) {
-    if (myGpsCoords || gpsAsked || !currentUser || document.getElementById('cs-gps-modal')) return;
+  async function askGps(reason) {
+    if (gpsAsked || !currentUser || document.getElementById('cs-gps-modal')) return;
+    let st = 'prompt'; try { st = await csGeoState(); } catch (e) {}
+    if (st === 'granted') {
+      const ts = +(lsGet('cs_gps_ts', '0')); if (!myGpsCoords || Date.now() - ts > 7 * 864e5) requestGpsLocation(() => {});
+      return;
+    }
+    if (myGpsCoords || st === 'denied') return;
     if (lsGet('cs_gps_declined', '') === String(new Date().toISOString().slice(0, 7))) return;
     gpsAsked = true;
     const m = document.createElement('div'); m.id = 'cs-gps-modal';
     m.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
     m.innerHTML = `<div style="background:var(--sand,#F3EEDF); color:#0D2E2C; max-width:380px; width:100%; border-radius:14px; padding:18px;">
-      <h3 style="margin:0 0 6px;">Megmutathatod, hol vagy?</h3>
-      <p style="margin:0 0 12px; line-height:1.45; font-size:0.9rem;">${esc(reason)} A pontos helyedet <strong>senki nem látja</strong>, csak a távolságot számoljuk vele. Bármikor kikapcsolhatod a profilban.</p>
-      <div style="display:flex; gap:8px; justify-content:flex-end;"><button class="btn btn-secondary btn-sm" id="cs-gps-no">Most nem</button><button class="btn btn-primary btn-sm" id="cs-gps-yes">Engedélyezem</button></div></div>`;
+      <h3 style="margin:0 0 6px;">Az engedélyedre van szükségünk</h3>
+      <p style="margin:0 0 8px; line-height:1.45; font-size:0.9rem;">${esc(reason)}</p>
+      <ul style="margin:0 0 12px; padding-left:18px; font-size:0.84rem; line-height:1.45;"><li>A helyzetedet csak az <strong>app használata közben</strong> kérjük (a rendszer kérdésénél válaszd az „Az alkalmazás használata közben”, <strong>pontos</strong> opciót).</li><li>A profilodban csak <strong>~1 km-re kerekített</strong> helyet tárolunk.</li><li>A pontos helyed csak akkor látszik másoknak, ha te megosztod („Itt vagyok most”), és csak időre.</li></ul>
+      <div style="display:flex; gap:8px; justify-content:flex-end;"><button class="btn btn-secondary btn-sm" id="cs-gps-no">Most nem</button><button class="btn btn-primary btn-sm" id="cs-gps-yes">Tovább</button></div></div>`;
     document.body.appendChild(m);
     m.querySelector('#cs-gps-no').onclick = () => { lsSet('cs_gps_declined', new Date().toISOString().slice(0, 7)); m.remove(); };
-    m.querySelector('#cs-gps-yes').onclick = () => { m.remove(); requestGpsLocation(() => {}); };
+    m.querySelector('#cs-gps-yes').onclick = () => { m.remove(); lsSet('cs_gps_explained', '1'); requestGpsLocation(() => {}); };
   }
   function suggestCity() {
     if (!myGpsCoords || !document.getElementById('view-profil')?.classList.contains('active')) return;
@@ -11119,4 +11134,307 @@ try {
   }
   new MutationObserver(patchAdminForm).observe(document.body, { childList: true, subtree: true });
   patchAdminForm();
+})();
+
+// =========================================================================
+// v15: vendég-összevető link, megosztás, helyengedély-magyarázó, „Itt vagyok most”, jogi linkek, AI-átfogalmazás
+// =========================================================================
+(function () {
+  const esc = (s) => escapeHtml(String(s == null ? '' : s));
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const censor = (t) => (typeof csCensor === 'function' ? csCensor(t) : t);
+  const baseUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
+
+  // ---------- Megosztási kód ----------
+  const share = { code: null, enabled: true, loaded: false };
+  async function loadShare() {
+    if (!currentUser || !db || share.loaded) return;
+    share.loaded = true;
+    try {
+      const cached = JSON.parse(lsGet('cs_share_' + currentUser.uid, 'null'));
+      if (cached && cached.code) { share.code = cached.code; share.enabled = cached.enabled !== false; return; }
+      const ref = db.collection('public_profiles').doc(currentUser.uid);
+      const d = await ref.get();
+      let code = d.exists ? d.data().shareCode : null;
+      if (!code) {
+        const abc = 'abcdefghjkmnpqrstuvwxyz23456789';
+        code = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => abc[b % abc.length]).join('');
+        if (d.exists) await ref.update({ shareCode: code, shareEnabled: true });
+      }
+      share.code = code; share.enabled = !d.exists || d.data().shareEnabled !== false;
+      lsSet('cs_share_' + currentUser.uid, JSON.stringify({ code, enabled: share.enabled }));
+    } catch (e) { share.loaded = false; }
+  }
+  const myShareLink = () => (share.code && share.enabled) ? `${baseUrl()}?csere=${share.code}&album=${encodeURIComponent(currentAlbumId)}` : '';
+  setInterval(() => { if (currentUser && !share.loaded) loadShare(); }, 3000);
+
+  // A Facebook-poszt végére kerül a link
+  try {
+    const cb = navigator.clipboard;
+    if (cb && cb.writeText) {
+      const w = cb.writeText.bind(cb);
+      cb.writeText = (t) => {
+        if (window.__csFbLink) { t += `\n\nA teljes listám itt, regisztráció nélkül összevethető: ${window.__csFbLink}`; window.__csFbLink = null; }
+        return w(t);
+      };
+    }
+  } catch (e) {}
+  document.addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('#btn-copy-fb-post')) { window.__csFbLink = myShareLink() || null; setTimeout(() => { window.__csFbLink = null; }, 800); }
+  }, true);
+
+  // Profil: megosztás kártya
+  function renderShareCard() {
+    const view = document.getElementById('view-profil'); if (!view || !currentUser) return;
+    loadShare();
+    let card = document.getElementById('cs-share-card');
+    if (!card) {
+      card = document.createElement('details'); card.id = 'cs-share-card'; card.className = 'card';
+      card.style.cssText = 'margin:0 0 14px; padding:10px 12px; border-radius:12px; border:1px solid rgba(243,238,223,.18);';
+      const anchor = document.getElementById('cs-my-badges') || document.getElementById('cs-my-rating') || view.querySelector('h2');
+      anchor.insertAdjacentElement('afterend', card);
+      card.addEventListener('change', async (e) => {
+        if (e.target.id !== 'cs-share-on') return;
+        share.enabled = e.target.checked;
+        lsSet('cs_share_' + currentUser.uid, JSON.stringify({ code: share.code, enabled: share.enabled }));
+        try { await db.collection('public_profiles').doc(currentUser.uid).update({ shareEnabled: share.enabled }); showToast(share.enabled ? 'A link újra működik.' : 'A megosztó link kikapcsolva.'); } catch (er) { showToast('Hiba: ' + er.message); }
+        renderShareCard();
+      });
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('#cs-share-copy')) { const l = myShareLink(); if (!l) return showToast('Kapcsold be a megosztást.'); navigator.clipboard.writeText(l); showToast('Link kimásolva.'); }
+      });
+    }
+    const link = myShareLink();
+    card.innerHTML = `<summary style="cursor:pointer; font-weight:800;">Gyűjteményem megosztása linkkel</summary>
+      <p style="font-size:0.84rem; margin:8px 0; line-height:1.45;">Aki megnyitja a linket, regisztráció nélkül összevetheti a saját listáját a tiéddel (aktuális album). A Facebook-posztodhoz is hozzáfűzzük. A címedet nem látják.</p>
+      <label style="display:flex; gap:8px; align-items:center; font-size:0.88rem;"><input type="checkbox" id="cs-share-on" ${share.enabled ? 'checked' : ''}> Megosztható link bekapcsolva</label>
+      ${link ? `<input class="input-field" readonly value="${esc(link)}" style="width:100%; margin-top:8px; font-size:0.78rem;" onclick="this.select()"><button class="btn btn-secondary btn-sm" id="cs-share-copy" style="margin-top:6px;">Link másolása</button>` : '<p style="font-size:0.8rem; opacity:.7;">A link készül…</p>'}`;
+  }
+
+  // ---------- Vendég-összevető oldal ----------
+  function parseNums(txt, albumId, total) {
+    const labelMap = {};
+    for (let n = 1; n <= total; n++) { try { labelMap[String(getItemLabel(n, albumId)).replace(/\s+/g, '').toUpperCase()] = n; } catch (e) {} }
+    const out = new Set();
+    String(txt || '').split(/[,;\n]+/).forEach(tok => {
+      tok = tok.trim().replace(/\*\s*\d+$/, ''); if (!tok) return;
+      const r = tok.match(/^(\d+)\s*[-–—]\s*(\d+)$/);
+      if (r) { for (let i = +r[1]; i <= +r[2] && i <= total; i++) if (i >= 1) out.add(i); return; }
+      const key = tok.replace(/\s+/g, '').toUpperCase();
+      if (labelMap[key]) { out.add(labelMap[key]); return; }
+      if (/^\d+$/.test(tok) && +tok >= 1 && +tok <= total) out.add(+tok);
+    });
+    return [...out].sort((a, b) => a - b);
+  }
+  async function guestInit() {
+    const q = new URLSearchParams(location.search);
+    const code = (q.get('csere') || '').trim().toLowerCase();
+    if (!/^[a-z0-9]{6,12}$/.test(code)) return;
+    const albumId = q.get('album') || 'lidl-lutra-2026';
+    for (let i = 0; i < 40 && !(window.db || (typeof db !== 'undefined' && db)); i++) await new Promise(r => setTimeout(r, 250));
+    const ov = document.createElement('div'); ov.id = 'cs-guest';
+    ov.style.cssText = 'position:fixed; inset:0; z-index:99990; overflow:auto; background:#0D2E2C; color:#F3EEDF; padding:16px;';
+    ov.innerHTML = '<div style="max-width:560px; margin:0 auto;"><p>Betöltés…</p></div>';
+    document.body.appendChild(ov);
+    const box = ov.firstElementChild;
+    const close = () => { ov.remove(); history.replaceState(null, '', location.pathname); };
+    try {
+      const snap = await db.collection('public_profiles').where('shareCode', '==', code).limit(1).get();
+      if (snap.empty) { box.innerHTML = '<h2>A link nem érvényes</h2><p>Lehet, hogy a gyűjtő kikapcsolta vagy megváltoztatta.</p><button class="btn btn-primary" id="g-close">Tovább az oldalra</button>'; box.querySelector('#g-close').onclick = close; return; }
+      const prof = snap.docs[0].data(), uid = snap.docs[0].id;
+      if (prof.shareEnabled === false) { box.innerHTML = '<h2>Ez a link ki van kapcsolva</h2><button class="btn btn-primary" id="g-close">Tovább az oldalra</button>'; box.querySelector('#g-close').onclick = close; return; }
+      let sub = null;
+      try { const d = await db.collection('public_profiles').doc(uid).collection('collections').doc(albumId).get(); if (d.exists) sub = d.data(); } catch (e) {}
+      const merged = Object.assign({}, prof); if (sub) merged.collections = Object.assign({}, prof.collections || {}, { [albumId]: sub });
+      const host = extractUserData(merged, uid, albumId) || { van: [], kell: [], nev: prof.nev };
+      const alb = ALBUMS_REGISTRY[albumId] || { title: albumId, totalItems: 999 };
+      const total = alb.totalItems || 999;
+      const lab = (n) => { try { return getItemLabel(n, albumId); } catch (e) { return String(n); } };
+      const chips = (arr, cls) => arr.length ? arr.map(n => `<span style="display:inline-block; margin:2px; padding:2px 8px; border-radius:999px; font-weight:600; font-size:.82rem; background:${cls};">${esc(lab(n))}</span>`).join('') : '<span style="opacity:.6;">–</span>';
+      box.innerHTML = `<div style="font-size:.75rem; color:#D89B4A; font-weight:800; letter-spacing:.1em; text-transform:uppercase;">Cserélj Okosan</div>
+        <h2 style="margin:.2em 0;">${esc(host.nev || 'Gyűjtő')} listája</h2>
+        <p style="margin:0 0 10px; opacity:.85;">${esc(alb.title)}${prof.telepules ? ' · ' + esc(prof.telepules) : ''}</p>
+        <div style="background:rgba(0,0,0,.25); border-radius:12px; padding:10px 12px; margin-bottom:8px;"><strong>Duplái (${host.van.length})</strong><div style="margin-top:4px;">${chips(host.van, '#2f6b3a')}</div></div>
+        <div style="background:rgba(0,0,0,.25); border-radius:12px; padding:10px 12px; margin-bottom:12px;"><strong>Hiányzik neki (${host.kell.length})</strong><div style="margin-top:4px;">${chips(host.kell, '#8B5E3C')}</div></div>
+        <h3 style="margin:.4em 0;">Írd be a te listádat</h3>
+        <p style="margin:0 0 6px; font-size:.85rem; opacity:.8;">Számokat vesszővel vagy tartományt (pl. <em>3, 12, 20-25</em>).</p>
+        <label style="font-size:.85rem;">A te dupláid</label><textarea id="g-van" class="input-field" rows="2" style="width:100%;"></textarea>
+        <label style="font-size:.85rem;">A te hiányzóid</label><textarea id="g-kell" class="input-field" rows="2" style="width:100%;"></textarea>
+        <div id="g-res" style="margin:12px 0;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button class="btn btn-primary" id="g-save" disabled>Elmentem a listámat és megnyitom az appot</button><button class="btn btn-secondary" id="g-close">Csak az oldalt nézem meg</button></div>`;
+      let myVan = [], myKell = [];
+      const calc = () => {
+        myVan = parseNums(box.querySelector('#g-van').value, albumId, total);
+        myKell = parseNums(box.querySelector('#g-kell').value, albumId, total);
+        const give = myVan.filter(n => host.kell.includes(n)), get = host.van.filter(n => myKell.includes(n));
+        const res = box.querySelector('#g-res');
+        if (!myVan.length && !myKell.length) { res.innerHTML = ''; box.querySelector('#g-save').disabled = true; return; }
+        const swap = Math.min(give.length, get.length);
+        res.innerHTML = `<div style="border:1.5px solid #D89B4A; border-radius:12px; padding:10px 12px; background:rgba(216,155,74,.12);">
+          <strong>${swap ? swap + ' db cserélhető 1:1 arányban' : (give.length || get.length ? 'Egyoldalú egyezés van' : 'Most nincs közös egyezés')}</strong>
+          <div style="margin-top:6px; font-size:.9rem;">Te adhatsz: ${chips(give, '#2f6b3a')}</div>
+          <div style="margin-top:4px; font-size:.9rem;">Tőle kaphatsz: ${chips(get, '#8B5E3C')}</div></div>`;
+        box.querySelector('#g-save').disabled = false;
+      };
+      box.querySelector('#g-van').addEventListener('input', calc); box.querySelector('#g-kell').addEventListener('input', calc);
+      box.querySelector('#g-close').onclick = close;
+      box.querySelector('#g-save').onclick = () => {
+        lsSet(`lutra_van_${albumId}`, JSON.stringify(myVan)); lsSet(`lutra_kell_${albumId}`, JSON.stringify(myKell));
+        lsSet('lutra_active_album', albumId);
+        location.replace(location.pathname);
+      };
+    } catch (e) { box.innerHTML = '<h2>Nem sikerült betölteni</h2><p>' + esc(e.message) + '</p><button class="btn btn-primary" id="g-close">Tovább az oldalra</button>'; box.querySelector('#g-close').onclick = close; }
+  }
+  if (/[?&]csere=/.test(location.search)) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', guestInit); else setTimeout(guestInit, 300); }
+
+  // ---------- Helyengedély: állapot + ~1 km-re kerekített mentés ----------
+  window.csGeoState = async function () {
+    try { if (navigator.permissions && navigator.permissions.query) return (await navigator.permissions.query({ name: 'geolocation' })).state; } catch (e) {}
+    return lsGet('cs_gps_explained', '') ? 'granted?' : 'prompt';
+  };
+  window.csRoundGeo = (g) => (g && typeof g.lat === 'number') ? { lat: Math.round(g.lat * 100) / 100, lng: Math.round(g.lng * 100) / 100 } : g;
+
+  // ---------- „Itt vagyok most” ----------
+  const LIVE_KEY = 'cs_live_until';
+  let liveCache = { t: 0, items: [] }, liveLayer = null;
+  function liveCard() {
+    const view = document.getElementById('view-statisztika'); if (!view) return;
+    let c = document.getElementById('cs-live-card');
+    if (!c) {
+      c = document.createElement('div'); c.id = 'cs-live-card';
+      c.style.cssText = 'margin:0 0 12px; padding:10px 12px; border:1.5px solid var(--amber); border-radius:12px; background:rgba(216,155,74,.10);';
+      const intro = view.querySelector('.view-intro'); (intro || view.querySelector('h2')).insertAdjacentElement('afterend', c);
+      c.addEventListener('click', (e) => {
+        if (e.target.closest('#cs-live-start')) openLiveModal();
+        if (e.target.closest('#cs-live-stop')) stopLive();
+        const u = e.target.closest('[data-live-profile]'); if (u && typeof openUserProfileModal === 'function') openUserProfileModal(u.dataset.liveProfile);
+      });
+    }
+    const until = +lsGet(LIVE_KEY, '0'), on = until > Date.now();
+    const list = liveCache.items.filter(x => !currentUser || x.uid !== currentUser.uid);
+    c.innerHTML = `<div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div><strong>Most itt vagyok, cserélnék</strong><div style="font-size:.8rem; opacity:.8;">${on ? 'A pontos helyed látható a térképen eddig: ' + new Date(until).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : 'Pl. leugrottál a játszótérre: időre megmutathatod a pontos helyed.'}</div></div>
+        ${on ? '<button class="btn btn-secondary btn-sm" id="cs-live-stop">Leállítom</button>' : '<button class="btn btn-primary btn-sm" id="cs-live-start">Megosztom a helyem</button>'}</div>
+      ${list.length ? `<div style="margin-top:8px; font-size:.85rem;"><strong>Most cserélni készek a közelben (${list.length})</strong>${list.slice(0, 8).map(x => `<div style="margin-top:3px;">${esc(x.nev)}${x.note ? ' – ' + esc(x.note) : ''} <button class="btn btn-secondary btn-sm" data-live-profile="${esc(x.uid)}" style="padding:1px 8px;">Profil</button></div>`).join('')}</div>` : ''}`;
+  }
+  function openLiveModal() {
+    if (!currentUser) return showToast('Előbb lépj be.');
+    if (document.getElementById('cs-live-modal')) return;
+    const m = document.createElement('div'); m.id = 'cs-live-modal';
+    m.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
+    m.innerHTML = `<div style="background:#F3EEDF; color:#0D2E2C; max-width:400px; width:100%; border-radius:14px; padding:18px;">
+      <h3 style="margin:0 0 6px;">Itt vagyok, cserélnék</h3>
+      <p style="margin:0 0 10px; font-size:.88rem; line-height:1.45;">Az app használata közben lekérjük a pontos helyed, és <strong>csak a kiválasztott ideig</strong> mutatjuk a térképen a többi bejelentkezett gyűjtőnek. Lejárat után törlődik. Bármikor leállíthatod.</p>
+      <label style="font-size:.85rem;">Meddig?</label>
+      <select id="cs-live-dur" class="input-field" style="width:100%;"><option value="1">1 óra</option><option value="2" selected>2 óra</option><option value="3">3 óra</option></select>
+      <label style="font-size:.85rem; display:block; margin-top:8px;">Rövid megjegyzés (nem kötelező)</label>
+      <input id="cs-live-note" class="input-field" maxlength="60" placeholder="pl. a nagy játszótéren, piros pulóver" style="width:100%;">
+      <label style="display:flex; gap:8px; align-items:flex-start; margin-top:10px; font-size:.84rem;"><input type="checkbox" id="cs-live-ok"> Értem, hogy a pontos helyem a megadott ideig látható.</label>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;"><button class="btn btn-secondary btn-sm" id="cs-live-cancel">Mégse</button><button class="btn btn-primary btn-sm" id="cs-live-go">Megosztom</button></div></div>`;
+    document.body.appendChild(m);
+    m.querySelector('#cs-live-cancel').onclick = () => m.remove();
+    m.querySelector('#cs-live-go').onclick = () => {
+      if (!m.querySelector('#cs-live-ok').checked) return showToast('Pipáld be, hogy tudomásul veszed.');
+      const hours = +m.querySelector('#cs-live-dur').value, note = censor(m.querySelector('#cs-live-note').value.trim()).slice(0, 60);
+      const go = m.querySelector('#cs-live-go'); go.disabled = true; go.textContent = 'Helyzet bemérése…';
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const untilMs = Date.now() + hours * 3600 * 1000;
+        try {
+          await db.collection('public_profiles').doc(currentUser.uid).update({ liveHere: { lat: pos.coords.latitude, lng: pos.coords.longitude, note, untilMs, nev: myProfile.nev || 'Gyűjtő' } });
+          lsSet(LIVE_KEY, String(untilMs)); m.remove(); showToast('Látható vagy a térképen.'); loadLive(true);
+        } catch (e) { go.disabled = false; go.textContent = 'Megosztom'; showToast('Hiba: ' + e.message); }
+      }, (err) => { go.disabled = false; go.textContent = 'Megosztom'; showToast('Nem sikerült a helyzetet lekérni: ' + err.message); }, { enableHighAccuracy: true, timeout: 15000 });
+    };
+  }
+  async function stopLive() {
+    try { await db.collection('public_profiles').doc(currentUser.uid).update({ liveHere: firebase.firestore.FieldValue.delete() }); } catch (e) {}
+    lsSet(LIVE_KEY, '0'); showToast('A helyed már nem látszik.'); loadLive(true);
+  }
+  async function loadLive(force) {
+    if (!db) return;
+    if (!force && Date.now() - liveCache.t < 60000) { drawLive(); liveCard(); return; }
+    try {
+      const snap = await db.collection('public_profiles').where('liveHere.untilMs', '>', Date.now()).limit(40).get();
+      liveCache = { t: Date.now(), items: snap.docs.map(d => { const l = d.data().liveHere || {}; return { uid: d.id, nev: l.nev || d.data().nev || 'Gyűjtő', note: l.note || '', lat: l.lat, lng: l.lng }; }).filter(x => typeof x.lat === 'number') };
+    } catch (e) { console.warn('live', e); }
+    drawLive(); liveCard();
+  }
+  function drawLive() {
+    if (typeof leafletMap === 'undefined' || !leafletMap || typeof L === 'undefined') return;
+    if (liveLayer) liveLayer.clearLayers(); else liveLayer = L.layerGroup().addTo(leafletMap);
+    liveCache.items.forEach(x => {
+      L.circleMarker([x.lat, x.lng], { radius: 11, color: '#fff', weight: 2, fillColor: '#D89B4A', fillOpacity: 0.95 }).addTo(liveLayer)
+        .bindPopup(`<strong>${esc(x.nev)}</strong><br>${esc(x.note || 'Most itt cserél')}<br><button data-live-profile="${esc(x.uid)}" style="margin-top:4px;">Profil</button>`);
+    });
+  }
+  document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.leaflet-popup [data-live-profile]'); if (b && typeof openUserProfileModal === 'function') openUserProfileModal(b.dataset.liveProfile); });
+  // lejárt élő hely törlése induláskor
+  setInterval(() => {
+    if (!currentUser || !db) return;
+    const u = +lsGet(LIVE_KEY, '0'); if (u && u < Date.now()) { lsSet(LIVE_KEY, '0'); db.collection('public_profiles').doc(currentUser.uid).update({ liveHere: firebase.firestore.FieldValue.delete() }).catch(() => {}); }
+  }, 20000);
+
+  // ---------- Jogi linkek (lábléc) ----------
+  function legalFooter() {
+    if (document.getElementById('cs-legal-footer')) return;
+    const f = document.createElement('div'); f.id = 'cs-legal-footer';
+    f.style.cssText = 'text-align:center; font-size:.75rem; opacity:.7; padding:18px 12px 90px;';
+    f.innerHTML = '<a href="adatkezeles.html" target="_blank" rel="noopener">Adatkezelési tájékoztató</a> · <a href="aszf.html" target="_blank" rel="noopener">ÁSZF</a> · <a href="impresszum.html" target="_blank" rel="noopener">Impresszum</a>';
+    (document.querySelector('main') || document.body).appendChild(f);
+  }
+
+  // ---------- AI-átfogalmazás az admin leírásnál ----------
+  function patchAdminDesc() {
+    const ta = document.getElementById('admin-album-description');
+    if (!ta || document.getElementById('cs-desc-ai')) return;
+    const w = document.createElement('div'); w.id = 'cs-desc-ai'; w.style.cssText = 'margin-top:4px; font-size:.78rem;';
+    w.innerHTML = `<button type="button" class="btn btn-secondary btn-sm" id="cs-desc-ai-btn">AI: átfogalmazás, egyszerűsítés</button>
+      <label style="display:flex; gap:6px; align-items:center; margin-top:6px;"><input type="checkbox" id="admin-album-desc-original"> Saját megfogalmazású szöveg (nyilvános albumoldalra kerülhet)</label>`;
+    ta.insertAdjacentElement('afterend', w);
+    w.querySelector('#cs-desc-ai-btn').onclick = async (ev) => {
+      const txt = ta.value.trim(); if (txt.length < 20) return showToast('Előbb írd vagy másold be a leírást.');
+      const btn = ev.currentTarget; btn.disabled = true; btn.textContent = 'Fogalmazom…';
+      try {
+        const idToken = await currentUser.getIdToken();
+        const res = await fetch(WORKER_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + idToken }, body: JSON.stringify({ action: 'rewrite', text: txt.slice(0, 4000) }) });
+        const j = await res.json(); if (!res.ok) throw new Error(j.error || 'Hiba');
+        ta.dataset.prev = txt; ta.value = j.text; showToast('Átfogalmazva. Olvasd át, és javítsd, ha kell.');
+      } catch (e) { showToast('Nem sikerült: ' + e.message); }
+      finally { btn.disabled = false; btn.textContent = 'AI: átfogalmazás, egyszerűsítés'; }
+    };
+  }
+  new MutationObserver(() => { patchAdminDesc(); }).observe(document.body, { childList: true, subtree: true });
+  patchAdminDesc();
+
+  // ---------- nézetváltás ----------
+  const _p7 = switchView;
+  window.switchView = switchView = function (v) {
+    _p7(v);
+    try {
+      if (v === 'profil') setTimeout(renderShareCard, 600);
+      if (v === 'statisztika') { setTimeout(() => { liveCard(); loadLive(false); }, 700); }
+    } catch (e) { console.warn(e); }
+  };
+  const boot = () => { legalFooter(); };
+  if (document.readyState !== 'loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
+})();
+
+// =========================================================================
+// v16: e-mail cím áthelyezése a nyilvános profilból a privát postaládába (mail_private)
+// =========================================================================
+(function () {
+  setInterval(async () => {
+    try {
+      if (!currentUser || !db || !currentUser.email) return;
+      const key = 'cs_mail_mig_' + currentUser.uid;
+      if (localStorage.getItem(key)) return;
+      window.__csMailTries = (window.__csMailTries || 0) + 1; if (window.__csMailTries > 3) return;
+      localStorage.setItem(key, 'pending');
+      const email = (myProfile && myProfile.email) || currentUser.email;
+      await db.collection('mail_private').doc(currentUser.uid).set({ notifyEmail: email, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      try { await db.collection('public_profiles').doc(currentUser.uid).update({ notifyEmail: firebase.firestore.FieldValue.delete() }); } catch (e) { /* nincs profil: nem baj */ }
+      localStorage.setItem(key, 'done');
+    } catch (e) { try { localStorage.removeItem('cs_mail_mig_' + currentUser.uid); } catch (x) {} }
+  }, 8000);
 })();
