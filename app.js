@@ -11844,7 +11844,9 @@ try {
     const size = getActiveAlbumSize(), top = getTop();
     const opts = (sel) => '<option value="0">–</option>' + Array.from({ length: size }, (_, i) => `<option value="${i + 1}"${sel === i + 1 ? ' selected' : ''}>${esc2(lab(i + 1))}</option>`).join('');
     const rk = ranking();
-    box.innerHTML = `<h3 style="margin:8px 0 6px;">Top 3 kedvenc tételed</h3>
+    box.innerHTML = `<h3 style="margin:8px 0 6px;">Saját kedvenceim</h3>
+      <p style="margin:0 0 10px;">${top.some(n => n) ? top.map((n, i) => n ? '<strong>' + (i + 1) + '.</strong> ' + esc2(lab(n)) : '').filter(Boolean).join(' &nbsp;·&nbsp; ') : '<span style="opacity:.7;">Még nem választottál kedvencet.</span>'}</p>
+      <h3 style="margin:8px 0 6px;">Top 3 kedvenc tételed</h3>
       <p class="view-intro">Szavazz a három kedvenc tételedre ebben az albumban. A közösség összesítését lent látod.</p>
       <div style="display:grid; gap:6px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
         ${['1.', '2.', '3.'].map((l, i) => `<label style="font-size:.85rem;">${l} hely<select class="input-field" data-top3="${i}" style="width:100%;">${opts(top[i])}</select></label>`).join('')}</div>
@@ -11867,23 +11869,7 @@ try {
     const n = (allUsersData || []).length;
     const alb = (typeof ALBUMS_REGISTRY !== 'undefined' && ALBUMS_REGISTRY[currentAlbumId]) || {};
     lbl.textContent = 'Térkép: ' + (alb.title || currentAlbumId) + ' (' + n + ' gyűjtő)';
-    let fav = document.getElementById('cs-stat-favs');
-    if (!fav) { fav = document.createElement('div'); fav.id = 'cs-stat-favs'; fav.className = 'card'; fav.style.cssText = 'padding:12px; margin:10px 0;'; card.insertAdjacentElement('afterend', fav); }
-    const rk = ranking();
-    fav.innerHTML = '<strong>A közösség kedvenc tételei (Top 5)</strong>' + (rk.length ? '<ol style="margin:6px 0 0; padding-left:20px;">' + rk.map(r => `<li>${esc2(lab(r.n))} <span style="opacity:.7;">· ${r.p} pont</span></li>`).join('') + '</ol>' : '<div style="opacity:.7; margin-top:4px;">Még nincs szavazat.</div>');
   }
-  // partner-profil modal: kedvencei
-  const _ou = openUserProfileModal;
-  window.openUserProfileModal = openUserProfileModal = async function (uid) {
-    const r = await _ou.apply(this, arguments);
-    try {
-      const u = allUsersData.find(x => x.id === uid); const modal = document.getElementById('modal-user-profile'); if (!u || !modal) return r;
-      let row = document.getElementById('cs-modal-favs');
-      if (!row) { row = document.createElement('div'); row.id = 'cs-modal-favs'; row.style.cssText = 'margin:8px 0; font-size:.88rem;'; const anchor = document.getElementById('user-profile-modal-city'); (anchor || modal.firstElementChild).insertAdjacentElement('afterend', row); }
-      row.innerHTML = (u.favs && u.favs.length) ? '<strong>Kedvencei:</strong> ' + u.favs.map((n, i) => (i + 1) + '. ' + esc2(lab(n))).join(' · ') : '';
-    } catch (e) {}
-    return r;
-  };
   const _p10 = switchView;
   window.switchView = switchView = function (v) {
     _p10(v);
