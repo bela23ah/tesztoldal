@@ -375,6 +375,7 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     kell,
     foglalva,
     favorites,
+    favs: (function(){ try { const t = data.favTop && data.favTop[targetAlbumId]; if (Array.isArray(t)) return t.map(Number).filter(n => n > 0).slice(0,3); } catch(e){} return []; })(),
     vanCounts,
     foglalvaCounts,
     isGiftOffering,
@@ -9793,7 +9794,7 @@ try {
     { view: 'radar', icon: 'store', t: 'Készletradar', d: 'Hol kapható még a gyűjtős csomag?' },
     { view: 'meetups', icon: 'cal', t: 'Találkozók', d: 'Személyes csere időpontok és helyek' },
     { view: 'profil', icon: 'user', t: 'Profil', d: 'Adataid és értesítések' },
-    { view: 'kedvencek', icon: 'star', t: 'Kiemeltek', d: 'Amikre kiemelten vadászol, és hol vannak dupla példányok' },
+    { view: 'kedvencek', icon: 'star', t: 'Kedvencek', d: 'Top 3 kedvenced, a közösség kedvencei és a kiemelt vadászlistád' },
     { view: 'gyik', icon: 'help', t: 'GYIK', d: 'Gyakori kérdések és válaszok' },
     { view: 'jegyzet', icon: 'note', t: 'Jegyzet', d: 'Általános és albumhoz kötött jegyzeteid' },
     { view: 'admin', icon: 'gear', t: 'Admin', d: 'Vezérlőpult', admin: true }
@@ -11092,7 +11093,9 @@ try {
     const main = document.querySelector('main'); if (!main) return;
     if (!document.getElementById('view-kedvencek')) {
       const s = document.createElement('section'); s.id = 'view-kedvencek'; s.className = 'view';
-      s.innerHTML = `<h2>Kiemeltek</h2>
+      s.innerHTML = `<h2>Kedvencek</h2>
+        <div id="cs-top3-box"></div>
+        <h3 style="margin:18px 0 6px;">Kiemeltek – amikre kiemelten vadászol</h3>
         <p class="view-intro">Jelöld meg azokat a tételeket, amikre kiemelten vadászol (pl. <em>12, 45, 88</em>). Megmutatjuk, kinél van belőlük dupla – a legközelebbi gyűjtők elöl.</p>
         <div style="display:flex; gap:6px; margin:8px 0;"><input id="cs-fav-input" class="input-field" placeholder="Sorszámok vesszővel…" style="flex:1;"><button class="btn btn-primary btn-sm" id="cs-fav-add">Hozzáadás</button></div>
         <div id="cs-fav-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
@@ -11663,7 +11666,6 @@ try {
       });
     }
     b.innerHTML = `<strong>${esc(filterTargetCity)}</strong>: az aktív albumban ${inCity.length} gyűjtőnek van jelölt tétele, közülük <strong>${swappable}</strong>-val van most cserélhető tétel.
-      <div style="opacity:.75; font-size:.8rem; margin-top:2px;">A térkép az összes albumot együtt számolja, ezért ott nagyobb szám is szerepelhet.</div>
       <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;"><button class="btn btn-secondary btn-sm" data-cn="search">Keresés a településen</button><button class="btn btn-secondary btn-sm" data-cn="clear">Szűrés törlése</button></div>`;
   }
   const _rm = renderMatches;
@@ -11813,4 +11815,121 @@ try {
     _p9(v);
     try { if (v === 'admin') setTimeout(adminHints, 700); } catch (e) {}
   };
+})();
+
+
+// ===== cs_ext10: Kedvencek (Top 3 + közösségi Top 5), térkép-címke =====
+(function () {
+  const esc2 = (t) => (typeof esc === 'function' ? esc(t) : String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])));
+  const key = () => 'cs_top3_' + currentAlbumId;
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const getTop = () => { try { const a = JSON.parse(lsGet(key(), '[]')); return [a[0] || 0, a[1] || 0, a[2] || 0]; } catch (e) { return [0, 0, 0]; } };
+  function saveTop(a) {
+    lsSet(key(), JSON.stringify(a));
+    const clean = a.filter(n => n > 0);
+    if (currentUser && db) db.collection('public_profiles').doc(currentUser.uid).set({ favTop: { [currentAlbumId]: clean } }, { merge: true }).catch(() => {});
+  }
+  const lab = (n) => (typeof getItemLabel === 'function' ? getItemLabel(n) : '#' + n);
+  function ranking() {
+    const sc = {}; const W = [3, 2, 1];
+    (allUsersData || []).forEach(u => (u.favs || []).forEach((n, i) => { sc[n] = (sc[n] || 0) + W[i]; }));
+    const mine = getTop().filter(n => n > 0);
+    // saját szavazat azonnali beszámítása, ha a saját profil még nincs az allUsersData-ban
+    if (currentUser && !(allUsersData || []).some(u => u.id === currentUser.uid)) mine.forEach((n, i) => { sc[n] = (sc[n] || 0) + W[i]; });
+    return Object.entries(sc).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, p]) => ({ n: +n, p }));
+  }
+  function renderTop3() {
+    const box = document.getElementById('cs-top3-box'); if (!box) return;
+    const size = getActiveAlbumSize(), top = getTop();
+    const opts = (sel) => '<option value="0">–</option>' + Array.from({ length: size }, (_, i) => `<option value="${i + 1}"${sel === i + 1 ? ' selected' : ''}>${esc2(lab(i + 1))}</option>`).join('');
+    const rk = ranking();
+    box.innerHTML = `<h3 style="margin:8px 0 6px;">Top 3 kedvenc tételed</h3>
+      <p class="view-intro">Szavazz a három kedvenc tételedre ebben az albumban. A közösség összesítését lent látod.</p>
+      <div style="display:grid; gap:6px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+        ${['1.', '2.', '3.'].map((l, i) => `<label style="font-size:.85rem;">${l} hely<select class="input-field" data-top3="${i}" style="width:100%;">${opts(top[i])}</select></label>`).join('')}</div>
+      <h3 style="margin:16px 0 6px;">A közösség kedvenc tételei (Top 5)</h3>
+      ${rk.length ? '<ol style="margin:0; padding-left:20px; line-height:1.7;">' + rk.map(r => `<li><strong>${esc2(lab(r.n))}</strong> <span style="opacity:.7; font-size:.85rem;">· ${r.p} pont</span></li>`).join('') + '</ol>' : '<p style="opacity:.7;">Még nincs elég szavazat ebben az albumban.</p>'}`;
+  }
+  document.addEventListener('change', (e) => {
+    const sel = e.target.closest && e.target.closest('[data-top3]'); if (!sel) return;
+    const a = getTop(); a[+sel.dataset.top3] = +sel.value;
+    // ismétlődés kiszűrése
+    const seen = new Set(); const out = a.map(n => { if (n && seen.has(n)) return 0; seen.add(n); return n; });
+    saveTop(out); renderTop3();
+  });
+  // statisztika kártya: közösségi Top 5 + térkép-címke
+  function statsExtras() {
+    const card = document.getElementById('stat-sec-map'); if (!card) return;
+    let lbl = document.getElementById('cs-map-label');
+    const m = document.getElementById('leaflet-map-container'); if (!m) return;
+    if (!lbl) { lbl = document.createElement('div'); lbl.id = 'cs-map-label'; lbl.style.cssText = 'font-size:.85rem; font-weight:700; margin:0 0 6px;'; m.insertAdjacentElement('beforebegin', lbl); }
+    const n = (allUsersData || []).length;
+    const alb = (typeof ALBUMS_REGISTRY !== 'undefined' && ALBUMS_REGISTRY[currentAlbumId]) || {};
+    lbl.textContent = 'Térkép: ' + (alb.title || currentAlbumId) + ' (' + n + ' gyűjtő)';
+    let fav = document.getElementById('cs-stat-favs');
+    if (!fav) { fav = document.createElement('div'); fav.id = 'cs-stat-favs'; fav.className = 'card'; fav.style.cssText = 'padding:12px; margin:10px 0;'; card.insertAdjacentElement('afterend', fav); }
+    const rk = ranking();
+    fav.innerHTML = '<strong>A közösség kedvenc tételei (Top 5)</strong>' + (rk.length ? '<ol style="margin:6px 0 0; padding-left:20px;">' + rk.map(r => `<li>${esc2(lab(r.n))} <span style="opacity:.7;">· ${r.p} pont</span></li>`).join('') + '</ol>' : '<div style="opacity:.7; margin-top:4px;">Még nincs szavazat.</div>');
+  }
+  // partner-profil modal: kedvencei
+  const _ou = openUserProfileModal;
+  window.openUserProfileModal = openUserProfileModal = async function (uid) {
+    const r = await _ou.apply(this, arguments);
+    try {
+      const u = allUsersData.find(x => x.id === uid); const modal = document.getElementById('modal-user-profile'); if (!u || !modal) return r;
+      let row = document.getElementById('cs-modal-favs');
+      if (!row) { row = document.createElement('div'); row.id = 'cs-modal-favs'; row.style.cssText = 'margin:8px 0; font-size:.88rem;'; const anchor = document.getElementById('user-profile-modal-city'); (anchor || modal.firstElementChild).insertAdjacentElement('afterend', row); }
+      row.innerHTML = (u.favs && u.favs.length) ? '<strong>Kedvencei:</strong> ' + u.favs.map((n, i) => (i + 1) + '. ' + esc2(lab(n))).join(' · ') : '';
+    } catch (e) {}
+    return r;
+  };
+  const _p10 = switchView;
+  window.switchView = switchView = function (v) {
+    _p10(v);
+    if (v === 'kedvencek') setTimeout(renderTop3, 60);
+    if (v === 'statisztika') setTimeout(statsExtras, 500);
+  };
+})();
+
+
+// ===== cs_ext11: Share Target (megosztott poszt -> elemző), heti összefoglaló kapcsoló =====
+(function () {
+  function handleShared() {
+    let p; try { p = new URLSearchParams(location.search); } catch (e) { return; }
+    const txt = [p.get('title'), p.get('text'), p.get('url')].filter(Boolean).join('\n').trim();
+    if (!txt && p.get('shared') !== '1') return;
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    let tries = 0;
+    const iv = setInterval(() => {
+      const ta = document.getElementById('fb-match-raw-text'), btn = document.getElementById('btn-open-fb-crossmatch');
+      if (++tries > 40) return clearInterval(iv);
+      if (!ta || !btn) return;
+      clearInterval(iv);
+      btn.click();
+      document.getElementById('btn-fb-tab-text')?.click();
+      if (txt) { ta.value = txt; ta.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (!currentUser) { showToast('Jelentkezz be, hogy összevethessem a listáddal.'); return; }
+      if (txt && txt.length > 15) setTimeout(() => document.getElementById('btn-run-fb-match')?.click(), 400);
+    }, 400);
+  }
+  if (document.readyState !== 'loading') handleShared(); else document.addEventListener('DOMContentLoaded', handleShared);
+
+  async function digestCard() {
+    const view = document.getElementById('view-profil'); if (!view || !currentUser || !db) return;
+    if (document.getElementById('cs-digest-card')) return;
+    const c = document.createElement('div'); c.id = 'cs-digest-card'; c.className = 'card'; c.style.cssText = 'padding:12px 14px; margin:12px 0;';
+    c.innerHTML = '<label style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;"><input type="checkbox" id="cs-digest-chk" style="margin-top:4px;"><span><strong>Heti összefoglaló e-mail</strong><br><span style="font-size:.85rem; opacity:.8;">Hetente egyszer megírjuk, hány cserepartnered van, és melyik albumodban vagy a célegyenesben. Bármikor kikapcsolhatod.</span></span></label>';
+    view.appendChild(c);
+    try { const d = await db.collection('mail_private').doc(currentUser.uid).get(); document.getElementById('cs-digest-chk').checked = !!(d.exists && d.data().digest); } catch (e) {}
+    document.getElementById('cs-digest-chk').addEventListener('change', async (e) => {
+      try {
+        const email = (myProfile && myProfile.email) || currentUser.email;
+        await db.collection('mail_private').doc(currentUser.uid).set({ digest: e.target.checked, notifyEmail: email, nev: (myProfile && myProfile.nev) || currentUser.displayName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        showToast(e.target.checked ? 'Heti összefoglaló bekapcsolva.' : 'Heti összefoglaló kikapcsolva.');
+      } catch (err) { e.target.checked = !e.target.checked; showToast('Nem sikerült menteni.'); }
+    });
+  }
+  const _p11 = switchView;
+  window.switchView = switchView = function (v) { _p11(v); if (v === 'profil') setTimeout(digestCard, 400); };
 })();

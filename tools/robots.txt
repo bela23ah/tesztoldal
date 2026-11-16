@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://csereljokosan.hu/sitemap.xml
