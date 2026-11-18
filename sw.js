@@ -1,11 +1,11 @@
-// sw_v1.js – Cserélj Okosan service worker. Telepítéskor másold sw.js néven a gyökérbe.
+// sw_v3.js – Cserélj Okosan service worker. Telepítéskor másold sw.js néven a gyökérbe.
 // Stratégia: kód/HTML/CSS = hálózat-első (mindig a friss verzió, offline a cache), képek = cache-első.
 // Idegen eredetű kéréseket (Firebase, Firestore, Worker, térkép, betűtípus) NEM érint és nem tárol.
 // Új kiadásnál növeld a CACHE értékét (v1 -> v2), a régi cache törlődik.
 try { importScripts("/push-sw.js"); } catch (e) { /* a push-sw.js még nincs feltöltve: nem baj */ }
 
-const CACHE = "cs-shell-v4.3";
-const SHELL = ["/", "/index.html", "/style.css", "/app.js","/read-layer_v4.js", "/manifest.json", "/favicon.png", "/icon-192.png", "/logo-mark.png"];
+const CACHE = "cs-shell-v3";   // v3: a régi cache (köztük a korábbi albumképek) az aktiváláskor törlődik
+const SHELL = ["/", "/index.html", "/style.css", "/app.js", "/manifest.json", "/favicon.png", "/icon-192.png", "/logo-mark.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -30,8 +30,9 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.endsWith("/sw.js")) return;
 
-  const isImage = /\.(png|jpe?g|webp|svg|ico|gif)$/i.test(url.pathname);
-  if (isImage) {
+  // csak a saját, állandó ikonok/logók cache-elődnek "cache-első" módon; minden más kép (pl. borítók) hálózat-első, így a törölt képek nem maradnak a böngészőben
+  const isStaticAsset = /\/(favicon|icon-|logo-|og-)[^/]*\.(png|jpe?g|webp|svg|ico)$/i.test(url.pathname);
+  if (isStaticAsset) {
     e.respondWith(
       caches.match(req).then((hit) => hit || fetch(req).then((res) => {
         if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
@@ -43,7 +44,7 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith(
     fetch(req).then((res) => {
-      if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+      if (res && res.ok && SHELL.includes(url.pathname)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req).then((hit) => hit || (req.mode === "navigate" ? caches.match("/index.html") : Response.error())))
   );
