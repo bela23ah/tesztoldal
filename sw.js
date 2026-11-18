@@ -4,7 +4,7 @@
 // Új kiadásnál növeld a CACHE értékét (v1 -> v2), a régi cache törlődik.
 try { importScripts("/push-sw.js"); } catch (e) { /* a push-sw.js még nincs feltöltve: nem baj */ }
 
-const CACHE = "cs-shell-v3";   // v3: a régi cache (köztük a korábbi albumképek) az aktiváláskor törlődik
+const CACHE = "cs-shell-v24";   // v3: a régi cache (köztük a korábbi albumképek) az aktiváláskor törlődik
 const SHELL = ["/", "/index.html", "/style.css", "/app.js", "/manifest.json", "/favicon.png", "/icon-192.png", "/logo-mark.png"];
 
 self.addEventListener("install", (e) => {
