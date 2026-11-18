@@ -375,7 +375,7 @@ function extractUserData(data, docId, targetAlbumId = currentAlbumId) {
     kell,
     foglalva,
     favorites,
-    favs: (function(){ try { const t = data.favTop && data.favTop[targetAlbumId]; if (Array.isArray(t)) return t.map(Number).filter(n => n > 0).slice(0,3); } catch(e){} return []; })(),
+    favs: (function(){ try { const t = data.favTop && data.favTop[targetAlbumId]; if (Array.isArray(t)) return t.map(Number).filter(n => n > 0).slice(0,3); if (targetAlbumId === 'lidl-lutra-2026' && Array.isArray(data.favorites)) return data.favorites.map(Number).filter(n => n > 0).slice(0,3); } catch(e){} return []; })(),
     vanCounts,
     foglalvaCounts,
     isGiftOffering,
@@ -1535,6 +1535,39 @@ function updateHubSocialProofMetrics() {
   if (pCountNotice) pCountNotice.textContent = totalCollectors;
 }
 
+async function csSetFeatured(albumId, mode) {
+  const reg = ALBUMS_REGISTRY;
+  const writes = [];
+  const upd = (id, patch) => { Object.assign(reg[id], patch); writes.push(db.collection('albums').doc(id).set(patch, { merge: true })); };
+  if (mode === 'main') {
+    const was = reg[albumId].featuredMain;
+    Object.keys(reg).forEach(id => { if (reg[id].featuredMain && id !== albumId) upd(id, { featuredMain: false }); });
+    upd(albumId, { featuredMain: !was, featured: false });
+  } else if (mode === 'off') {
+    upd(albumId, { featured: false, featuredMain: false });
+  } else {
+    if (reg[albumId].featured) upd(albumId, { featured: false });
+    else {
+      upd(albumId, { featured: true, featuredMain: false, featuredAt: Date.now() });
+      const feats = Object.values(reg).filter(x => x.featured && !x.featuredMain).sort((x, y) => (x.featuredAt || 0) - (y.featuredAt || 0));
+      while (feats.length > 5) { const old = feats.shift(); upd(old.id, { featured: false }); showToast('„' + old.title + '” kiemelése lejárt (max. 5 kiemelt).'); }
+    }
+  }
+  try { await Promise.all(writes); } catch (e) { showToast('Mentési hiba: ' + (e.message || e)); }
+  renderHub(); renderAdminAlbumsList(); csAdminFeaturedPanel();
+  showToast('Kiemelés frissítve.');
+}
+function csAdminFeaturedPanel() {
+  const list = document.getElementById('admin-albums-list'); if (!list) return;
+  let p = document.getElementById('cs-admin-featured');
+  if (!p) { p = document.createElement('div'); p.id = 'cs-admin-featured'; p.style.cssText = 'margin:10px 0; padding:10px 12px; border:1.5px solid var(--amber); border-radius:12px; background:rgba(216,155,74,.08);'; list.insertAdjacentElement('beforebegin', p);
+    p.addEventListener('click', (e) => { const b = e.target.closest('[data-cs-unfeat]'); if (b) csSetFeatured(b.dataset.csUnfeat, 'off'); }); }
+  const all = Object.values(ALBUMS_REGISTRY);
+  const main = all.find(x => x.featuredMain), feats = all.filter(x => x.featured && !x.featuredMain).sort((x, y) => (x.featuredAt || 0) - (y.featuredAt || 0));
+  const chip = (a, star) => `<span style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,.3); border-radius:999px; padding:3px 4px 3px 10px; margin:3px 4px 3px 0;">${star ? '★ ' : ''}${escapeHtml(a.title)}<button data-cs-unfeat="${escapeHtml(a.id)}" title="Levétel" style="background:none; border:none; color:var(--danger,#e85a4f); cursor:pointer; font-size:1rem;">✕</button></span>`;
+  p.innerHTML = `<strong>Kiemeltek (főkiemelt + max. 5)</strong><div style="margin-top:6px;"><div style="font-size:.78rem; opacity:.75;">Főkiemelt (bal felső csempe):</div>${main ? chip(main, true) : '<em style="opacity:.7;">nincs</em>'}<div style="font-size:.78rem; opacity:.75; margin-top:4px;">Kiemeltek (${feats.length}/5, a legrégebbi esik ki, ha a hatodik jön):</div>${feats.length ? feats.map(a => chip(a)).join('') : '<em style="opacity:.7;">nincs, a legnépszerűbbek jelennek meg</em>'}</div>`;
+}
+
 function getAlbumLiveStats(albumId) {
   if (csCommunityAlbum !== albumId) {
     const pm = csCommunityMeta && csCommunityMeta.perAlbum && csCommunityMeta.perAlbum[albumId];
@@ -1652,23 +1685,38 @@ function renderHub() {
     return true;
   });
 
+  const csPop = (id) => { const pm = csCommunityMeta && csCommunityMeta.perAlbum && csCommunityMeta.perAlbum[id]; return pm ? (pm.c || 0) : 0; };
   list.sort((a, b) => {
     const aActive = a.active !== false;
     const bActive = b.active !== false;
     if (aActive !== bActive) return aActive ? -1 : 1;
-
-    const aFeatured = a.featured && aActive;
-    const bFeatured = b.featured && bActive;
-    if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
-
-    const aRecentIdx = recentAlbumIds.indexOf(a.id);
-    const bRecentIdx = recentAlbumIds.indexOf(b.id);
-    if (aRecentIdx !== -1 && bRecentIdx !== -1) return aRecentIdx - bRecentIdx;
-    if (aRecentIdx !== -1) return -1;
-    if (bRecentIdx !== -1) return 1;
-
     return (a.title || '').localeCompare(b.title || '', 'hu');
   });
+  if (currentHubFilter === 'all' && !query) {
+    // 1 főkiemelt (bal felső) + legfeljebb 5 kiemelt (kiemelés sorrendjében) + népszerűek a 6 helyig; a többi ABC-ben
+    const act = list.filter(x => x.active !== false);
+    const main = act.find(x => x.featuredMain);
+    const feats = act.filter(x => x.featured && !x.featuredMain).sort((x, y) => (x.featuredAt || 0) - (y.featuredAt || 0)).slice(0, 5);
+    const top = [];
+    if (main) top.push(main);
+    feats.forEach(x => top.push(x));
+    const used = new Set(top.map(x => x.id));
+    const popular = act.filter(x => !used.has(x.id)).sort((x, y) => csPop(y.id) - csPop(x.id) || (x.title || '').localeCompare(y.title || '', 'hu'));
+    while (top.length < 6 && popular.length) top.push(popular.shift());
+    const topIds = new Set(top.map(x => x.id));
+    const rest = list.filter(x => !topIds.has(x.id));
+    list.length = 0; top.forEach(x => list.push(x)); rest.forEach(x => list.push(x));
+  } else {
+    list.sort((a, b) => {
+      const aActive = a.active !== false, bActive = b.active !== false;
+      if (aActive !== bActive) return aActive ? -1 : 1;
+      const aRecentIdx = recentAlbumIds.indexOf(a.id), bRecentIdx = recentAlbumIds.indexOf(b.id);
+      if (aRecentIdx !== -1 && bRecentIdx !== -1) return aRecentIdx - bRecentIdx;
+      if (aRecentIdx !== -1) return -1;
+      if (bRecentIdx !== -1) return 1;
+      return (a.title || '').localeCompare(b.title || '', 'hu');
+    });
+  }
 
   if (countSpan) countSpan.textContent = list.length;
 
@@ -1691,7 +1739,7 @@ function renderHub() {
   }
 
   container.innerHTML = displayList.map(album => {
-    const isFeatured = album.featured === true && album.active !== false;
+    const isFeatured = (album.featured === true || album.featuredMain === true) && album.active !== false;
     const isRetro = isRetroAlbum(album);
     const isInactive = (album.active === false);
     const albumVan = ensureArray(safeJsonParse(`lutra_van_${album.id}`, album.id === 'lidl-lutra-2026' ? safeJsonParse('lutra_van', []) : []));
@@ -7561,118 +7609,7 @@ safeAddListener('admin-audit-report-box', 'click', async (e) => {
   }
 });
 
-safeAddListener('btn-admin-import-json', async () => {
-  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
-  const rawJson = document.getElementById('admin-album-json-import')?.value.trim();
-  const statusEl = document.getElementById('admin-json-import-status');
-  if (!rawJson) return showToast("Illeszd be a JSON adatokat a mezőbe!");
-
-  let albumsList = [];
-  try {
-    albumsList = JSON.parse(rawJson);
-    if (!Array.isArray(albumsList)) throw new Error("A JSON-nak egy tömbnek kell lennie!");
-  } catch (err) {
-    return showToast("Érvénytelen JSON formátum: " + err.message);
-  }
-
-  if (statusEl) {
-    statusEl.style.display = 'block';
-    statusEl.textContent = `Elemzés és szűrés...`;
-  }
-
-  const cleanedList = [];
-  let skippedJunk = 0;
-  let skippedExisting = 0;
-
-  albumsList.forEach(alb => {
-    const rawId = (alb.id || alb.title || '').toLowerCase().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '');
-
-    if (SCRAPER_JUNK_IDS.has(rawId) || /^(mind|kartya|matricaalbum|figura|kisauto)-\d+$/i.test(rawId)) {
-      skippedJunk++;
-      return;
-    }
-
-    if (rawId === 'lutra-album' && ALBUMS_REGISTRY['lidl-lutra-2026']) {
-      skippedExisting++;
-      return;
-    }
-
-    // Kategória-fülek („Foci (15)”, „Pokémon (9)”) és beküldő-gombok kiszűrése
-    if (/\s\(\d+\)$/.test(alb.title || '') || ['ismeretlen-gyujtemeny', 'gyujtemeny-javaslasa', 'gyujtemeny-bekuldese'].includes(rawId)) {
-      skippedJunk++;
-      return;
-    }
-
-    // Már meglévő album: azonosító vagy azonos címkulcs alapján NEM írjuk felül
-    const titleKey = getNormalizedAlbumTitleKey(alb.title || rawId);
-    const dupExisting = ALBUMS_REGISTRY[rawId] || Object.values(ALBUMS_REGISTRY).some(ex =>
-      ex.id !== rawId && titleKey && getNormalizedAlbumTitleKey(ex.title || ex.id) === titleKey && Number(ex.year || 0) === Number(alb.year || 0));
-    if (dupExisting) {
-      skippedExisting++;
-      return;
-    }
-
-    cleanedList.push({ ...alb, cleanId: rawId });
-  });
-
-  const chunkSize = 400;
-  let savedCount = 0;
-
-  try {
-    for (let i = 0; i < cleanedList.length; i += chunkSize) {
-      const chunk = cleanedList.slice(i, i + chunkSize);
-      const batch = db.batch();
-
-      chunk.forEach(alb => {
-        const id = alb.cleanId;
-        const totalItems = parseInt(alb.totalItems || alb.total_stickers || '100', 10);
-        const year = parseInt(alb.year || '2026', 10);
-        const type = alb.type || 'sticker';
-        const typeLabel = alb.typeLabel || (type === 'mixed' ? 'Matrica + kártya' : type === 'card' ? 'Kártya' : type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum');
-
-        const docRef = db.collection("albums").doc(id);
-        const payload = {
-          id,
-          title: alb.title || id,
-          subtitle: alb.subtitle || '',
-          publisher: alb.publisher || 'Egyéb',
-          year,
-          totalItems,
-          type,
-          typeLabel,
-          coverUrl: csCover(alb.coverUrl || alb.image, `covers/${id}.webp`),
-          featured: false,
-          isRetro: year > 0 ? csIsRetroYear(year) : alb.isRetro === true,
-          hasFavorites: false,
-          hasRadar: alb.hasRadar === true,
-          radarType: alb.radarType || 'none',
-          hasChapters: alb.hasChapters === true,
-          customItems: alb.customItems || [],
-          customNames: alb.customNames || [],
-          customChaptersList: alb.customChaptersList || [],
-          active: true,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        batch.set(docRef, payload, { merge: true });
-        ALBUMS_REGISTRY[id] = payload;
-        savedCount++;
-      });
-
-      await batch.commit();
-      if (statusEl) statusEl.textContent = `Mentve: ${savedCount} / ${cleanedList.length} album...`;
-    }
-
-    showToast(`Siker! ${savedCount} új album feltöltve (${skippedExisting} már megvolt, ${skippedJunk} szemét kiszűrve).`);
-    renderHub();
-    renderAdminAlbumsList();
-    if (document.getElementById('admin-album-json-import')) document.getElementById('admin-album-json-import').value = '';
-  } catch (err) {
-    showToast("Importálási hiba: " + err.message);
-  } finally {
-    if (statusEl) setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
-  }
-});
+// (a tömeges JSON albumimportőr eltávolítva)
 
 safeAddListener('btn-admin-seed-database', async () => {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) return showToast("Nincs admin jogosultságod.");
@@ -8120,7 +8057,7 @@ function renderAdminAlbumPreview() {
   const publisher = val('admin-album-publisher');
   const year = val('admin-album-year');
   const type = val('admin-album-type') || 'sticker';
-  const typeLabel = type === 'mixed' ? 'Matrica + kártya' : type === 'card' ? 'Kártya' : type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum';
+  const typeLabel = type === 'mixed' ? 'Matrica + kártya' : type === 'card' ? 'Kártya' : type === 'kinder' ? 'Kinder tojás' : type === 'figure' ? 'Figura' : 'Matricaalbum';
   const cover = adminAlbumCoverBase64 || csCover(val('admin-album-cover-url'), '') || csCover(ALBUMS_REGISTRY[editingAlbumId || id]?.coverUrl, '') || 'logo-emblem.png';
   const labelOf = (n) => items[n - 1] || String(n);
   const nameOf = (n) => names[n - 1] || '';
@@ -8337,6 +8274,7 @@ function renderAdminAlbumsList() {
             </button>
             <button class="btn btn-primary btn-sm" data-action="edit-album" data-id="${escapeHtml(a.id)}">Szerkesztés</button>
             <button class="btn btn-secondary btn-sm" data-action="toggle-feature-album" data-id="${escapeHtml(a.id)}">${a.featured ? 'Kiemelt levétel' : 'Kiemelés'}</button>
+            <button class="btn btn-secondary btn-sm" data-action="main-feature-album" data-id="${escapeHtml(a.id)}">${a.featuredMain ? '★ Főkiemelt' : 'Főkiemelt legyen'}</button>
             <button class="btn btn-secondary btn-sm" data-action="delete-album" data-id="${escapeHtml(a.id)}" style="color:var(--danger); border-color:var(--danger);">Törlés</button>
           </div>
         </div>
@@ -8385,13 +8323,8 @@ safeAddListener('admin-albums-list', async (e) => {
     showToast(newActive ? `${album.title} aktiválva!` : `${album.title} inaktiválva (csak olvasható)!`);
   } else if (btn.dataset.action === 'edit-album') {
     loadAlbumIntoAdminForm(albumId);
-  } else if (btn.dataset.action === 'toggle-feature-album') {
-    const current = ALBUMS_REGISTRY[albumId]?.featured || false;
-    ALBUMS_REGISTRY[albumId].featured = !current;
-    await db.collection("albums").doc(albumId).set({ featured: !current }, { merge: true });
-    renderHub();
-    renderAdminAlbumsList();
-    showToast("Kiemelés frissítve.");
+  } else if (btn.dataset.action === 'toggle-feature-album' || btn.dataset.action === 'main-feature-album') {
+    await csSetFeatured(albumId, btn.dataset.action === 'main-feature-album' ? 'main' : 'toggle');
   } else if (btn.dataset.action === 'delete-album') {
     if (albumId === 'lidl-lutra-2026') return showToast("A Lutra alapértelmezett album nem törölhető.");
     if (!confirm(`Biztosan törlöd a(z) ${albumId} gyűjteményt?`)) return;
@@ -8663,9 +8596,11 @@ function listenToAlbumsFull() {
         year: data.year || 2026,
         totalItems: data.totalItems || 100,
         type: data.type || 'sticker',
-        typeLabel: data.typeLabel || (data.type === 'mixed' ? 'Matrica + kártya' : data.type === 'card' ? 'Kártya' : data.type === 'figure' ? 'Figura / Kinder' : 'Matricaalbum'),
+        typeLabel: data.typeLabel || (data.type === 'mixed' ? 'Matrica + kártya' : data.type === 'card' ? 'Kártya' : data.type === 'kinder' ? 'Kinder tojás' : type === 'figure' ? 'Figura' : 'Matricaalbum'),
         coverUrl: csCover(data.coverUrl, `covers/${doc.id}.webp`),
         featured: data.featured === true,
+        featuredMain: data.featuredMain === true,
+        featuredAt: data.featuredAt || 0,
         isRetro: data.year > 0 ? csIsRetroYear(data.year) : data.isRetro === true,
         hasFavorites: false,
         hasRadar: data.hasRadar === true,
@@ -9534,7 +9469,13 @@ function listenToMyProfile(uid) {
       const hasRemoteData = (parsed.van.length > 0 || parsed.kell.length > 0);
       const isLocalEmpty = (myProfile.van.length === 0 && myProfile.kell.length === 0);
 
-      if (hasRemoteData || remoteTime >= localTime || isLocalEmpty) {
+      // Mindig a legfrissebb szerkesztés az irányadó: a felhő csak akkor írja felül a helyi adatot, ha újabb nála.
+      const remoteIsNewer = remoteTime > localTime;
+      if (!remoteIsNewer && !isLocalEmpty && localTime > remoteTime + 1500 && !pubSnap.metadata.fromCache && !window['__csPushed_' + effKey]) {
+        window['__csPushed_' + effKey] = true;   // a helyi állapot az újabb: feltöltjük, hogy a többi eszköz is ezt lássa
+        try { syncLutraDualSave(effKey); } catch (e) {}
+      }
+      if (remoteIsNewer || isLocalEmpty) {
         myProfile = {
           ...myProfile,
           nev: parsed.nev,
@@ -9789,13 +9730,14 @@ try {
 
   const TILES = [
     { view: 'uzenofal', icon: 'wall', t: 'Üzenőfal', d: 'Közös fal és albumonkénti beszélgetések' },
-    { view: 'hirek', icon: 'news', t: 'Gyártói hírek', d: 'Friss albumok, kiadások a gyártóktól' },
+    // Gyártói hírek átmenetileg kikapcsolva (lásd CS_NEWS_OFF a fájl végén)
     { view: 'statisztika', icon: 'map', t: 'Helyi cserék', d: 'Térkép és statisztika a közeli gyűjtőkről' },
     { view: 'radar', icon: 'store', t: 'Készletradar', d: 'Hol kapható még a gyűjtős csomag?' },
     { view: 'meetups', icon: 'cal', t: 'Találkozók', d: 'Személyes csere időpontok és helyek' },
     { view: 'profil', icon: 'user', t: 'Profil', d: 'Adataid és értesítések' },
     { view: 'kedvencek', icon: 'star', t: 'Kedvencek', d: 'Top 3 kedvenced, a közösség kedvencei és a kiemelt vadászlistád' },
     { view: 'gyik', icon: 'help', t: 'GYIK', d: 'Gyakori kérdések és válaszok' },
+    { view: 'szotar', icon: 'note', t: 'Szótár', d: 'Gyűjtői fogalmak és az app funkciói, kereshetően' },
     { view: 'jegyzet', icon: 'note', t: 'Jegyzet', d: 'Általános és albumhoz kötött jegyzeteid' },
     { view: 'admin', icon: 'gear', t: 'Admin', d: 'Vezérlőpult', admin: true }
   ];
@@ -10828,6 +10770,7 @@ try {
     }
     return n;
   };
+  window.csIdxSize = function (albumId) { const i = partnerIdx[albumId]; return i && i.u ? Object.keys(i.u).length : null; };
   const dupeMap = {};
   window.csDupeCount = function (albumId, num) {
     const idx = partnerIdx[albumId]; if (!idx || !idx.u) return 0;
@@ -11454,7 +11397,7 @@ try {
     const m = document.createElement('div'); m.id = 'cs-live-modal';
     m.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
     m.innerHTML = `<div style="background:#F3EEDF; color:#0D2E2C; max-width:400px; width:100%; border-radius:14px; padding:18px;">
-      <h3 style="margin:0 0 6px;">Itt vagyok, cserélnék</h3>
+      <button type="button" id="cs-live-x" aria-label="Mégse" style="float:right; background:none; border:none; font-size:1.3rem; cursor:pointer; color:inherit;">✕</button><h3 style="margin:0 0 6px;">Itt vagyok, cserélnék</h3>
       <p style="margin:0 0 10px; font-size:.88rem; line-height:1.45;">Az app használata közben lekérjük a pontos helyed, és <strong>csak a kiválasztott ideig</strong> mutatjuk a térképen a többi bejelentkezett gyűjtőnek. Lejárat után törlődik. Bármikor leállíthatod.</p>
       <label style="font-size:.85rem;">Meddig?</label>
       <select id="cs-live-dur" class="input-field" style="width:100%;"><option value="1">1 óra</option><option value="2" selected>2 óra</option><option value="3">3 óra</option></select>
@@ -11464,11 +11407,13 @@ try {
       <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;"><button class="btn btn-secondary btn-sm" id="cs-live-cancel">Mégse</button><button class="btn btn-primary btn-sm" id="cs-live-go">Megosztom</button></div></div>`;
     document.body.appendChild(m);
     m.querySelector('#cs-live-cancel').onclick = () => m.remove();
+    m.querySelector('#cs-live-x').onclick = () => m.remove();
     m.querySelector('#cs-live-go').onclick = () => {
       if (!m.querySelector('#cs-live-ok').checked) return showToast('Pipáld be, hogy tudomásul veszed.');
       const hours = +m.querySelector('#cs-live-dur').value, note = censor(m.querySelector('#cs-live-note').value.trim()).slice(0, 60);
       const go = m.querySelector('#cs-live-go'); go.disabled = true; go.textContent = 'Helyzet bemérése…';
       navigator.geolocation.getCurrentPosition(async (pos) => {
+        if (!m.isConnected) return;   // közben a Mégse-t nyomták: nem osztjuk meg
         const untilMs = Date.now() + hours * 3600 * 1000;
         try {
           await db.collection('public_profiles').doc(currentUser.uid).update({ liveHere: { lat: pos.coords.latitude, lng: pos.coords.longitude, note, untilMs, nev: myProfile.nev || 'Gyűjtő' } });
@@ -11695,10 +11640,13 @@ try {
       const home = myProfile.telepules ? known.filter(o => isLocalCityMatch(myProfile.telepules, byId[o.uid].locations || byId[o.uid].telepules)).length : 0;
       m.firstElementChild.querySelector('[data-body]').innerHTML = `<p style="margin:0 0 6px;"><strong>${owners.length}</strong> gyűjtőnél van belőle dupla.</p>
         <p style="margin:0 0 6px;"><strong>${mutual}</strong> közülük cserélhet is veled (nekik is kell valamelyik dupláid közül).</p>
-        ${known.length ? `<p style="margin:0;">A városodban: <strong>${home}</strong> · máshol: <strong>${known.length - home}</strong>${known.length < owners.length ? ' <span style="opacity:.7;">(' + (owners.length - known.length) + ' gyűjtő településéhez nyisd meg a Cserék menüt)</span>' : ''}</p>` : '<p style="margin:0; opacity:.7;">A városonkénti bontáshoz nyisd meg a Cserék menüt.</p>'}`;
+        ${known.length ? `<p style="margin:0;">A városodban: <a href="#" data-cs-go="home" style="font-weight:800; color:#B9791F;">${home}</a> · máshol: <a href="#" data-cs-go="else" style="font-weight:800; color:#B9791F;">${known.length - home}</a>${known.length < owners.length ? ' <span style="opacity:.7;">(' + (owners.length - known.length) + ' gyűjtő településéhez nyisd meg a Cserék menüt)</span>' : ''}</p>` : '<p style="margin:0; opacity:.7;">A városonkénti bontáshoz nyisd meg a Cserék menüt.</p>'}`;
     };
     m.innerHTML = `<div style="background:#F3EEDF; color:#0D2E2C; max-width:360px; width:100%; border-radius:14px; padding:18px;"><h3 style="margin:0 0 8px;">${esc(getItemLabel(num, currentAlbumId))}</h3><div data-body></div><div style="text-align:right; margin-top:12px;"><button class="btn btn-secondary btn-sm" data-x>Bezár</button></div></div>`;
-    document.body.appendChild(m); m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); });
+    document.body.appendChild(m); m.addEventListener('click', (e) => {
+      const go = e.target.closest('[data-cs-go]');
+      if (go) { e.preventDefault(); m.remove(); if (go.dataset.csGo === 'home' && myProfile.telepules) filterMatchesByCityName(myProfile.telepules); else { filterTargetCity = ''; switchView('cserek'); showToast('Összes lehetséges cserepartner'); } return; }
+      if (e.target === m || e.target.closest('[data-x]')) m.remove(); });
     fill();
     try { if (typeof csLoadCommunity === 'function' && csCommunityAlbum !== currentAlbumId) csLoadCommunity(currentAlbumId).then(fill).catch(() => {}); } catch (e) {}
   }
@@ -11757,7 +11705,7 @@ try {
   const IC = {
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/>', camera: '<path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.500"/>',
     chat: '<path d="M4 5h16v11H9l-5 4z"/>', check: '<path d="M5 12l5 5 9-10"/>', lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', hat: '<path d="M6 17h12M8 17c0-5 1-9 4-9s4 4 4 9"/>',
-    shield: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/>', flag: '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>', plus: '<path d="M12 5v14M5 12h14"/>', pin: '<path d="M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>', star: '<path d="M12 3l2.600 5.500 6 .8-4.400 4.200 1.100 6L12 16.600 6.700 19.500l1.100-6L3.400 9.300l6-.8z"/>'
+    shield: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', book: '<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11"/>', heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.600-7 10-7 10z"/>', flag: '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>', plus: '<path d="M12 5v14M5 12h14"/>', pin: '<path d="M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>', star: '<path d="M12 3l2.600 5.500 6 .8-4.400 4.200 1.100 6L12 16.600 6.700 19.500l1.100-6L3.400 9.300l6-.8z"/>'
   };
   const QA = [
     ['info', 'Mi ez az oldal, és mennyibe kerül?', 'A Cserélj Okosan ingyenes matrica-, kártya- és figuracsere platform gyűjtőknek. Nincs előfizetés, nincs rejtett költség.', '', ''],
@@ -11771,6 +11719,9 @@ try {
     ['pin', 'Mi az, hogy „Itt vagyok most”?', 'Ha leugrottál például a játszótérre, 1–3 órára megoszthatod a pontos helyed a térképen. Lejárat után törlődik, bármikor leállíthatod.', 'statisztika', 'Helyi cserék megnyitása'],
     ['star', 'Mik azok a jelvények?', 'A jelvényeket nem pontokért, hanem a valódi világban tett dolgokért kapod: például ha elétek mentek autóval a cseréhez, vagy csokit tettek a csomagba. A partnered javasolhat, az admin adja.', 'profil', 'Profil megnyitása'],
     ['flag', 'Hogyan jelezhetek hibás értékelést vagy hozzászólást?', 'Az értékeléseknél a „Jelentem” gombbal. Az admin megnézi, és szükség esetén moderálja.', '', ''],
+    ['mail', 'Mit tartalmaz a heti összefoglaló e-mail?', 'Csak akkor kapod, ha a Profilban bekapcsoltad. Megírja, hány cserepartnered van az albumaidban, és ha már csak néhány tétel hiányzik, jelzi a célegyenest. Bármikor kikapcsolhatod.', 'profil', 'Profil megnyitása'],
+    ['book', 'Mit jelentenek a gyűjtői szakszavak?', 'A Szótárban megtalálod a dupla, a körcsere, a binder, a holo és még közel 60 fogalom magyarázatát, az app funkcióival együtt.', 'szotar', 'Szótár megnyitása'],
+    ['heart', 'Hogyan támogathatom az oldalt?', 'Az oldal ingyenes és az is marad. Ha szeretnéd, a csereljokosan.hu/tamogatas.html oldalon önkéntesen hozzájárulhatsz a működés költségeihez. Semmilyen funkció nem függ tőle.', '', ''],
     ['plus', 'Hiányzik az albumom. Mit tegyek?', 'Javasold az albumot a Hubon az „Album javaslat” gombbal, vagy írj az adminnak.', 'hub', 'Hub megnyitása']
   ];
   function buildGyik() {
@@ -11830,7 +11781,7 @@ try {
     const clean = a.filter(n => n > 0);
     if (currentUser && db) db.collection('public_profiles').doc(currentUser.uid).set({ favTop: { [currentAlbumId]: clean } }, { merge: true }).catch(() => {});
   }
-  const lab = (n) => (typeof getItemLabel === 'function' ? getItemLabel(n) : '#' + n);
+  const lab = (n) => { try { const l = getItemLabel(n, currentAlbumId), f = typeof getItemFullName === 'function' ? getItemFullName(n, currentAlbumId) : ''; return f && f !== l ? l + ' – ' + f : l; } catch (e) { return '#' + n; } };
   function ranking() {
     const sc = {}; const W = [3, 2, 1];
     (allUsersData || []).forEach(u => (u.favs || []).forEach((n, i) => { sc[n] = (sc[n] || 0) + W[i]; }));
@@ -11918,4 +11869,321 @@ try {
   }
   const _p11 = switchView;
   window.switchView = switchView = function (v) { _p11(v); if (v === 'profil') setTimeout(digestCard, 400); };
+})();
+
+
+// ===== cs_ext12: hub gyűjtő-szám tartalék, admin kiemelt panel =====
+(function () {
+  const _ra = renderAdminAlbumsList;
+  window.renderAdminAlbumsList = renderAdminAlbumsList = function () { const r = _ra.apply(this, arguments); try { csAdminFeaturedPanel(); } catch (e) { console.warn(e); } return r; };
+  const _gl = getAlbumLiveStats;
+  window.getAlbumLiveStats = getAlbumLiveStats = function (albumId) {
+    const r = _gl.apply(this, arguments);
+    try {
+      if (!r.collectors) {
+        if (typeof csEnsurePartnerIdx === 'function') csEnsurePartnerIdx(albumId);
+        const n = typeof csIdxSize === 'function' ? csIdxSize(albumId) : null;
+        const isL = albumId === 'lidl-lutra-2026';
+        const mine = ensureArray(safeJsonParse('lutra_van_' + albumId, isL ? safeJsonParse('lutra_van', []) : [])).length + ensureArray(safeJsonParse('lutra_kell_' + albumId, isL ? safeJsonParse('lutra_kell', []) : [])).length;
+        if (n) r.collectors = n; else if (mine && currentUser) r.collectors = 1; else if (n === null) r.collectors = null;
+      }
+    } catch (e) {}
+    return r;
+  };
+})();
+
+
+// ===== cs_ext13: v21 javítások =====
+(function () {
+  const esc = (t) => escapeHtml(String(t == null ? '' : t));
+  const ls = { g: (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+
+  // ---------- CSS ----------
+  const css = document.createElement('style');
+  const person = (c) => "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 80'%3E%3Cg fill='" + c + "'%3E%3Ccircle cx='30' cy='11' r='9'/%3E%3Crect x='19' y='22' width='22' height='30' rx='7'/%3E%3Crect x='6' y='24' width='9' height='24' rx='4.5' transform='rotate(12 10 24)'/%3E%3Crect x='45' y='24' width='9' height='24' rx='4.5' transform='rotate(-12 50 24)'/%3E%3Crect x='20' y='50' width='9' height='27' rx='4.5'/%3E%3Crect x='31' y='50' width='9' height='27' rx='4.5'/%3E%3C/g%3E%3C/svg%3E\")";
+  css.textContent = `
+    .cs-mob-album{display:none !important}
+    .cs-comm-badge{min-width:12px !important; height:12px !important; line-height:12px !important; font-size:.52rem !important; padding:0 2px !important; transition:transform .12s, box-shadow .12s;}
+    .cs-comm-badge:hover,.cs-comm-badge:focus,.cs-comm-badge:active{transform:scale(1.9); box-shadow:0 0 0 2px #fff, 0 2px 8px rgba(0,0,0,.5); z-index:5;}
+    .matrica-cell.cell-person{background-color:transparent !important; background-repeat:no-repeat !important; background-position:center !important; background-size:contain !important; border-color:transparent !important; aspect-ratio:3/4 !important; min-height:64px; box-shadow:none !important; text-shadow:0 1px 2px rgba(0,0,0,.65); color:#fff; font-weight:800; padding-top:16px;}
+    .matrica-cell.cell-person{background-image:${person('%233b6f69')} !important;}
+    .matrica-cell.cell-person.van{background-image:${person('%2393B382')} !important;}
+    .matrica-cell.cell-person.kell{background-image:${person('%23B07A4A')} !important;}
+    .matrica-cell.cell-person.foglalva{background-image:${person('%234A78B0')} !important;}
+    [data-cs-pn]{cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px;}
+    .cs-nb{display:inline-flex; gap:2px; vertical-align:middle; margin-left:4px;}
+    .cs-dot{position:relative;} .cs-dot::after{content:''; position:absolute; top:6px; right:8px; width:9px; height:9px; border-radius:50%; background:#E85A4F; box-shadow:0 0 0 2px var(--deep,#0D2E2C);}
+    #cs-legal-footer{background:var(--deep,#0D2E2C); color:var(--sand,#E3D5B8) !important; opacity:1 !important; border-top:1px solid rgba(243,238,223,.15); margin-top:24px;}
+    #cs-legal-footer a{color:var(--sand,#E3D5B8) !important; text-decoration:underline; text-underline-offset:3px;}
+    #cs-refresh-note{position:fixed; left:12px; right:12px; bottom:78px; z-index:99990; background:var(--amber,#D89B4A); color:#2a1c06; border-radius:12px; padding:10px 12px; font-weight:700; font-size:.88rem; display:flex; gap:8px; align-items:center; justify-content:space-between; box-shadow:0 6px 20px rgba(0,0,0,.4);}
+  `;
+  document.head.appendChild(css);
+
+  // ---------- Figura (általános alak) és Kinder (tojás) szétválasztása ----------
+  const _gc = gridCellHtml;
+  window.gridCellHtml = gridCellHtml = function () {
+    let h = _gc.apply(this, arguments);
+    try {
+      const a = getActiveAlbum();
+      const kinder = a.type === 'kinder' || /kinder|tojás/i.test(a.title || '');
+      if (!kinder && h.indexOf('cell-figure') > -1) h = h.replace('cell-figure', 'cell-person');
+    } catch (e) {}
+    return h;
+  };
+  function fixTypeSelect() {
+    const sel = document.getElementById('admin-album-type'); if (!sel || sel.dataset.v21) return; sel.dataset.v21 = '1';
+    const f = [...sel.options].find(o => o.value === 'figure'); if (f) f.textContent = 'Figura (általános alak a rácsban)';
+    if (![...sel.options].some(o => o.value === 'kinder')) { const o = document.createElement('option'); o.value = 'kinder'; o.textContent = 'Kinder tojás (tojás a rácsban)'; sel.appendChild(o); }
+  }
+
+  // ---------- Alsó menü: a Profil gomb (dinamikusan létrehozott) kattintása ----------
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('#mobile-bottom-bar [data-bottom-view="profil"]');
+    if (b) switchView('profil');
+  });
+
+  // ---------- Partnernév -> adatlap + jelvények a név mellett ----------
+  const nameCount = () => { const m = {}; (allUsersData || []).forEach(u => { m[u.nev] = (m[u.nev] || 0) + 1; }); return m; };
+  let pnTimer = null;
+  function markNames() {
+    if (!Array.isArray(allUsersData) || !allUsersData.length) return;
+    const cnt = nameCount(), byName = {}; allUsersData.forEach(u => { byName[u.nev] = u; });
+    document.querySelectorAll('#view-cserek strong, #view-cserek h4, #view-kereso strong, #view-kereso h4, #view-uzeneteim strong').forEach(el => {
+      if (el.dataset.csPn || el.children.length) return;
+      const t = el.textContent.trim(); const u = byName[t];
+      if (!u || cnt[t] !== 1 || (currentUser && u.id === currentUser.uid)) return;
+      el.dataset.csPn = u.id;
+      if (window.CS_BADGES && (u.badges || []).length) {
+        const sp = document.createElement('span'); sp.className = 'cs-nb';
+        sp.innerHTML = window.CS_BADGES.filter(b => u.badges.includes(b.id)).slice(0, 4).map(b => `<span title="${esc(b.t)} – ${esc(b.d)}">${window.csBadgeSvg ? window.csBadgeSvg(b.id, 16) : ''}</span>`).join('');
+        el.insertAdjacentElement('afterend', sp);
+      }
+    });
+  }
+  new MutationObserver(() => { clearTimeout(pnTimer); pnTimer = setTimeout(markNames, 250); }).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('click', (e) => {
+    const n = e.target.closest && e.target.closest('[data-cs-pn]');
+    if (n && typeof openUserProfileModal === 'function') { e.preventDefault(); e.stopPropagation(); openUserProfileModal(n.dataset.csPn); }
+  }, true);
+
+  // ---------- „Frissítsd az oldalt" jelzés a hiányzók felvitele után ----------
+  let kellSig = null, refTimer = null;
+  const _sm = saveMyStateFast;
+  window.saveMyStateFast = saveMyStateFast = function () {
+    const r = _sm.apply(this, arguments);
+    try {
+      const sig = (myProfile.kell || []).length;
+      if (kellSig !== null && sig > kellSig) {
+        clearTimeout(refTimer);
+        refTimer = setTimeout(() => {
+          if (document.getElementById('cs-refresh-note')) return;
+          const n = document.createElement('div'); n.id = 'cs-refresh-note';
+          n.innerHTML = '<span>Frissítsd az oldalt, ha látni szeretnéd, hány cserepartnernél van meg a hiányzód!</span><span style="display:flex; gap:6px;"><button class="btn btn-secondary btn-sm" id="cs-refresh-go">Frissítés</button><button class="btn btn-secondary btn-sm" id="cs-refresh-x">✕</button></span>';
+          document.body.appendChild(n);
+          n.querySelector('#cs-refresh-go').onclick = () => location.reload();
+          n.querySelector('#cs-refresh-x').onclick = () => n.remove();
+          setTimeout(() => n.remove(), 20000);
+        }, 5000);
+      }
+      kellSig = sig;
+    } catch (e) {}
+    return r;
+  };
+  function initKellSig() { try { kellSig = (myProfile.kell || []).length; } catch (e) {} }
+  setTimeout(initKellSig, 3000);
+  function addRefreshBtn() {
+    const t = document.querySelector('.view-mode-toggle'); if (!t || document.getElementById('cs-refresh-btn')) return;
+    const b = document.createElement('button'); b.id = 'cs-refresh-btn'; b.className = 'btn btn-secondary btn-sm'; b.title = 'Oldal frissítése'; b.textContent = '⟳'; b.style.marginLeft = 'auto';
+    b.onclick = () => location.reload();
+    t.insertAdjacentElement('afterend', b);
+    t.style.display = t.style.display; 
+  }
+
+  // ---------- Lábléc: legalulra, a lap színében ----------
+  function moveFooter() {
+    const f = document.getElementById('cs-legal-footer'); if (!f) return;
+    if (f.parentElement !== document.body || f.nextElementSibling) document.body.appendChild(f);
+    f.style.padding = '16px 12px 84px';
+  }
+
+  // ---------- Jelvény-értesítés + pötty a Profil menün ----------
+  let badgeChecked = false;
+  async function checkNewBadges() {
+    if (!currentUser || !db || badgeChecked) return; badgeChecked = true;
+    try {
+      const d = await db.collection('public_profiles').doc(currentUser.uid).get();
+      const got = (d.exists && Array.isArray(d.data().badges)) ? d.data().badges : [];
+      const key = 'cs_badges_seen_' + currentUser.uid, seenRaw = ls.g(key, null);
+      if (seenRaw === null) { ls.s(key, JSON.stringify(got)); return; }
+      const seen = JSON.parse(seenRaw), fresh = got.filter(x => !seen.includes(x));
+      if (!fresh.length || !window.CS_BADGES) return;
+      const b = window.CS_BADGES.find(x => x.id === fresh[0]); if (!b) return;
+      const m = document.createElement('div'); m.style.cssText = 'position:fixed; inset:0; z-index:100001; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px;';
+      m.innerHTML = `<div style="background:#F3EEDF; color:#0D2E2C; max-width:340px; width:100%; border-radius:16px; padding:22px; text-align:center;"><div style="font-size:.8rem; font-weight:800; color:#B9791F; letter-spacing:.1em;">ÚJ JELVÉNYT KAPTÁL!</div><div style="margin:10px 0;">${window.csBadgeSvg ? window.csBadgeSvg(b.id, 96) : ''}</div><h3 style="margin:0 0 4px;">${esc(b.t)}</h3><p style="margin:0 0 14px; font-size:.9rem;">${esc(b.d)}</p><button class="btn btn-primary" id="cs-badge-ok">Köszönöm!</button></div>`;
+      document.body.appendChild(m);
+      m.querySelector('#cs-badge-ok').onclick = () => { m.remove(); ls.s(key, JSON.stringify(got)); };
+    } catch (e) {}
+  }
+  function updateDot() {
+    const need = !!document.getElementById('cs-retro-rate');
+    ['#mobile-bottom-bar [data-bottom-view="profil"]', '#btn-bottom-more'].forEach(sel => { const el = document.querySelector(sel); if (el) el.classList.toggle('cs-dot', need); });
+    const t = document.querySelector('.sub-tab[data-view="profil"]'); if (t) t.classList.toggle('cs-dot', need);
+  }
+  setInterval(() => { try { updateDot(); moveFooter(); fixTypeSelect(); addRefreshBtn(); if (currentUser) setTimeout(checkNewBadges, 4000); } catch (e) {} }, 3000);
+
+  // ---------- Térkép: szűrő (mind / gyűjtők / találkozók) ----------
+  let meetLayer = null, mapFilter = 'all';
+  const geoKey = (q) => 'cs_geo_' + q.toLowerCase();
+  async function geocode(q) {
+    const c = ls.g(geoKey(q), null); if (c) { try { return JSON.parse(c); } catch (e) {} }
+    try {
+      const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=hu&q=' + encodeURIComponent(q), { headers: { 'Accept-Language': 'hu' } });
+      const j = await r.json(); const v = j && j[0] ? { lat: +j[0].lat, lng: +j[0].lon } : { lat: null, lng: null };
+      ls.s(geoKey(q), JSON.stringify(v)); return v;
+    } catch (e) { return { lat: null, lng: null }; }
+  }
+  async function drawMeetups() {
+    if (typeof leafletMap === 'undefined' || !leafletMap || typeof L === 'undefined') return;
+    if (meetLayer) meetLayer.clearLayers(); else meetLayer = L.layerGroup();
+    const list = (typeof meetupEvents !== 'undefined' ? meetupEvents : []).slice(0, 30);
+    for (const ev of list) {
+      const q = [ev.place, ev.city].filter(Boolean).join(', ') + ', Magyarország';
+      let g = await geocode(q); if (g.lat == null && ev.city) g = await geocode(ev.city + ', Magyarország');
+      if (g.lat == null) continue;
+      L.circleMarker([g.lat, g.lng], { radius: 10, color: '#fff', weight: 2, fillColor: '#4A78B0', fillOpacity: .95 }).addTo(meetLayer)
+        .bindPopup(`<strong>${esc(ev.place)}</strong><br>${esc(ev.city)} · ${esc(ev.time)}<br><span style="font-size:.8rem;">${esc(ev.description || '')}</span>`);
+      if (!ls.g(geoKey(q) + '_t', null)) await new Promise(r => setTimeout(r, 1100));
+    }
+    applyMapFilter();
+  }
+  function applyMapFilter() {
+    if (typeof leafletMap === 'undefined' || !leafletMap) return;
+    const show = (layer, on) => { if (!layer) return; if (on && !leafletMap.hasLayer(layer)) leafletMap.addLayer(layer); if (!on && leafletMap.hasLayer(layer)) leafletMap.removeLayer(layer); };
+    show(leafletMarkersGroup, mapFilter !== 'meet');
+    show(meetLayer, mapFilter !== 'users');
+  }
+  function mapFilterUi() {
+    const m = document.getElementById('leaflet-map-container'); if (!m || document.getElementById('cs-map-filter')) return;
+    const w = document.createElement('div'); w.id = 'cs-map-filter'; w.style.cssText = 'display:flex; gap:6px; margin:0 0 8px; flex-wrap:wrap;';
+    w.innerHTML = [['all', 'Mind'], ['users', 'Gyűjtők'], ['meet', 'Találkozók']].map(([k, t]) => `<button class="btn ${k === 'all' ? 'btn-primary' : 'btn-secondary'} btn-sm" data-mf="${k}">${t}</button>`).join('');
+    const anchor = document.getElementById('cs-map-label') || m; anchor.insertAdjacentElement('beforebegin', w);
+    w.addEventListener('click', (e) => { const b = e.target.closest('[data-mf]'); if (!b) return; mapFilter = b.dataset.mf; w.querySelectorAll('button').forEach(x => x.className = 'btn btn-sm ' + (x === b ? 'btn-primary' : 'btn-secondary')); if (mapFilter !== 'users' && !meetLayer) drawMeetups(); applyMapFilter(); });
+    try { if (typeof listenToMeetups === 'function') listenToMeetups(); } catch (e) {}
+    setTimeout(drawMeetups, 1500);
+  }
+  const _pm = switchView;
+  window.switchView = switchView = function (v) {
+    _pm(v);
+    if (v === 'statisztika') { setTimeout(mapFilterUi, 800); setTimeout(applyMapFilter, 1200); }
+    if (v === 'admin') setTimeout(fixTypeSelect, 400);
+  };
+
+  // ---------- Admin: üzenet-statisztika ----------
+  function adminMsgStats() {
+    const box = document.getElementById('cs-admin-tools'); if (!box || !currentUser || currentUser.email !== ADMIN_EMAIL || box.querySelector('#cs-adm-msgs')) return;
+    const d = document.createElement('details'); d.id = 'cs-adm-msgs'; d.style.cssText = 'margin-top:10px;';
+    d.innerHTML = '<summary style="cursor:pointer; font-weight:700;">Üzenet-statisztika</summary><div style="margin-top:8px;"><button class="btn btn-secondary btn-sm" id="cs-msgs-go">Számolás (utolsó 1000 üzenet)</button><div id="cs-msgs-out" style="margin-top:8px; font-size:.88rem; line-height:1.6;"></div></div>';
+    box.appendChild(d);
+    d.querySelector('#cs-msgs-go').onclick = async () => {
+      const out = d.querySelector('#cs-msgs-out'); out.textContent = 'Számolás…';
+      try {
+        const snap = await db.collection('messages').orderBy('createdAt', 'desc').limit(1000).get();
+        const now = Date.now(), day = 864e5; let d1 = 0, d7 = 0, d30 = 0; const from = new Set(), pairs = new Set(); const perAlbum = {};
+        snap.docs.forEach(x => { const m = x.data(), t = m.createdAt && m.createdAt.seconds ? m.createdAt.seconds * 1000 : 0; if (now - t < day) d1++; if (now - t < 7 * day) d7++; if (now - t < 30 * day) d30++; from.add(m.fromUid); pairs.add([m.fromUid, m.toUid].sort().join('|')); const a = m.albumId || '–'; perAlbum[a] = (perAlbum[a] || 0) + 1; });
+        const top = Object.entries(perAlbum).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([a, n]) => esc(a) + ': ' + n).join('<br>');
+        out.innerHTML = `Összes (max. 1000-ből): <strong>${snap.size}</strong><br>Utolsó 24 óra: <strong>${d1}</strong> · 7 nap: <strong>${d7}</strong> · 30 nap: <strong>${d30}</strong><br>Különböző küldők: <strong>${from.size}</strong> · párbeszédek: <strong>${pairs.size}</strong><br><span style="opacity:.8;">Albumonként:</span><br>${top}`;
+      } catch (e) { out.textContent = 'Nem sikerült: ' + e.message; }
+    };
+  }
+  setInterval(() => { try { adminMsgStats(); } catch (e) {} }, 3000);
+})();
+
+
+// ===== cs_ext14: Szótár nézet =====
+(function () {
+  const GL = [["csere", "1:1 csere", "Egy tételt egy tételre cserélsz. A legtisztább, legkönnyebben átlátható csere."], ["alap", "Alapsorozat", "A kiadvány alap, mindenhol kapható tételei, a különleges kiadások nélkül."], ["alap", "Album / füzet", "A gyűjtős kiadvány (matricás füzet, kártyamappa vagy tartó), amibe a tételeket beragasztod vagy elhelyezed. Az appban minden album külön gyűjtemény, saját sorszámlistával."], ["intl", "Binder", "Mappa, amiben a kártyákat tasakokban tárolják. A gyűjtők gyakran binderben rendezik a teljes szettet."], ["intl", "Booster / Pack", "Bontatlan kártyacsomag (általában véletlenszerű lapokkal). A „booster box” egy doboznyi csomag."], ["gyarto", "Cardmarket", "Európai online kártyapiac. Az árak tájékoztatásul szolgálnak, az appban a gyűjtőkártyáknál is megjelenhetnek."], ["intl", "Common / Uncommon / Rare", "Ritkaság szerinti kategóriák: gyakori, kevésbé gyakori és ritka. Kártyajátékoknál a rarity a lap előfordulási aránya."], ["csere", "Csere lezárása", "Mindkét fél külön lezárja a cserét. Ekkor a tételek átvezetődnek a gyűjteményekben, és értékelhetitek egymást."], ["csere", "Cserepartner", "Az a gyűjtő, akivel kölcsönösen tudtok cserélni. A Cserék nézet rangsorolja őket."], ["app", "Cserék nézet", "A párosítás központja: kikkel van kölcsönös egyezésed, milyen tételekre, milyen távolságra. A számok mellett a várost is látod."], ["alap", "Csomag / zacskó", "Egy bontatlan kiszerelés véletlenszerű tételekkel. Innen jönnek a dupláid, ezért van szükség cserére."], ["alap", "Dupla (Van)", "Az a tétel, amiből több példányod van, így a felesleget cserére ajánlhatod."], ["intl", "Duplicates / Doubles", "Angolul a dupla példányok. A gyűjtők gyakran „dupes” rövidítéssel írják."], ["app", "Facebook-poszt elemző", "A csoportokban látott VAN/KELL cserelista összevetése a sajátoddal. Szövegből vagy képből dolgozik, és a darabszámot is felismeri, ha hiányzik, rákérdez."], ["gyarto", "Ferrero (Kinder)", "A Kinder-meglepetések és a Kinder Joy gyártója. A kiadásonként változó figurákat gyűjtik."], ["alap", "Figura", "Gyűjthető kis szobor vagy játékfigura. Az appban általános emberalakú csempe jelzi."], ["csere", "Foglalt / zárolt tétel", "Megállapodtatok egy cseréről, ezért a tételt külön tartod. Más cserére addig nem ajánlhatod fel, a lezáráskor feloldódik."], ["alap", "Fóliás / csillogó tétel", "Eltérő felületű, speciális kidolgozású tétel (fólia, hologram, csillogó bevonat). Általában kevesebb van belőle, ezért értékesebb a gyűjtőknek."], ["intl", "Graded card", "Független cég (pl. PSA vagy Beckett) által pontozott és lezárt tokba tett lap. Az értékelés befolyásolja az árat."], ["app", "Gyűjteményem megosztása", "Linkkel megoszthatod a listádat, a vendég a belépés nélkül is összevetheti a sajátjával."], ["intl", "Have / Need list", "Angol megfelelője a Van/Kell listának. Külföldön „have list” a dupláid, „need list” a hiányzóid."], ["csere", "Helyi csere", "Személyes találkozón, ugyanabban a városban vagy környéken zajló csere. Költségkímélő, nincs postaköltség."], ["app", "Helyi cserék térkép", "A gyűjtők és a találkozók helye a térképen az aktuális albumhoz. Szűrhető: mind, gyűjtők vagy találkozók."], ["app", "Heti összefoglaló", "Opcionális heti e-mail: hány cserepartnered van, és melyik albumodban vagy a célegyenesben. A profilban kapcsolható be és ki."], ["alap", "Hiányzó (Kell)", "Az a tétel, amit még nem szereztél meg. Az appban ezeket jelölöd „Kell” listaként, ezek alapján keresünk neked partnert."], ["intl", "Holo / Foil", "Holografikus vagy fóliás felületű lap. A fóliás változat jellemzően ritkább, és értékesebb."], ["app", "Itt vagyok most", "Ideiglenesen megosztod a pontos helyedet a térképen (pl. játszótéren), hogy a közelben lévők megtalálhassanak. Csak a megadott ideig látszik, utána automatikusan törlődik."], ["app", "Jelvények", "Elismerések a segítőkész, megbízható gyűjtőknek (pl. Postagalamb, Taxisofőr). Jelvényt a partnerek is javasolhatnak értékelés közben."], ["app", "Kedvencek", "Itt választod ki a Top 3 kedvenc tételedet, itt látod a közösség Top 5-ét, és itt tartod a kiemelt vadászlistádat."], ["app", "Kereső", "Egy konkrét tételre vagy városra keresel gyűjtőket, még akkor is, ha nincs kölcsönös egyezés."], ["app", "Kiemeltek (vadászlista)", "Azok a tételek, amikre kiemelten vadászol. Megmutatjuk, kinél van belőlük dupla, a legközelebbi gyűjtők elöl."], ["alap", "Kinder tojás", "A Kinder-meglepetéstojásokból vagy Kinder Joy-ból származó gyűjthető figura. Az appban tojás alakú csempével jelenik meg."], ["app", "Készletradar", "Hol kapható még a gyűjtős csomag az üzletekben. A közösség jelzései alapján működik."], ["csere", "Kölcsönös egyezés", "Te keresel valamit, amit a partner dupláz, és ő is talál nálad olyat, ami neki hiányzik. Ilyenkor mindketten nyerhettek."], ["csere", "Körcsere", "Három vagy több gyűjtő láncban cserél, amikor kettő között nincs közvetlen egyezés, de körben mindenkinek megoldódik. A körcsere-kalkulátor kiszámolja."], ["csere", "Közös kalap", "Felajánlás rászoruló osztályoknak, ovisoknak: nem cserébe adod, hanem ajándékba. A felajánlók jelvényt kaphatnak."], ["alap", "Limitált kiadás (LE)", "Korlátozott darabszámban megjelent, ritkább tétel. Gyakran külön jelölést kap (pl. LE 1, XXL LE). Az app a sorszám helyén is kezeli az ilyen jelöléseket."], ["csere", "Megbízhatósági pont", "A sikeres, lezárt cserék után kapott értékelések alapján épülő bizalmi jelzés a profilodon."], ["app", "Megosztott poszt (Share Target)", "Ha a telepített appot választod a megosztásnál, a Facebook-poszt szövege közvetlenül az elemzőbe kerül. Jelenleg Androidon, telepített appal működik."], ["intl", "Mint / Near Mint", "Újszerű, hibátlan állapot. A „near mint” szinte hibátlan, kisebb szemmel alig látható eltéréssel."], ["gyarto", "Panini", "Olasz gyártó, főleg focis matricaalbumokról (világbajnokság, Európa-bajnokság) és Adrenalyn XL kártyákról ismert."], ["alap", "Plusz példány", "A duplán felüli darab. Ha egy tételből 3 van meg, 2 plusz példányod van."], ["csere", "Postás csere", "Távolsági csere, ahol a tételeket postán küldjétek. Érdemes előre megegyezni, ki viseli a költséget."], ["gyarto", "Ravensburger", "Német kiadó. Az ő nevéhez fűződik a Disney Lorcana gyűjthető kártyajáték."], ["alap", "Retro album", "Régi, jellemzően a szülők gyerekkorából ismert album. Az appban külön szűrővel találod meg, és a retro cserékhez külön jelvény is jár."], ["intl", "Rookie card", "Sportolók első, újonc kártyája. A gyűjtők gyakran keresik, mert a karrier elején jelent meg."], ["intl", "Set / Szett", "Egy kiadás teljes kártyalistája. „Master set” a minden változatot tartalmazó, „base set” csak az alapsorozat."], ["intl", "Sleeve / Toploader", "Kártyatok: a sleeve puha védőtasak, a toploader merev műanyag tartó az értékesebb lapokhoz."], ["alap", "Sorszám / checklist", "A tételek számozott listája. A checklist mutatja, mi gyűjthető az albumban, így pontosan látszik, mi hiányzik."], ["intl", "Swap", "Angolul csere. Külföldi gyűjtőcsoportokban „swap” és „swaps” néven keresik."], ["app", "Szkenner", "Az app fotós beolvasója: lefényképezed a sorszámokat vagy a számlistát, az app kiolvassa őket, a darabszámokat is. Mentés előtt mindig ellenőrizd az eredményt."], ["intl", "TCG", "Trading Card Game, azaz gyűjtögetős kártyajáték (pl. Pokémon, Magic, Yu-Gi-Oh!), ahol a lapokkal játszani is lehet."], ["gyarto", "The Pokémon Company", "A Pokémon kártyajáték (Pokémon TCG) kiadója. Évente több kiegészítő szettet jelentet meg."], ["gyarto", "Topps", "Amerikai gyártó, sport- és filmes kártyákat készít. Ismert sorozatai a Match Attax (foci) és a Turbo Attax (Forma-1)."], ["alap", "Tétel", "Egyetlen gyűjthető darab: egy matrica, egy kártya vagy egy figura. Cserénél a sorszáma azonosítja."], ["gyarto", "Upper Deck", "Amerikai kártyagyártó, sport- és filmes licencekkel, ismert a Marvel-kártyákról."]];
+  const CAT = { alap: 'Alapfogalmak', csere: 'Csere', app: 'Az app funkciói', intl: 'Nemzetközi kifejezések', gyarto: 'Gyártók és kiadók' };
+  const esc = (t) => escapeHtml(String(t == null ? '' : t));
+  let cat = 'all', q = '';
+  function build() {
+    const main = document.querySelector('main'); if (!main || document.getElementById('view-szotar')) return;
+    const s = document.createElement('section'); s.id = 'view-szotar'; s.className = 'view';
+    s.innerHTML = '<h2>Szótár</h2><p class="view-intro">Gyűjtői fogalmak és az app funkciói. A teljes, megosztható változat: <a href="szotar.html" target="_blank" rel="noopener">szotar.html</a></p><input id="cs-gl-q" type="search" class="input-field" placeholder="Keress a fogalmak között" style="width:100%; margin-bottom:8px;"><div id="cs-gl-chips" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;"></div><div id="cs-gl-list"></div>';
+    main.appendChild(s);
+    s.addEventListener('input', (e) => { if (e.target.id === 'cs-gl-q') { q = e.target.value.toLowerCase().trim(); draw(); } });
+    s.addEventListener('click', (e) => { const b = e.target.closest('[data-gl-c]'); if (b) { cat = b.dataset.glC; draw(); } });
+    draw();
+  }
+  function draw() {
+    const ch = document.getElementById('cs-gl-chips'), ls = document.getElementById('cs-gl-list'); if (!ch || !ls) return;
+    ch.innerHTML = [['all', 'Mind']].concat(Object.entries(CAT)).map(([k, t]) => `<button class="btn ${cat === k ? 'btn-primary' : 'btn-secondary'} btn-sm" data-gl-c="${k}">${esc(t)}</button>`).join('');
+    const rows = GL.filter(([c, n, d]) => (cat === 'all' || c === cat) && (!q || (n + ' ' + d).toLowerCase().includes(q)));
+    ls.innerHTML = rows.length ? rows.map(([c, n, d]) => `<div class="card" style="padding:10px 12px; margin-bottom:8px;"><strong style="color:var(--amber);">${esc(n)}</strong> <span style="font-size:.68rem; opacity:.65; text-transform:uppercase; letter-spacing:.06em;">${esc(CAT[c])}</span><div style="margin-top:3px; font-size:.9rem; line-height:1.5;">${esc(d)}</div></div>`).join('') : '<p style="opacity:.7;">Nincs találat.</p>';
+  }
+  if (document.readyState !== 'loading') build(); else document.addEventListener('DOMContentLoaded', build);
+  const _p14 = switchView;
+  window.switchView = switchView = function (v) { if (v === 'szotar') build(); _p14(v); };
+  // lábléc: szótár + támogatás
+  setInterval(() => {
+    const f = document.getElementById('cs-legal-footer'); if (!f || f.dataset.v21) return; f.dataset.v21 = '1';
+    f.innerHTML = '<a href="szotar.html" target="_blank" rel="noopener">Szótár</a> · <a href="adatkezeles.html" target="_blank" rel="noopener">Adatkezelési tájékoztató</a> · <a href="aszf.html" target="_blank" rel="noopener">ÁSZF</a> · <a href="impresszum.html" target="_blank" rel="noopener">Impresszum</a>';
+  }, 2500);
+})();
+
+// ===== cs_ext15: regisztrációs elfogadó jelölőnégyzet (ÁSZF + adatkezelési tájékoztató) =====
+(function () {
+  const TERMS_VER = '2026-11-18';
+  function ensureBox() {
+    const modal = document.getElementById('modal-auth'); if (!modal || document.getElementById('cs-consent-box')) return;
+    const anchor = document.getElementById('btn-google-login'); if (!anchor) return;
+    const w = document.createElement('label'); w.id = 'cs-consent-box';
+    w.style.cssText = 'display:flex; gap:8px; align-items:flex-start; font-size:.82rem; line-height:1.45; margin:0 0 12px; cursor:pointer;';
+    w.innerHTML = '<input type="checkbox" id="cs-consent-chk" style="margin-top:3px; flex:none;"><span>Elolvastam és elfogadom a <a href="aszf.html" target="_blank" rel="noopener" style="color:var(--amber);">Felhasználási feltételeket</a>, és tudomásul vettem az <a href="adatkezeles.html" target="_blank" rel="noopener" style="color:var(--amber);">Adatkezelési tájékoztatót</a>.</span>';
+    anchor.insertAdjacentElement('beforebegin', w);
+  }
+  function guard(e) {
+    const b = e.target.closest && e.target.closest('#btn-google-login, #btn-email-signup, #btn-email-login');
+    if (!b) return;
+    // a már meglévő fiókkal való e-mailes belépéshez nem kell újra elfogadni
+    if (b.id === 'btn-email-login') return;
+    const chk = document.getElementById('cs-consent-chk');
+    if (chk && !chk.checked) {
+      e.preventDefault(); e.stopPropagation();
+      showToast('A folytatáshoz fogadd el a Felhasználási feltételeket és az Adatkezelési tájékoztatót.');
+      const box = document.getElementById('cs-consent-box'); if (box) { box.style.outline = '2px solid #E85A4F'; box.style.borderRadius = '6px'; setTimeout(() => { box.style.outline = ''; }, 1800); }
+      return;
+    }
+    try { localStorage.setItem('cs_consent_pending', JSON.stringify({ at: Date.now(), v: TERMS_VER })); } catch (x) {}
+  }
+  const modal0 = () => document.getElementById('modal-auth');
+  document.addEventListener('click', guard, true);
+  // az elfogadás tényének rögzítése belépés után (bizonyíték): users/{uid}.consent
+  async function saveConsent() {
+    try {
+      if (!currentUser || !db) return;
+      const raw = localStorage.getItem('cs_consent_pending'); if (!raw) return;
+      const c = JSON.parse(raw);
+      await db.collection('users').doc(currentUser.uid).set({ consent: { at: new Date(c.at).toISOString(), terms: c.v } }, { merge: true });
+      localStorage.removeItem('cs_consent_pending');
+    } catch (e) {}
+  }
+  setInterval(() => { try { ensureBox(); saveConsent(); } catch (e) {} }, 1500);
+  document.addEventListener('click', (e) => { if (e.target && e.target.id === 'btn-open-auth') setTimeout(ensureBox, 30); });
+})();
+
+
+// ===== cs_ext16: Gyártói hírek ideiglenes kikapcsolása =====
+// Visszakapcsolás: CS_NEWS_OFF = false, és a fenti TILES listába vissza kell tenni a 'hirek' csempét.
+const CS_NEWS_OFF = true;
+(function () {
+  if (!CS_NEWS_OFF) return;
+  window.csRenderNews = async function () {
+    const box = document.getElementById('news-list');
+    if (box) box.innerHTML = '<p style="opacity:.75;">A Gyártói hírek rész átmenetileg nem érhető el.</p>';
+  };
+  const _p16 = switchView;
+  window.switchView = switchView = function (v) {
+    if (v === 'hirek') { showToast('A Gyártói hírek rész átmenetileg nem érhető el.'); v = 'hub'; }
+    return _p16(v);
+  };
 })();
